@@ -1,4 +1,4 @@
-# muggles-waffles
+# waffles-muggles
 #
 # CS 5150 Navigation in Library Stacks.
 #
@@ -26,6 +26,8 @@ class InitTables < ActiveRecord::Migration[5.0]
             t.integer :library
 
             t.timestamps
+
+            t.primary_key :id
         end
 
         create_table 'library'.pluralize.to_sym, id: false do |t|
@@ -35,6 +37,8 @@ class InitTables < ActiveRecord::Migration[5.0]
             t.decimal :longitude
 
             t.timestamps
+
+            t.primary_key :id
         end
 
         create_table 'rule'.pluralize.to_sym, id: false do |t|
@@ -44,6 +48,8 @@ class InitTables < ActiveRecord::Migration[5.0]
             t.string :rule
 
             t.timestamps
+
+            t.primary_key :rule_id
         end
 
         create_table 'search_result'.pluralize.to_sym, id: false do |t|
@@ -52,6 +58,8 @@ class InitTables < ActiveRecord::Migration[5.0]
             t.string :result
 
             t.timestamps
+
+            t.primary_key :result_id
         end
 
         create_table 'stack'.pluralize.to_sym, id: false do |t|
@@ -70,6 +78,8 @@ class InitTables < ActiveRecord::Migration[5.0]
             t.integer :floor
 
             t.timestamps
+
+            t.primary_key :id
         end
       end
 end

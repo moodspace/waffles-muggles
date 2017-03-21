@@ -1,4 +1,4 @@
-# muggles-waffles
+# waffles-muggles
 #
 # CS 5150 Navigation in Library Stacks.
 #
