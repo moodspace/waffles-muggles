@@ -49,6 +49,7 @@ test:
 #
 production:
   <<: *default
-  database: library_nav_production
-  username: root
-  password: password
+  host: <%= ENV['DB_HOST'] %>
+  database: <%= ENV['DB_NAME'] %>
+  username: <%= ENV['DB_USER'] %>
+  password: <%= ENV['DB_PASS'] %>
