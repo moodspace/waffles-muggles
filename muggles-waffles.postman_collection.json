@@ -1,0 +1,380 @@
+{
+	"variables": [],
+	"info": {
+		"name": "muggles-waffles",
+		"_postman_id": "649af5f8-a7b6-e0d3-f18c-93efbd2bfa8f",
+		"description": "CS 5150 Navigation in Library Stacks.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "floors",
+			"description": "Folder for floors",
+			"item": [
+				{
+					"name": "https://boiling-woodland-25300.herokuapp.com/v1/floors?library_id={{library_id}}",
+					"request": {
+						"url": "https://boiling-woodland-25300.herokuapp.com/v1/floors?library_id={{library_id}}",
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"description": "Returns information about floors at a given library."
+					},
+					"response": []
+				},
+				{
+					"name": "https://boiling-woodland-25300.herokuapp.com/v1/floors",
+					"request": {
+						"url": "https://boiling-woodland-25300.herokuapp.com/v1/floors",
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "Floor with given ID to be updated"
+						},
+						"description": "Edit a floor."
+					},
+					"response": []
+				},
+				{
+					"name": "https://boiling-woodland-25300.herokuapp.com/v1/floors",
+					"request": {
+						"url": "https://boiling-woodland-25300.herokuapp.com/v1/floors",
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "Floor with default ID to be added"
+						},
+						"description": "Adds a new floor to a given library."
+					},
+					"response": []
+				},
+				{
+					"name": "https://boiling-woodland-25300.herokuapp.com/v1/floors/:id",
+					"request": {
+						"url": {
+							"raw": "https://boiling-woodland-25300.herokuapp.com/v1/floors/:id",
+							"protocol": "https",
+							"auth": {},
+							"host": [
+								"boiling-woodland-25300",
+								"herokuapp",
+								"com"
+							],
+							"path": [
+								"v1",
+								"floors",
+								":id"
+							],
+							"variable": [
+								{
+									"value": "{{id}}",
+									"id": "id"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"description": "Returns information about the floor of a specified ID."
+					},
+					"response": []
+				},
+				{
+					"name": "https://boiling-woodland-25300.herokuapp.com/v1/floors/:id",
+					"request": {
+						"url": {
+							"raw": "https://boiling-woodland-25300.herokuapp.com/v1/floors/:id",
+							"protocol": "https",
+							"auth": {},
+							"host": [
+								"boiling-woodland-25300",
+								"herokuapp",
+								"com"
+							],
+							"path": [
+								"v1",
+								"floors",
+								":id"
+							],
+							"variable": [
+								{
+									"value": "{{id}}",
+									"id": "id"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {},
+						"description": "Delete a floor."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "libraries",
+			"description": "Folder for libraries",
+			"item": [
+				{
+					"name": "https://boiling-woodland-25300.herokuapp.com/v1/libraries",
+					"request": {
+						"url": "https://boiling-woodland-25300.herokuapp.com/v1/libraries",
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"description": "Returns information about libraries."
+					},
+					"response": []
+				},
+				{
+					"name": "https://boiling-woodland-25300.herokuapp.com/v1/libraries",
+					"request": {
+						"url": "https://boiling-woodland-25300.herokuapp.com/v1/libraries",
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "Library with given ID to be updated"
+						},
+						"description": "Edit a library."
+					},
+					"response": []
+				},
+				{
+					"name": "https://boiling-woodland-25300.herokuapp.com/v1/libraries",
+					"request": {
+						"url": "https://boiling-woodland-25300.herokuapp.com/v1/libraries",
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "Library with default ID to be added"
+						},
+						"description": "Adds a new library."
+					},
+					"response": []
+				},
+				{
+					"name": "https://boiling-woodland-25300.herokuapp.com/v1/libraries/:id",
+					"request": {
+						"url": {
+							"raw": "https://boiling-woodland-25300.herokuapp.com/v1/libraries/:id",
+							"protocol": "https",
+							"auth": {},
+							"host": [
+								"boiling-woodland-25300",
+								"herokuapp",
+								"com"
+							],
+							"path": [
+								"v1",
+								"libraries",
+								":id"
+							],
+							"variable": [
+								{
+									"value": "{{id}}",
+									"id": "id"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {},
+						"description": "Delete a library."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "rules",
+			"description": "Folder for rules",
+			"item": [
+				{
+					"name": "https://boiling-woodland-25300.herokuapp.com/v1/rules",
+					"request": {
+						"url": "https://boiling-woodland-25300.herokuapp.com/v1/rules",
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"description": "Returns information about rules."
+					},
+					"response": []
+				},
+				{
+					"name": "https://boiling-woodland-25300.herokuapp.com/v1/rules",
+					"request": {
+						"url": "https://boiling-woodland-25300.herokuapp.com/v1/rules",
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "Rule with default ID to be added"
+						},
+						"description": "Adds a new rule."
+					},
+					"response": []
+				},
+				{
+					"name": "https://boiling-woodland-25300.herokuapp.com/v1/rules/:id",
+					"request": {
+						"url": {
+							"raw": "https://boiling-woodland-25300.herokuapp.com/v1/rules/:id",
+							"protocol": "https",
+							"auth": {},
+							"host": [
+								"boiling-woodland-25300",
+								"herokuapp",
+								"com"
+							],
+							"path": [
+								"v1",
+								"rules",
+								":id"
+							],
+							"variable": [
+								{
+									"value": "{{id}}",
+									"id": "id"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {},
+						"description": "Delete a rule."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "search",
+			"description": "Folder for search",
+			"item": [
+				{
+					"name": "https://boiling-woodland-25300.herokuapp.com/v1/search?keyword={{keyword}}",
+					"request": {
+						"url": "https://boiling-woodland-25300.herokuapp.com/v1/search?keyword={{keyword}}",
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"description": "Find stacks by a call number."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "stacks",
+			"description": "Folder for stacks",
+			"item": [
+				{
+					"name": "https://boiling-woodland-25300.herokuapp.com/v1/stacks?floor_id={{floor_id}}",
+					"request": {
+						"url": "https://boiling-woodland-25300.herokuapp.com/v1/stacks?floor_id={{floor_id}}",
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"description": "Returns information about stacks at a given floor."
+					},
+					"response": []
+				},
+				{
+					"name": "https://boiling-woodland-25300.herokuapp.com/v1/stacks",
+					"request": {
+						"url": "https://boiling-woodland-25300.herokuapp.com/v1/stacks",
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "Stack with given ID to be updated"
+						},
+						"description": "Edit a stack."
+					},
+					"response": []
+				},
+				{
+					"name": "https://boiling-woodland-25300.herokuapp.com/v1/stacks",
+					"request": {
+						"url": "https://boiling-woodland-25300.herokuapp.com/v1/stacks",
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "Stack with default ID to be added"
+						},
+						"description": "Adds a new stack to a given floor."
+					},
+					"response": []
+				},
+				{
+					"name": "https://boiling-woodland-25300.herokuapp.com/v1/stacks/:id",
+					"request": {
+						"url": {
+							"raw": "https://boiling-woodland-25300.herokuapp.com/v1/stacks/:id",
+							"protocol": "https",
+							"auth": {},
+							"host": [
+								"boiling-woodland-25300",
+								"herokuapp",
+								"com"
+							],
+							"path": [
+								"v1",
+								"stacks",
+								":id"
+							],
+							"variable": [
+								{
+									"value": "{{id}}",
+									"id": "id"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"description": "Returns information about the stack of a specified ID."
+					},
+					"response": []
+				},
+				{
+					"name": "https://boiling-woodland-25300.herokuapp.com/v1/stacks/:id",
+					"request": {
+						"url": {
+							"raw": "https://boiling-woodland-25300.herokuapp.com/v1/stacks/:id",
+							"protocol": "https",
+							"auth": {},
+							"host": [
+								"boiling-woodland-25300",
+								"herokuapp",
+								"com"
+							],
+							"path": [
+								"v1",
+								"stacks",
+								":id"
+							],
+							"variable": [
+								{
+									"value": "{{id}}",
+									"id": "id"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {},
+						"description": "Delete a stack."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
