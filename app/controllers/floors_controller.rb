@@ -36,7 +36,9 @@ class FloorsController < ApplicationController
 
   def floors_put
     # Your code here
-
+    floor = Floor.new
+    floor.name = 'lololol'
+    Floor.save
     render json: {"message" => "yes, it worked"}
   end
 end
