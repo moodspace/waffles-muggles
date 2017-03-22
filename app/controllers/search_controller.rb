@@ -10,9 +10,9 @@ class SearchController < ApplicationController
     include ApplicationControllerConcern
 
     def index
-        re = /([A-z]{1,3})(\d+(?:\.[A-z]*\d+)*)\s+\.?([A-z])(\d+)\s+([^+]*)([+]*)/
+        re = /([A-z]{1,3})(\d+(?:\.[A-z]*\d+)*)\s+([^+]*)([+]*)/
         callno_dec = re.match(params[:keyword])
-        oversize = callno_dec[6].length
+        oversize = callno_dec[4].length
         rules = []
         Rule.find_each do |rule|
             rules << rule if rule.call_number == callno_dec[0]
