@@ -86,7 +86,7 @@ function loadMap(stackId) {
 
 $(document).ready(function() {
     var callno = $('#map-wrapper').data('callno');
-    var lib_id = 4;
+    var lib_id = $('#map-wrapper').data('libid');
     $.ajax({
         url: "/v1/search", // Route to the Script Controller method
         type: "GET",
