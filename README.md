@@ -23,4 +23,4 @@ The API is currently live [here](https://boiling-woodland-25300.herokuapp.com/v1
 - Import ```muggles-waffles.postman_collection.json``` from this repo
 - All entry points callable from Postman client
 
-Standalone API documentation will be online soon. For now, refer to [Swagger Docs](https://powerful-shore-47112.herokuapp.com/docs).
+Standalone API documentation is available [here](https://boiling-woodland-25300.herokuapp.com/docs/v1).

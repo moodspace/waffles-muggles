@@ -25,7 +25,7 @@ swagger: "2.0"
 info:
   description: "CS 5150 Navigation in Library Stacks."
   version: "1.0.0"
-  title: "muggles-waffles"
+  title: "waffles-muggles"
 host: "127.0.0.1:8000"
 basePath: "/v1"
 schemes:

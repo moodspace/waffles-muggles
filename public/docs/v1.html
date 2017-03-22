@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="./img/favicon.ico">
+
+	<title>CS 5150</title>
+
+        <link href="./css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="./css/font-awesome-4.0.3.css" rel="stylesheet">
+        <link rel="stylesheet" href="./css/highlight.css">
+        <link href="./css/base.css" rel="stylesheet">
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+
+        
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+            <!-- Main title -->
+            <a class="navbar-brand" href=".">CS 5150</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+            
+            
+                <li class="active">
+                    <a href=".">Home</a>
+                </li>
+            
+            
+            </ul>
+
+            <!-- Search, Navigation and Repo links -->
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                        <i class="fa fa-search"></i> Search
+                    </a>
+                </li>
+                <li class="disabled">
+                    <a rel="next" >
+                        <i class="fa fa-arrow-left"></i> Previous
+                    </a>
+                </li>
+                <li class="disabled">
+                    <a rel="prev" >
+                        Next <i class="fa fa-arrow-right"></i>
+                    </a>
+                </li>
+                
+            </ul>
+        </div>
+    </div>
+</div>
+
+        <div class="container">
+            <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+    
+        <li class="main active"><a href="#waffles-muggles">waffles-muggles</a></li>
+        
+            <li><a href="#stacks">/stacks</a></li>
+        
+            <li><a href="#stacksid">/stacks/{id}</a></li>
+        
+            <li><a href="#floors">/floors</a></li>
+        
+            <li><a href="#floorsid">/floors/{id}</a></li>
+        
+            <li><a href="#libraries">/libraries</a></li>
+        
+            <li><a href="#librariesid">/libraries/{id}</a></li>
+        
+            <li><a href="#search">/search</a></li>
+        
+            <li><a href="#rules">/rules</a></li>
+        
+            <li><a href="#rulesid">/rules/{id}</a></li>
+        
+            <li><a href="#models">Models</a></li>
+        
+    
+    </ul>
+</div></div>
+            <div class="col-md-9" role="main">
+
+<h1 id="waffles-muggles">waffles-muggles</h1>
+<p>CS 5150 Navigation in Library Stacks.</p>
+<p><strong>Version:</strong> 1.0.0</p>
+<h3 id="stacks">/stacks</h3>
+<hr />
+<h5 id="get"><strong><em>GET</em></strong></h5>
+<p><strong>Description:</strong> Returns information about stacks at a given floor.</p>
+<p><strong>Parameters</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Located in</th>
+<th>Description</th>
+<th>Required</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>floor_id</td>
+<td>query</td>
+<td>Floor to list stacks</td>
+<td>Yes</td>
+<td>integer</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Responses</strong></p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Description</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>200</td>
+<td>An array of stacks</td>
+<td>[ <a href="#stack">Stack</a> ]</td>
+</tr>
+<tr>
+<td>default</td>
+<td>Unexpected error</td>
+<td><a href="#error">Error</a></td>
+</tr>
+</tbody>
+</table>
+<h5 id="post"><strong><em>POST</em></strong></h5>
+<p><strong>Description:</strong> Adds a new stack to a given floor.</p>
+<p><strong>Parameters</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Located in</th>
+<th>Description</th>
+<th>Required</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>body</td>
+<td>body</td>
+<td>Stack with default ID to be added</td>
+<td>Yes</td>
+<td><a href="#stack">Stack</a></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Responses</strong></p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Description</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>200</td>
+<td>OK</td>
+<td>string</td>
+</tr>
+<tr>
+<td>405</td>
+<td>Invalid input</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h5 id="put"><strong><em>PUT</em></strong></h5>
+<p><strong>Description:</strong> Edit a stack.</p>
+<p><strong>Parameters</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Located in</th>
+<th>Description</th>
+<th>Required</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>body</td>
+<td>body</td>
+<td>Stack with given ID to be updated</td>
+<td>Yes</td>
+<td><a href="#stack">Stack</a></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Responses</strong></p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Description</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>200</td>
+<td>OK</td>
+<td>string</td>
+</tr>
+<tr>
+<td>405</td>
+<td>Invalid input</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="stacksid">/stacks/{id}</h3>
+<hr />
+<h5 id="get_1"><strong><em>GET</em></strong></h5>
+<p><strong>Description:</strong> Returns information about the stack of a specified ID.</p>
+<p><strong>Parameters</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Located in</th>
+<th>Description</th>
+<th>Required</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>path</td>
+<td>ID of stack</td>
+<td>Yes</td>
+<td>integer</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Responses</strong></p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Description</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>200</td>
+<td>A stack</td>
+<td><a href="#stack">Stack</a></td>
+</tr>
+<tr>
+<td>default</td>
+<td>Unexpected error</td>
+<td><a href="#error">Error</a></td>
+</tr>
+</tbody>
+</table>
+<h5 id="delete"><strong><em>DELETE</em></strong></h5>
+<p><strong>Description:</strong> Delete a stack.</p>
+<p><strong>Parameters</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Located in</th>
+<th>Description</th>
+<th>Required</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>path</td>
+<td>ID of stack</td>
+<td>Yes</td>
+<td>integer</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Responses</strong></p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Description</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>200</td>
+<td>OK</td>
+<td>string</td>
+</tr>
+<tr>
+<td>405</td>
+<td>Invalid input</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="floors">/floors</h3>
+<hr />
+<h5 id="get_2"><strong><em>GET</em></strong></h5>
+<p><strong>Description:</strong> Returns information about floors at a given library.</p>
+<p><strong>Parameters</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Located in</th>
+<th>Description</th>
+<th>Required</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>library_id</td>
+<td>query</td>
+<td>Library to list floors</td>
+<td>Yes</td>
+<td>integer</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Responses</strong></p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Description</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>200</td>
+<td>An array of floors</td>
+<td>[ <a href="#floor">Floor</a> ]</td>
+</tr>
+<tr>
+<td>default</td>
+<td>Unexpected error</td>
+<td><a href="#error">Error</a></td>
+</tr>
+</tbody>
+</table>
+<h5 id="post_1"><strong><em>POST</em></strong></h5>
+<p><strong>Description:</strong> Adds a new floor to a given library.</p>
+<p><strong>Parameters</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Located in</th>
+<th>Description</th>
+<th>Required</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>body</td>
+<td>body</td>
+<td>Floor with default ID to be added</td>
+<td>Yes</td>
+<td><a href="#floor">Floor</a></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Responses</strong></p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Description</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>200</td>
+<td>OK</td>
+<td>string</td>
+</tr>
+<tr>
+<td>405</td>
+<td>Invalid input</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h5 id="put_1"><strong><em>PUT</em></strong></h5>
+<p><strong>Description:</strong> Edit a floor.</p>
+<p><strong>Parameters</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Located in</th>
+<th>Description</th>
+<th>Required</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>body</td>
+<td>body</td>
+<td>Floor with given ID to be updated</td>
+<td>Yes</td>
+<td><a href="#floor">Floor</a></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Responses</strong></p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Description</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>200</td>
+<td>OK</td>
+<td>string</td>
+</tr>
+<tr>
+<td>405</td>
+<td>Invalid input</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="floorsid">/floors/{id}</h3>
+<hr />
+<h5 id="get_3"><strong><em>GET</em></strong></h5>
+<p><strong>Description:</strong> Returns information about the floor of a specified ID.</p>
+<p><strong>Parameters</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Located in</th>
+<th>Description</th>
+<th>Required</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>path</td>
+<td>ID of floor</td>
+<td>Yes</td>
+<td>integer</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Responses</strong></p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Description</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>200</td>
+<td>A floor</td>
+<td><a href="#floor">Floor</a></td>
+</tr>
+<tr>
+<td>default</td>
+<td>Unexpected error</td>
+<td><a href="#error">Error</a></td>
+</tr>
+</tbody>
+</table>
+<h5 id="delete_1"><strong><em>DELETE</em></strong></h5>
+<p><strong>Description:</strong> Delete a floor.</p>
+<p><strong>Parameters</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Located in</th>
+<th>Description</th>
+<th>Required</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>path</td>
+<td>ID of floor</td>
+<td>Yes</td>
+<td>integer</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Responses</strong></p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Description</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>200</td>
+<td>OK</td>
+<td>string</td>
+</tr>
+<tr>
+<td>405</td>
+<td>Invalid input</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="libraries">/libraries</h3>
+<hr />
+<h5 id="get_4"><strong><em>GET</em></strong></h5>
+<p><strong>Description:</strong> Returns information about libraries.</p>
+<p><strong>Parameters</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Located in</th>
+<th>Description</th>
+<th>Required</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+<p><strong>Responses</strong></p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Description</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>200</td>
+<td>An array of libraries</td>
+<td>[ <a href="#library">Library</a> ]</td>
+</tr>
+<tr>
+<td>default</td>
+<td>Unexpected error</td>
+<td><a href="#error">Error</a></td>
+</tr>
+</tbody>
+</table>
+<h5 id="post_2"><strong><em>POST</em></strong></h5>
+<p><strong>Description:</strong> Adds a new library.</p>
+<p><strong>Parameters</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Located in</th>
+<th>Description</th>
+<th>Required</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>body</td>
+<td>body</td>
+<td>Library with default ID to be added</td>
+<td>Yes</td>
+<td><a href="#library">Library</a></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Responses</strong></p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Description</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>200</td>
+<td>OK</td>
+<td>string</td>
+</tr>
+<tr>
+<td>405</td>
+<td>Invalid input</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h5 id="put_2"><strong><em>PUT</em></strong></h5>
+<p><strong>Description:</strong> Edit a library.</p>
+<p><strong>Parameters</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Located in</th>
+<th>Description</th>
+<th>Required</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>body</td>
+<td>body</td>
+<td>Library with given ID to be updated</td>
+<td>Yes</td>
+<td><a href="#library">Library</a></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Responses</strong></p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Description</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>200</td>
+<td>OK</td>
+<td>string</td>
+</tr>
+<tr>
+<td>405</td>
+<td>Invalid input</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="librariesid">/libraries/{id}</h3>
+<hr />
+<h5 id="delete_2"><strong><em>DELETE</em></strong></h5>
+<p><strong>Description:</strong> Delete a library.</p>
+<p><strong>Parameters</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Located in</th>
+<th>Description</th>
+<th>Required</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>path</td>
+<td>ID of library</td>
+<td>Yes</td>
+<td>integer</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Responses</strong></p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Description</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>200</td>
+<td>OK</td>
+<td>string</td>
+</tr>
+<tr>
+<td>405</td>
+<td>Invalid input</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="search">/search</h3>
+<hr />
+<h5 id="get_5"><strong><em>GET</em></strong></h5>
+<p><strong>Description:</strong> Find stacks by a call number.</p>
+<p><strong>Parameters</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Located in</th>
+<th>Description</th>
+<th>Required</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>keyword</td>
+<td>query</td>
+<td>Call number of search</td>
+<td>Yes</td>
+<td>string</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Responses</strong></p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Description</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>200</td>
+<td>An array of search results</td>
+<td>[ <a href="#searchResult">SearchResult</a> ]</td>
+</tr>
+<tr>
+<td>default</td>
+<td>Unexpected error</td>
+<td><a href="#error">Error</a></td>
+</tr>
+</tbody>
+</table>
+<h3 id="rules">/rules</h3>
+<hr />
+<h5 id="get_6"><strong><em>GET</em></strong></h5>
+<p><strong>Description:</strong> Returns information about rules.</p>
+<p><strong>Parameters</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Located in</th>
+<th>Description</th>
+<th>Required</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+<p><strong>Responses</strong></p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Description</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>200</td>
+<td>An array of rules</td>
+<td>[ <a href="#rule">Rule</a> ]</td>
+</tr>
+<tr>
+<td>default</td>
+<td>Unexpected error</td>
+<td><a href="#error">Error</a></td>
+</tr>
+</tbody>
+</table>
+<h5 id="post_3"><strong><em>POST</em></strong></h5>
+<p><strong>Description:</strong> Adds a new rule.</p>
+<p><strong>Parameters</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Located in</th>
+<th>Description</th>
+<th>Required</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>body</td>
+<td>body</td>
+<td>Rule with default ID to be added</td>
+<td>Yes</td>
+<td><a href="#rule">Rule</a></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Responses</strong></p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Description</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>200</td>
+<td>OK</td>
+<td>string</td>
+</tr>
+<tr>
+<td>405</td>
+<td>Invalid input</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="rulesid">/rules/{id}</h3>
+<hr />
+<h5 id="delete_3"><strong><em>DELETE</em></strong></h5>
+<p><strong>Description:</strong> Delete a rule.</p>
+<p><strong>Parameters</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Located in</th>
+<th>Description</th>
+<th>Required</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>path</td>
+<td>ID of rule</td>
+<td>Yes</td>
+<td>integer</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Responses</strong></p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Description</th>
+<th>Schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>200</td>
+<td>OK</td>
+<td>string</td>
+</tr>
+<tr>
+<td>405</td>
+<td>Invalid input</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="models">Models</h3>
+<hr />
+<p><a name="stack"></a><strong>Stack</strong>  </p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>integer</td>
+<td>Unique ID representing a stack</td>
+<td>No</td>
+</tr>
+<tr>
+<td>cx</td>
+<td>double</td>
+<td>Shape center (anchor) x</td>
+<td>No</td>
+</tr>
+<tr>
+<td>cy</td>
+<td>double</td>
+<td>Shape center (anchor) y</td>
+<td>No</td>
+</tr>
+<tr>
+<td>lx</td>
+<td>double</td>
+<td>Shape size x</td>
+<td>No</td>
+</tr>
+<tr>
+<td>ly</td>
+<td>double</td>
+<td>Shape size y</td>
+<td>No</td>
+</tr>
+<tr>
+<td>rotation</td>
+<td>double</td>
+<td>Shape rotation</td>
+<td>No</td>
+</tr>
+<tr>
+<td>geojson</td>
+<td>string</td>
+<td>Fine shape</td>
+<td>No</td>
+</tr>
+<tr>
+<td>startClass</td>
+<td>string</td>
+<td>Start class alpha e.g. QA</td>
+<td>No</td>
+</tr>
+<tr>
+<td>startSubclass</td>
+<td>integer</td>
+<td>Start class number e.g. 67</td>
+<td>No</td>
+</tr>
+<tr>
+<td>endClass</td>
+<td>string</td>
+<td>End class alpha e.g. QB</td>
+<td>No</td>
+</tr>
+<tr>
+<td>endSubclass</td>
+<td>integer</td>
+<td>End class number e.g. 67</td>
+<td>No</td>
+</tr>
+<tr>
+<td>oversize</td>
+<td>integer</td>
+<td>Size property</td>
+<td>No</td>
+</tr>
+<tr>
+<td>floor</td>
+<td>integer</td>
+<td>Floor located on</td>
+<td>No</td>
+</tr>
+<tr>
+<td><a name="floor"></a><strong>Floor</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>integer</td>
+<td>Unique ID representing a floor</td>
+<td>No</td>
+</tr>
+<tr>
+<td>name</td>
+<td>string</td>
+<td>Name of floor</td>
+<td>No</td>
+</tr>
+<tr>
+<td>size_x</td>
+<td>double</td>
+<td>Bounding box size x</td>
+<td>No</td>
+</tr>
+<tr>
+<td>size_y</td>
+<td>double</td>
+<td>Bounding box size y</td>
+<td>No</td>
+</tr>
+<tr>
+<td>geojson</td>
+<td>string</td>
+<td>Fine shape</td>
+<td>No</td>
+</tr>
+<tr>
+<td>library</td>
+<td>integer</td>
+<td>Library located in</td>
+<td>No</td>
+</tr>
+<tr>
+<td><a name="library"></a><strong>Library</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>integer</td>
+<td>Unique ID representing a library</td>
+<td>No</td>
+</tr>
+<tr>
+<td>name</td>
+<td>string</td>
+<td>Name of library</td>
+<td>No</td>
+</tr>
+<tr>
+<td>latitude</td>
+<td>double</td>
+<td>Latitude of library</td>
+<td>No</td>
+</tr>
+<tr>
+<td>longitude</td>
+<td>double</td>
+<td>Longitude of library</td>
+<td>No</td>
+</tr>
+<tr>
+<td><a name="searchResult"></a><strong>SearchResult</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>result_type</td>
+<td>string</td>
+<td>Type of result</td>
+<td>No</td>
+</tr>
+<tr>
+<td>result_id</td>
+<td>integer</td>
+<td>ID of result</td>
+<td>No</td>
+</tr>
+<tr>
+<td>result</td>
+<td>string</td>
+<td>Displayed text of result</td>
+<td>No</td>
+</tr>
+<tr>
+<td><a name="rule"></a><strong>Rule</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>rule_type</td>
+<td>string</td>
+<td>Type of rule</td>
+<td>No</td>
+</tr>
+<tr>
+<td>rule_id</td>
+<td>integer</td>
+<td>ID of rule</td>
+<td>No</td>
+</tr>
+<tr>
+<td>call_number</td>
+<td>string</td>
+<td>Call number applying the rule</td>
+<td>No</td>
+</tr>
+<tr>
+<td>rule</td>
+<td>string</td>
+<td>Rule to interpret</td>
+<td>No</td>
+</tr>
+<tr>
+<td><a name="error"></a><strong>Error</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>code</td>
+<td>integer</td>
+<td></td>
+<td>No</td>
+</tr>
+<tr>
+<td>message</td>
+<td>string</td>
+<td></td>
+<td>No</td>
+</tr>
+<tr>
+<td>fields</td>
+<td>string</td>
+<td></td>
+<td>No</td>
+</tr>
+</tbody>
+</table></div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            
+            <center>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</center>
+        </footer>
+
+        <script src="./js/jquery-1.10.2.min.js"></script>
+        <script src="./js/bootstrap-3.0.3.min.js"></script>
+        <script src="./js/highlight.pack.js"></script>
+        <script>var base_url = '.';</script>
+        <script data-main="./mkdocs/js/search.js" src="./mkdocs/js/require.js"></script>
+        <script src="./js/base.js"></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                        <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            From here you can search these documents. Enter
+                            your search terms below.
+                        </p>
+                        <form role="form">
+                            <div class="form-group">
+                                <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query">
+                            </div>
+                        </form>
+                        <div id="mkdocs-search-results"></div>
+                    </div>
+                    <div class="modal-footer">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
