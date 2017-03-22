@@ -1,0 +1,550 @@
+# The MIT License (MIT)
+
+# Proposed controller implementation written in Swagger | Copyright (c) 2017 Ke Qian
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+---
+swagger: "2.0"
+info:
+  description: "CS 5150 Navigation in Library Stacks."
+  version: "1.0.0"
+  title: "muggles-waffles"
+host: "127.0.0.1:8000"
+basePath: "/v1"
+schemes:
+- "http"
+produces:
+- "application/json"
+paths:
+  /stacks:
+    get:
+      tags:
+      - "Stacks"
+      description: "Returns information about stacks at a given floor."
+      operationId: "stacksGET"
+      parameters:
+      - name: "floor_id"
+        in: "query"
+        description: "Floor to list stacks"
+        required: true
+        type: "integer"
+        format: "int32"
+      responses:
+        200:
+          description: "An array of stacks"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Stack"
+        default:
+          description: "Unexpected error"
+          schema:
+            $ref: "#/definitions/Error"
+      x-swagger-router-controller: "Stacks"
+    post:
+      tags:
+      - "Stacks"
+      description: "Adds a new stack to a given floor."
+      operationId: "stacksPOST"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Stack with default ID to be added"
+        required: true
+        schema:
+          $ref: "#/definitions/Stack"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: "string"
+        405:
+          description: "Invalid input"
+      x-swagger-router-controller: "Stacks"
+    put:
+      tags:
+      - "Stacks"
+      description: "Edit a stack."
+      operationId: "stacksPUT"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Stack with given ID to be updated"
+        required: true
+        schema:
+          $ref: "#/definitions/Stack"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: "string"
+        405:
+          description: "Invalid input"
+      x-swagger-router-controller: "Stacks"
+  /stacks/{id}:
+    get:
+      tags:
+      - "Stacks"
+      description: "Returns information about the stack of a specified ID."
+      operationId: "stacksIdGET"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of stack"
+        required: true
+        type: "integer"
+        format: "int32"
+      responses:
+        200:
+          description: "A stack"
+          schema:
+            $ref: "#/definitions/Stack"
+        default:
+          description: "Unexpected error"
+          schema:
+            $ref: "#/definitions/Error"
+      x-swagger-router-controller: "Stacks"
+    delete:
+      tags:
+      - "Stacks"
+      description: "Delete a stack."
+      operationId: "stacksIdDELETE"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of stack"
+        required: true
+        type: "integer"
+        format: "int32"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: "string"
+        405:
+          description: "Invalid input"
+      x-swagger-router-controller: "Stacks"
+  /floors:
+    get:
+      tags:
+      - "Floors"
+      description: "Returns information about floors at a given library."
+      operationId: "floorsGET"
+      parameters:
+      - name: "library_id"
+        in: "query"
+        description: "Library to list floors"
+        required: true
+        type: "integer"
+        format: "int32"
+      responses:
+        200:
+          description: "An array of floors"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Floor"
+        default:
+          description: "Unexpected error"
+          schema:
+            $ref: "#/definitions/Error"
+      x-swagger-router-controller: "Floors"
+    post:
+      tags:
+      - "Floors"
+      description: "Adds a new floor to a given library."
+      operationId: "floorsPOST"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Floor with default ID to be added"
+        required: true
+        schema:
+          $ref: "#/definitions/Floor"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: "string"
+        405:
+          description: "Invalid input"
+      x-swagger-router-controller: "Floors"
+    put:
+      tags:
+      - "Floors"
+      description: "Edit a floor."
+      operationId: "floorsPUT"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Floor with given ID to be updated"
+        required: true
+        schema:
+          $ref: "#/definitions/Floor"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: "string"
+        405:
+          description: "Invalid input"
+      x-swagger-router-controller: "Floors"
+  /floors/{id}:
+    get:
+      tags:
+      - "Floors"
+      description: "Returns information about the floor of a specified ID."
+      operationId: "floorsIdGET"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of floor"
+        required: true
+        type: "integer"
+        format: "int32"
+      responses:
+        200:
+          description: "A floor"
+          schema:
+            $ref: "#/definitions/Floor"
+        default:
+          description: "Unexpected error"
+          schema:
+            $ref: "#/definitions/Error"
+      x-swagger-router-controller: "Floors"
+    delete:
+      tags:
+      - "Floors"
+      description: "Delete a floor."
+      operationId: "floorsIdDELETE"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of floor"
+        required: true
+        type: "integer"
+        format: "int32"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: "string"
+        405:
+          description: "Invalid input"
+      x-swagger-router-controller: "Floors"
+  /libraries:
+    get:
+      tags:
+      - "Libraries"
+      description: "Returns information about libraries."
+      operationId: "librariesGET"
+      parameters: []
+      responses:
+        200:
+          description: "An array of libraries"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Library"
+        default:
+          description: "Unexpected error"
+          schema:
+            $ref: "#/definitions/Error"
+      x-swagger-router-controller: "Libraries"
+    post:
+      tags:
+      - "Libraries"
+      description: "Adds a new library."
+      operationId: "librariesPOST"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Library with default ID to be added"
+        required: true
+        schema:
+          $ref: "#/definitions/Library"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: "string"
+        405:
+          description: "Invalid input"
+      x-swagger-router-controller: "Libraries"
+    put:
+      tags:
+      - "Libraries"
+      description: "Edit a library."
+      operationId: "librariesPUT"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Library with given ID to be updated"
+        required: true
+        schema:
+          $ref: "#/definitions/Library"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: "string"
+        405:
+          description: "Invalid input"
+      x-swagger-router-controller: "Libraries"
+  /libraries/{id}:
+    delete:
+      tags:
+      - "Libraries"
+      description: "Delete a library."
+      operationId: "librariesIdDELETE"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of library"
+        required: true
+        type: "integer"
+        format: "int32"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: "string"
+        405:
+          description: "Invalid input"
+      x-swagger-router-controller: "Libraries"
+  /search:
+    get:
+      tags:
+      - "Search"
+      description: "Find stacks by a call number."
+      operationId: "searchGET"
+      parameters:
+      - name: "keyword"
+        in: "query"
+        description: "Call number of search"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "An array of search results"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/SearchResult"
+        default:
+          description: "Unexpected error"
+          schema:
+            $ref: "#/definitions/Error"
+      x-swagger-router-controller: "Search"
+  /rules:
+    get:
+      tags:
+      - "Rules"
+      description: "Returns information about rules."
+      operationId: "rulesGET"
+      parameters: []
+      responses:
+        200:
+          description: "An array of rules"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Rule"
+        default:
+          description: "Unexpected error"
+          schema:
+            $ref: "#/definitions/Error"
+      x-swagger-router-controller: "Rules"
+    post:
+      tags:
+      - "Rules"
+      description: "Adds a new rule."
+      operationId: "rulesPOST"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Rule with default ID to be added"
+        required: true
+        schema:
+          $ref: "#/definitions/Rule"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: "string"
+        405:
+          description: "Invalid input"
+      x-swagger-router-controller: "Rules"
+  /rules/{id}:
+    delete:
+      tags:
+      - "Rules"
+      description: "Delete a rule."
+      operationId: "rulesIdDELETE"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of rule"
+        required: true
+        type: "integer"
+        format: "int32"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: "string"
+        405:
+          description: "Invalid input"
+      x-swagger-router-controller: "Rules"
+definitions:
+  Stack:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int32"
+        description: "Unique ID representing a stack"
+      cx:
+        type: "number"
+        format: "double"
+        description: "Shape center (anchor) x"
+      cy:
+        type: "number"
+        format: "double"
+        description: "Shape center (anchor) y"
+      lx:
+        type: "number"
+        format: "double"
+        description: "Shape size x"
+      ly:
+        type: "number"
+        format: "double"
+        description: "Shape size y"
+      rotation:
+        type: "number"
+        format: "double"
+        description: "Shape rotation"
+      geojson:
+        type: "string"
+        description: "Fine shape"
+      startClass:
+        type: "string"
+        description: "Start class alpha e.g. QA"
+      startSubclass:
+        type: "integer"
+        format: "int32"
+        description: "Start class number e.g. 67"
+      endClass:
+        type: "string"
+        description: "End class alpha e.g. QB"
+      endSubclass:
+        type: "integer"
+        format: "int32"
+        description: "End class number e.g. 67"
+      oversize:
+        type: "integer"
+        format: "int32"
+        description: "Size property"
+      floor:
+        type: "integer"
+        format: "int32"
+        description: "Floor located on"
+  Floor:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int32"
+        description: "Unique ID representing a floor"
+      name:
+        type: "string"
+        description: "Name of floor"
+      size_x:
+        type: "number"
+        format: "double"
+        description: "Bounding box size x"
+      size_y:
+        type: "number"
+        format: "double"
+        description: "Bounding box size y"
+      geojson:
+        type: "string"
+        description: "Fine shape"
+      library:
+        type: "integer"
+        format: "int32"
+        description: "Library located in"
+  Library:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int32"
+        description: "Unique ID representing a library"
+      name:
+        type: "string"
+        description: "Name of library"
+      latitude:
+        type: "number"
+        format: "double"
+        description: "Latitude of library"
+      longitude:
+        type: "number"
+        format: "double"
+        description: "Longitude of library"
+  SearchResult:
+    type: "object"
+    properties:
+      result_type:
+        type: "string"
+        description: "Type of result"
+      result_id:
+        type: "integer"
+        format: "int32"
+        description: "ID of result"
+      result:
+        type: "string"
+        description: "Displayed text of result"
+  Rule:
+    type: "object"
+    properties:
+      rule_type:
+        type: "string"
+        description: "Type of rule"
+      rule_id:
+        type: "integer"
+        format: "int32"
+        description: "ID of rule"
+      call_number:
+        type: "string"
+        description: "Call number applying the rule"
+      rule:
+        type: "string"
+        description: "Rule to interpret"
+  Error:
+    type: "object"
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+      message:
+        type: "string"
+      fields:
+        type: "string"
