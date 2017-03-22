@@ -11,13 +11,19 @@ class FloorsController < ApplicationController
         ret = []
         Floor.find_each do |floor|
             if floor.library == params[:library_id].to_i
+                library = Library.find(floor.library)
                 ret << {
                     id: floor.id,
                     name: floor.name,
                     size_x: floor.size_x,
                     size_y: floor.size_y,
                     geojson: floor.geojson,
-                    library: floor.library
+                    library: {
+                        id: library.id,
+                        name: library.name,
+                        latitude: library.latitude,
+                        longitude: library.longitude
+                    }
                 }
             end
         end
@@ -31,13 +37,20 @@ class FloorsController < ApplicationController
 
     def show
         floor = Floor.find(params[:id])
+        library = Library.find(floor.library)
+
         render json: {
             id: floor.id,
             name: floor.name,
             size_x: floor.size_x,
             size_y: floor.size_y,
             geojson: floor.geojson,
-            library: floor.library
+            library: {
+                id: library.id,
+                name: library.name,
+                latitude: library.latitude,
+                longitude: library.longitude
+            }
         }
     end
 
