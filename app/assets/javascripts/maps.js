@@ -21,7 +21,7 @@ function drawFloor(ctx, size, w, h, json) {
 
 function drawStack(ctx, size, stack, highlighted) {
     ctx.translate(size.scaleX(stack.cx), size.scaleY(stack.cy));
-    ctx.rotate(stack.rotation);
+    ctx.rotate(stack.rotation * Math.PI / 180);
     ctx.beginPath();
     ctx.rect(-size.scale(stack.lx) / 2, -size.scale(stack.ly) / 2, size.scale(stack.lx), size.scale(stack.ly));
     ctx.closePath();
@@ -30,7 +30,7 @@ function drawStack(ctx, size, stack, highlighted) {
     ctx.lineWidth = 1;
     ctx.strokeStyle = 'black';
     ctx.stroke();
-    ctx.rotate(-stack.rotation);
+    ctx.rotate(-stack.rotation * Math.PI / 180);
     ctx.translate(-size.scaleX(stack.cx), -size.scaleY(stack.cy));
 }
 
