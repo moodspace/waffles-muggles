@@ -23,14 +23,28 @@ function loadLibraries() {
         type: "GET",
         success: function(data) {
             libraries = data;
-            $('#library-collection-header').click();
+
+            $('#library-collection').html('');
             libraries.forEach(function(lib) {
-                var item = $('<a href="#!" class="collection-item" data-library_id=' + lib.id + '>' + lib.name + '</a>').appendTo($('#library-collection'));
+                var item = $('<a href="javascript:void(0)" class="collection-item" data-library_id=' + lib.id + '>' + lib.name + '</a>').appendTo($('#library-collection'));
                 if (lib.id === current_library) {
                     item.addClass('active');
                     loadFloors(lib.id);
                 }
             });
+
+            $('#library-collection>a').click(function() {
+                var library_id = _.findIndex(libraries, {'id': $(this).data('library_id')});
+                current_library = libraries[library_id].id;
+                $('#library-collection>a').removeClass('active');
+                $(this).addClass('active');
+                current_floor = -1;
+                $('#workspace').css('background-image', '');
+                loadFloors(current_library);
+            });
+
+            $('.collapsible').collapsible('close', 0);
+            $('.collapsible').collapsible('open', 0);
         }
     });
 }
@@ -44,7 +58,8 @@ function loadFloors(library_id) {
         type: "GET",
         success: function(data) {
             floors = data;
-            $('#floor-collection-header').click();
+
+            $('#floor-collection').html('');
             floors.forEach(function(floor) {
                 var f_item = $('<a href="javascript:void(0)" class="collection-item" data-floor_id=' + floor.id + '>' + floor.name + '</a>').appendTo($('#floor-collection'));
                 if (floor.id === current_floor) {
@@ -53,6 +68,7 @@ function loadFloors(library_id) {
                     Materialize.updateTextFields();
                 }
             });
+
             $('#floor-collection>a').click(function() {
                 var lib_name = libraries[_.findIndex(libraries, {'id': current_library})].name.split(' ')[0];
                 var floor_id = _.findIndex(floors, {'id': $(this).data('floor_id')});
@@ -64,6 +80,9 @@ function loadFloors(library_id) {
                 $('#cfloor-name').val(floors[floor_id].name);
                 Materialize.updateTextFields();
             });
+
+            $('.collapsible').collapsible('close', 0);
+            $('.collapsible').collapsible('open', 0);
         }
     });
 }
