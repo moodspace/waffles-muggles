@@ -8,6 +8,7 @@
 #
 Rails.application.routes.draw do
     get '/maps', to: 'maps#show'
+    get '/editor', to: 'map_editor#show'
 
     def add_swagger_route(http_method, path, opts = {})
         full_path = path.gsub(/{(.*?)}/, ':\1')

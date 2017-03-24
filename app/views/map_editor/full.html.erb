@@ -1,0 +1,237 @@
+<header>
+    <ul id="slide-out" class="side-nav fixed">
+        <li>
+            <div class="userView">
+                <div class="background">
+                    <img src="assets/book.jpg">
+                </div>
+                <a href="#!user"><img class="circle" src="assets/user.png"></a>
+                <a href="#!name">
+                    <span class="white-text name">John Doe</span>
+                </a>
+                <a href="#!email">
+                    <span class="white-text email">jdandturk@gmail.com</span>
+                </a>
+            </div>
+        </li>
+        <li>
+            <ul class="collapsible" data-collapsible="accordion">
+                <li>
+                    <div class="collapsible-header waves-effect" id="library-collection-header">
+                        Libraries<i class="material-icons right">add</i>
+                    </div>
+                    <div class="collapsible-body">
+                        <div class="collection" id="library-collection"></div>
+                    </div>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <div class="divider"></div>
+        </li>
+        <li>
+            <ul class="collapsible" data-collapsible="accordion">
+                <li>
+                    <div class="collapsible-header waves-effect" id="floor-collection-header">
+                        Floors<i class="material-icons right">add</i>
+                    </div>
+                    <div class="collapsible-body">
+                        <div class="collection" id="floor-collection"></div>
+                    </div>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <div class="divider"></div>
+        </li>
+        <li>
+            <a class="subheader">Drawing</a>
+        </li>
+        <li>
+            <div class="toolbox">
+                <div class="row">
+                    <a class="btn-flat col s3 light-blue">
+                        <i class="material-icons">navigation</i>
+                    </a>
+                    <a class="btn-flat col s3">
+                        <i class="material-icons">crop_landscape</i>
+                    </a>
+                    <a class="btn-flat col s3">
+                        <i class="material-icons">label_outline</i>
+                    </a>
+                </div>
+                <div class="row">
+                    <a class="btn-flat col s3">
+                        <i class="material-icons">flag</i>
+                    </a>
+                    <a class="btn-flat col s3">
+                        <i class="material-icons">layers</i>
+                    </a>
+                    <a class="btn-flat col s3">
+                        <i class="material-icons">theaters</i>
+                    </a>
+                </div>
+            </div>
+        </li>
+        <li>
+            <a class="subheader">Tool Options</a>
+        </li>
+        <li>
+            <div class="tool-options">
+                <div class="row crect">
+                    <div class="input-field col s3">
+                        <input id="crect-x" type="text">
+                        <label for="crect-x">x</label>
+                    </div>
+                    <div class="input-field col s3">
+                        <input id="crect-y" type="text">
+                        <label for="crect-y">y</label>
+                    </div>
+                    <div class="input-field col s3">
+                        <input id="crect-width" type="text">
+                        <label for="crect-width">width</label>
+                    </div>
+                    <div class="input-field col s3">
+                        <input id="crect-height" type="text">
+                        <label for="crect-height">height</label>
+                    </div>
+                </div>
+                <!-- cpolygon | polygon plotter -->
+                <div class="row cpolygon">
+                    <div class="input-field col s12">
+                        <input id="cpolygon-points" type="text">
+                        <label for="cpolygon-points">points</label>
+                    </div>
+                </div>
+                <div class="row cmark">
+                    <div class="input-field col s3">
+                        <input id="cmark-rows" type="text">
+                        <label for="cmark-rows">rows</label>
+                    </div>
+                    <div class="input-field col s3">
+                        <input id="cmark-rotation" type="text">
+                        <label for="cmark-rotation">rotation</label>
+                    </div>
+                </div>
+                <!-- cfloor | floor configurator -->
+                <div class="row cfloor">
+                    <div class="input-field col s12">
+                        <label for="cfloor-range-scale">Set map scale</label>
+                        <input type="range" id="cfloor-range-scale" min="1" max="1000"/>
+                    </div>
+                    <div class="input-field col s12">
+                        <a class="waves-effect waves-light btn" id="cfloor-btn-set">Draw floor border</a>
+                    </div>
+                    <div class="input-field col s3">
+                        <input id="cfloor-name" type="text">
+                        <label for="cfloor-name">name</label>
+                    </div>
+                </div>
+                <!-- cstack | stack meta -->
+                <div class="row cstack">
+                    <div class="input-field col s6">
+                        <input id="cstack-oversize" type="text">
+                        <label for="cstack-oversize">oversize</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <input id="cstack-startClass" type="text">
+                        <label for="cstack-startClass">startClass</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <input id="cstack-startSubclass" type="text">
+                        <label for="cstack-startSubclass">startSubclass</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <input id="cstack-endClass" type="text">
+                        <label for="cstack-endClass">endClass</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <input id="cstack-endSubclass" type="text">
+                        <label for="cstack-endSubclass">endSubclass</label>
+                    </div>
+                </div>
+            </div>
+        </li>
+    </ul>
+</header>
+<main>
+    <div class="card-panel light-blue darken-1 help-text"></div>
+    <ul id="dropdown2" class="dropdown-content">
+        <li>
+            <a href="#!">50%</a>
+        </li>
+        <li>
+            <a href="#!">100%</a>
+        </li>
+        <li class="divider"></li>
+        <li>
+            <a href="#!">150%</a>
+        </li>
+        <li>
+            <a href="#!">200%</a>
+        </li>
+        <li class="divider"></li>
+        <li>
+            <a href="#!">Fit</a>
+        </li>
+    </ul>
+    <nav>
+        <div class="nav-wrapper light-blue darken-1">
+            <ul class="left">
+                <li>
+                    <a id="nav-undo" href="javascript:void(0)">
+                        <i class="material-icons">undo</i>
+                    </a>
+                </li>
+                <li>
+                    <a id="nav-redo" href="javascript:void(0)">
+                        <i class="material-icons">redo</i>
+                    </a>
+                </li>
+                <!-- <li>
+                    <a href="javascript:void(0)">
+                        <i class="material-icons">history</i>
+                    </a>
+                </li> -->
+                <!-- <li>
+                    <a class="dropdown-button" href="#!" data-activates="dropdown2">
+                        Fit
+                        <i class="material-icons right">arrow_drop_down</i>
+                    </a>
+                </li> -->
+                <li>
+                    <a class="switch" style="height: 64px">
+                        <label style="color: #fff">
+                            <i class="material-icons" style="display: inline-block;">layers</i>
+                            <input id="viewmode-toggle" type="checkbox" checked>
+                            <span class="lever" style="top: -8px;"></span>
+                            <i class="material-icons" style="display: inline-block;">theaters</i>
+                        </label>
+                    </a>
+                </li>
+            </ul>
+            <ul class="right">
+                <!-- <li>
+                    <a href="sass.html">Upload</a>
+                </li> -->
+                <li>
+                    <a href="javascript:void(0)" id="btn-output-save">Save</a>
+                </li>
+                <li>
+                    <a href="javascript:void(0)" id="btn-output-JSON">JSON</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container" id="workspace">
+        <!-- Workspace -->
+        <svg id="canvas"></svg>
+    </div>
+</main>
+
+<div id="code-popup" class="modal bottom-sheet">
+    <div class="modal-content">
+        <h4>Output</h4>
+        <pre><code class="json" id="box-code-pop"></code></pre>
+    </div>
+</div>

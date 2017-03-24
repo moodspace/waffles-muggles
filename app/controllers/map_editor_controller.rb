@@ -4,12 +4,12 @@
 #
 # Controller to render maps
 #
-class MapsController < ApplicationController
-    layout "bootstrap"
+class MapEditorController < ApplicationController
+    layout "materialize"
 
     def show
         @callno = params[:callno]
         @libid = params[:library_id]
-        render 'maps/full'
+        render 'map_editor/full'
     end
 end

@@ -1,0 +1,12 @@
+.stack-box-wrapper {
+    background: #FFF;
+}
+
+.floor-map-wrapper {
+    background: #FFF;
+}
+
+#map-wrapper {
+    width: 100vw;
+    height: 100vh;
+}

@@ -1,0 +1,59 @@
+nav {
+    margin-bottom: 10px;
+}
+
+main>.container {
+    width: 100%;
+    height: 100vh;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-image: url('/assets/Olin-Level6.gif')
+}
+
+.side-nav>li>.collapsible>li>.collapsible-header {
+    padding-left: 32px;
+}
+
+.side-nav>li>.collapsible>li>.collapsible-body>div>a {
+    padding-left: 42px;
+}
+
+.toolbox *, .tool-options * {
+    line-height: 1.5;
+}
+
+.toolbox a.btn-flat {
+    line-height: 36px;
+    text-align: center;
+}
+
+.toolbox, .tool-options {
+    padding-left: 24px;
+    padding-right: 24px;
+}
+
+svg .selected {
+    stroke-width: 3px;
+}
+
+svg g.hidden {
+    visibility: hidden;
+}
+
+main {
+    padding-left: 300px;
+}
+
+@media only screen and (max-width: 992px) {
+    main {
+        padding-left: 0;
+    }
+}
+
+.card-panel.help-text {
+    display: none;
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+}
