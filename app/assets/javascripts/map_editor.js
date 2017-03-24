@@ -150,18 +150,14 @@ $(document).ready(function() {
         switch (obj.type) {
             case 'rect':
                 var rect = canvas.append('rect');
-                rect.attrs({'x': obj.data[0], 'y': obj.data[1], 'width': obj.data[2], 'height': obj.data[3]});
+                rect.attrs(obj.data);
                 // rect redrawn and restored
                 objects.push(obj);
                 confirmNewShape(rect, obj.id, {redo: true});
                 break;
             case 'polygon':
                 var polygon = canvas.append('polygon');
-                polygon.attrs({
-                    'points': obj.data.map(function(p) {
-                        return p[0] + ',' + p[1];
-                    }).join(' ')
-                });
+                polygon.attrs(obj.data);
                 // rect redrawn and restored
                 objects.push(obj);
                 confirmNewShape(polygon, obj.id, {redo: true});
@@ -169,7 +165,7 @@ $(document).ready(function() {
             case 'stacks':
                 var group = canvas.append('g').attr('for', obj.id);
                 obj.data.forEach(function(r) {
-                    var rect = group.append('rect').attrs({'x': r.data.x, 'y': r.data.y, 'width': r.data.width, 'height': r.data.height});
+                    var rect = group.append('rect').attrs(r.data);
                     var r_center = [];
                     r_center[0] = r.data.x + r.data.width * 0.5;
                     r_center[1] = r.data.y + r.data.height * 0.5;
@@ -189,7 +185,7 @@ $(document).ready(function() {
 
     $('.row.cmark input').change(function() {
         var shape = d3.select('svg .selected');
-        initStacksInShape(shape, parseInt($('#cmark-rows').val()), parseInt($('#cmark-rotation').val()));
+        initStacksInShape(shape, $('#cmark-rows').val(), $('#cmark-rotation').val());
     });
 
     $('.row.crect input').change(function() {
@@ -200,16 +196,14 @@ $(document).ready(function() {
         shape.attr('height', $('#crect-height').val());
         objects = objects.map(function(obj) {
             if (obj.id === shape.attr('id')) {
-                return {
-                    type: 'rect',
-                    id: obj.id,
-                    data: [
-                        parseInt(shape.attr('x')),
-                        parseInt(shape.attr('y')),
-                        parseInt(shape.attr('width')),
-                        parseInt(shape.attr('height'))
-                    ]
+                var new_obj = _.clone(obj);
+                new_obj.data = {
+                    x: parseInt(shape.attr('x')),
+                    y: parseInt(shape.attr('y')),
+                    width: parseInt(shape.attr('width')),
+                    height: parseInt(shape.attr('height'))
                 };
+                return new_obj;
             } else {
                 return obj;
             }
@@ -420,12 +414,16 @@ function initCanvas(w, h) {
                     objects.push({
                         id: 'canvas-e-' + rid,
                         type: 'rect',
-                        data: [
-                            parseInt(active_rect.attr('x')),
-                            parseInt(active_rect.attr('y')),
-                            parseInt(active_rect.attr('width')),
-                            parseInt(active_rect.attr('height'))
-                        ]
+                        meta: {
+                            rows: 0,
+                            rotation: 0
+                        },
+                        data: {
+                            x: parseInt(active_rect.attr('x')),
+                            y: parseInt(active_rect.attr('y')),
+                            width: parseInt(active_rect.attr('width')),
+                            height: parseInt(active_rect.attr('height'))
+                        }
                     });
                     confirmNewShape(active_rect, rid);
                 }
@@ -508,12 +506,13 @@ function initCanvas(w, h) {
                     objects.push({
                         id: 'canvas-e-' + rid,
                         type: 'polygon',
-                        data: active_polygon.attr('points').split(' ').map(function(p) {
-                            return [
-                                parseInt(p.split(',')[0]),
-                                parseInt(p.split(',')[1])
-                            ];
-                        })
+                        meta: {
+                            rows: 0,
+                            rotation: 0
+                        },
+                        data: {
+                            points: active_polygon.attr('points')
+                        }
                     });
                     confirmNewShape(active_polygon, rid);
                 }
@@ -528,12 +527,9 @@ function initCanvas(w, h) {
                     var rid = randomId();
                     meta_objects.floor_border = {
                         type: 'f_border',
-                        data: active_f_polygon.attr('points').split(' ').map(function(p) {
-                            return [
-                                parseInt(p.split(',')[0]),
-                                parseInt(p.split(',')[1])
-                            ];
-                        })
+                        data: {
+                            points: active_f_polygon.attr('points')
+                        }
                     };
                     confirmNewShape(active_f_polygon, rid, {readonly: true});
                 }
@@ -663,13 +659,18 @@ function selectPolygon(id) {
 function showMarkTool(id) {
     $('svg .selected').removeClass('selected');
     $('#' + id).addClass('selected');
-    $('#cmark-rows').val($('#' + id).attr('rows'));
-    $('#cmark-rotation').val($('#' + id).attr('rotation'));
+    var objIdx = _.findIndex(objects, function(o) {
+        return o.id === id && o.type !== 'stacks';
+    });
+    $('#cmark-rows').val(objects[objIdx].meta.rows);
+    $('#cmark-rotation').val(objects[objIdx].meta.rotation);
     $('.tool-options > .row:nth-child(' + modebit + ')').show();
     Materialize.updateTextFields();
 }
 
 function showStackTool(id) {
+    $('svg .selected').removeClass('selected');
+    $('#' + id).addClass('selected');
     // $('#cmark-rows').val($('#' + id).attr('rows'));
     // $('#cmark-rotation').val($('#' + id).attr('rotation'));
     $('.tool-options > .row:nth-child(' + modebit + ')').show();
@@ -710,6 +711,24 @@ function addClickHandlerToShape(e) {
 var row_thickness = 10;
 
 function initStacksInShape(e, rows, rotation) {
+    rows = parseInt(rows);
+    if (_.isNaN(rows) || rows <= 0) {
+        return;
+    }
+    rotation = parseInt(rotation);
+    if (_.isNaN(rotation) || rotation < 0 || rotation > 360) {
+        return;
+    }
+
+    var objIdx = _.findIndex(objects, function(o) {
+        return o.id === e.attr('id') && o.type !== 'stacks';
+    });
+    objects[objIdx].meta.rows = rows;
+    objects[objIdx].meta.rotation = rotation;
+
+    $('#cmark-rows').val(rows);
+    $('#cmark-rotation').val(rotation);
+
     canvas.select('g[for="' + e.attr('id') + '"]').remove();
     new_objects = [];
     objects.forEach(function(obj) {
@@ -781,23 +800,23 @@ function initStacksInShape(e, rows, rotation) {
         data_stacks.push({
             type: 'stack',
             id: 'canvas-e-' + rid,
+            meta: {
+                'cx': rect_center_rot[0],
+                'cy': rect_center_rot[1],
+                'lx': centeroid_row_len,
+                'ly': row_thickness,
+                'rotation': rotation,
+                'oversize': 0,
+                'startClass': 'A',
+                'startSubclass': 0,
+                'endClass': 'Z',
+                'endSubclass': 0
+            },
             data: {
                 'x': parseFloat(rect.attr('x')),
                 'y': parseFloat(rect.attr('y')),
                 'width': parseFloat(rect.attr('width')),
                 'height': parseFloat(rect.attr('height')),
-                'meta': {
-                    'cx': rect_center_rot[0],
-                    'cy': rect_center_rot[1],
-                    'lx': centeroid_row_len,
-                    'ly': row_thickness,
-                    'rotation': rotation,
-                    'oversize': 0,
-                    'startClass': 'A',
-                    'startSubclass': 0,
-                    'endClass': 'Z',
-                    'endSubclass': 0
-                },
                 'rotation': parseFloat(rotation)
             }
         });
