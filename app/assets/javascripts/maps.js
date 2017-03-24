@@ -25,7 +25,9 @@ function drawStack(ctx, size, stack, highlighted) {
     ctx.beginPath();
     ctx.rect(-size.scale(stack.lx) / 2, -size.scale(stack.ly) / 2, size.scale(stack.lx), size.scale(stack.ly));
     ctx.closePath();
-    ctx.fillStyle = highlighted ? 'red' : '#FAF5ED';
+    ctx.fillStyle = highlighted
+        ? 'red'
+        : '#FAF5ED';
     ctx.fill();
     ctx.lineWidth = 1;
     ctx.strokeStyle = 'black';
@@ -95,10 +97,11 @@ $(document).ready(function() {
             keyword: callno
         },
         success: function(data) {
+            var found = false;
             data.forEach(function(search_result) {
-                if (search_result.result.library.id === lib_id) {
+                if (!found && search_result.result.library.id === lib_id) {
                     loadMap(search_result.result_id);
-                    return;
+                    found = true;
                 }
             });
         }
