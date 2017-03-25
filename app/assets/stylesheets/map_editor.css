@@ -26,6 +26,7 @@ main>.container {
 .toolbox a.btn-flat {
     line-height: 36px;
     text-align: center;
+    cursor: default;
 }
 
 .toolbox, .tool-options {
@@ -56,4 +57,9 @@ main {
     position: fixed;
     right: 20px;
     bottom: 20px;
+}
+
+svg polygon.fb {
+    stroke-width: 8px;
+    stroke-opacity: 0.5;
 }

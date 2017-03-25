@@ -97,17 +97,26 @@ $(document).ready(function() {
     $('.toolbox a.btn-flat').each(function(index) {
         $(this).click(function() {
             if (modebit !== index) {
-                $('svg .selected').removeClass('selected');
+                canvas.selectAll('.selected').classed('selected', false);
             }
             modebit = index;
+
+            canvas.style('cursor', 'default').selectAll('*').style('cursor', 'default');
+
             if (modebit === 1 || modebit === 2) {
-                canvas.style('cursor', 'crosshair');
+                canvas.style('cursor', 'crosshair').selectAll('*').style('cursor', 'crosshair');
             } else {
-                canvas.style('cursor', 'default');
+                canvas.style('cursor', 'default').selectAll('*').style('cursor', 'default');
+                if (modebit === 3) {
+                    canvas.selectAll('.cobject:not(.cstack)').style('cursor', 'pointer');
+                }
+                if (modebit === 5) {
+                    canvas.selectAll('.cobject.cstack').style('cursor', 'pointer');
+                }
             }
             $('.tool-options > .row').hide();
             $('.toolbox a.btn-flat').removeClass('light-blue');
-            if (!$('svg.selected').empty) {
+            if (!canvas.selectAll('.selected').empty()) {
                 $('.tool-options > .row:nth-child(' + index + ')').show();
             }
 
@@ -122,10 +131,9 @@ $(document).ready(function() {
 
     $('#viewmode-toggle').change(function() {
         if (this.checked) {
-            $('svg g').removeClass('hidden');
+            canvas.selectAll('g').classed('hidden', false);
         } else {
-            $('svg g').removeClass('hidden');
-            $('svg g').addClass('hidden');
+            canvas.selectAll('g').classed('hidden', true);
         }
     });
 
@@ -165,7 +173,7 @@ $(document).ready(function() {
             case 'stacks':
                 var group = canvas.append('g').attr('for', obj.id);
                 obj.data.forEach(function(r) {
-                    var rect = group.append('rect').attrs(r.data);
+                    var rect = group.append('rect').attrs(r.data).classed('cstack', true);
                     var r_center = [];
                     r_center[0] = r.data.x + r.data.width * 0.5;
                     r_center[1] = r.data.y + r.data.height * 0.5;
@@ -184,12 +192,12 @@ $(document).ready(function() {
     });
 
     $('.row.cmark input').change(function() {
-        var shape = d3.select('svg .selected');
+        var shape = canvas.selectAll('.selected');
         initStacksInShape(shape, $('#cmark-rows').val(), $('#cmark-rotation').val());
     });
 
     $('.row.crect input').change(function() {
-        var shape = d3.select('svg .selected');
+        var shape = canvas.selectAll('.selected');
         shape.attr('x', $('#crect-x').val());
         shape.attr('y', $('#crect-y').val());
         shape.attr('width', $('#crect-width').val());
@@ -211,7 +219,7 @@ $(document).ready(function() {
     });
 
     $('.row.cpolygon input').change(function() {
-        var shape = d3.select('svg .selected');
+        var shape = canvas.selectAll('.selected');
         shape.attr('points', $('#cpolygon-points').val());
     });
 
@@ -222,6 +230,7 @@ $(document).ready(function() {
         }
         meta_objects.floor_border = undefined;
         $(this).addClass('disabled');
+        canvas.style('cursor', 'crosshair');
     });
 
     $('#btn-output-JSON').click(function() {
@@ -301,40 +310,38 @@ function offsetStack(stackMeta, dx, dy) {
 }
 
 function exportFloorData() {
+    if (!meta_objects.floor_border) {
+        return {floor: {}, stacks: []};
+    }
     var floorJson = {};
-    var offset_x = d3.min(meta_objects.floor_border.data, function(e) {
+    var floorPoints = pointsToArray(meta_objects.floor_border.data.points);
+
+    var offset_x = d3.min(floorPoints, function(e) {
         return e[0];
     });
-
-    var offset_y = d3.min(meta_objects.floor_border.data, function(e) {
+    var offset_y = d3.min(floorPoints, function(e) {
         return e[1];
     });
 
-    if (meta_objects.floor_border) {
-        floorJson = {
-            name: $('#cfloor-name').val(),
-            size_x: d3.max(meta_objects.floor_border.data, function(e) {
-                return e[0];
-            }) - d3.min(meta_objects.floor_border.data, function(e) {
-                return e[0];
-            }),
-            size_y: d3.max(meta_objects.floor_border.data, function(e) {
-                return e[1];
-            }) - d3.min(meta_objects.floor_border.data, function(e) {
-                return e[1];
-            }),
-            geojson: JSON.stringify({
-                type: "polygon",
-                coordinates: offsetPoints(meta_objects.floor_border.data, -offset_x, -offset_y)
-            })
-        };
-    }
+    floorJson = {
+        name: $('#cfloor-name').val(),
+        size_x: d3.max(floorPoints, function(e) {
+            return e[0];
+        }) - offset_x,
+        size_y: d3.max(floorPoints, function(e) {
+            return e[1];
+        }) - offset_y,
+        geojson: JSON.stringify({
+            type: "polygon",
+            coordinates: offsetPoints(floorPoints, -offset_x, -offset_y)
+        })
+    };
 
     var stacksJson = [];
     objects.forEach(function(obj) {
         if (obj.type === 'stacks') {
             obj.data.forEach(function(stack) {
-                stacksJson.push(offsetStack(stack.data.meta, -offset_x, -offset_y));
+                stacksJson.push(offsetStack(stack.meta, -offset_x, -offset_y));
             });
         }
     });
@@ -440,11 +447,11 @@ function initCanvas(w, h) {
                 if (!$('#cfloor-btn-set').hasClass('disabled')) {
                     break;
                 }
-                var active_f_polygon = canvas.select('polygon.active_f');
-                if (active_f_polygon.empty()) {
-                    canvas.append('polygon').classed('active_f', true).attrs({'points': coords.join(','), 'stroke-width': '1', 'stroke': '#F66', 'fill': 'rgba(239, 108, 0, 0.5)'});
+                var active_fb_polygon = canvas.select('polygon.active_fb');
+                if (active_fb_polygon.empty()) {
+                    canvas.insert('polygon', ':first-child').classed('active_fb', true).attrs({'points': coords.join(','), 'stroke-width': '1', 'stroke': '#F66', 'fill': 'rgba(239, 108, 0, 0.5)'});
                 } else {
-                    active_f_polygon.attr('points', active_f_polygon.attr('points') + ' ' + coords.join(','));
+                    active_fb_polygon.attr('points', active_fb_polygon.attr('points') + ' ' + coords.join(','));
                 }
                 break;
             default:
@@ -481,9 +488,9 @@ function initCanvas(w, h) {
                 }
                 break;
             case 4:
-                var active_f_polygon = canvas.select('polygon.active_f');
-                if (!active_f_polygon.empty()) {
-                    active_f_polygon.attr('points', active_f_polygon.attr('points').replace(/\s+[-\d\.]+,[-\d\.]+$/, '') + ' ' + coords.join(','));
+                var active_fb_polygon = canvas.select('polygon.active_fb');
+                if (!active_fb_polygon.empty()) {
+                    active_fb_polygon.attr('points', active_fb_polygon.attr('points').replace(/\s+[-\d\.]+,[-\d\.]+$/, '') + ' ' + coords.join(','));
                 }
                 break;
             default:
@@ -518,22 +525,24 @@ function initCanvas(w, h) {
                 }
                 break;
             case 4:
-                var active_f_polygon = canvas.select('polygon.active_f');
-                if (!active_f_polygon.empty()) {
-                    var newPoints = active_f_polygon.attr('points') + ' ' + coords.join(',');
+                var active_fb_polygon = canvas.select('polygon.active_fb');
+                if (!active_fb_polygon.empty()) {
+                    var newPoints = active_fb_polygon.attr('points') + ' ' + coords.join(',');
                     newPoints = arrayToPoints(prunePoints(pointsToArray(newPoints)));
-                    active_f_polygon.attr('points', newPoints);
+                    active_fb_polygon.attr('points', newPoints).classed('fb', true);
                     // polygon created and stored
                     var rid = randomId();
                     meta_objects.floor_border = {
                         type: 'f_border',
+                        id: 'canvas-e-' + rid,
                         data: {
-                            points: active_f_polygon.attr('points')
+                            points: active_fb_polygon.attr('points')
                         }
                     };
-                    confirmNewShape(active_f_polygon, rid, {readonly: true});
+                    confirmNewShape(active_fb_polygon, rid, {readonly: true});
                 }
                 $('#cfloor-btn-set').removeClass('disabled');
+                canvas.style('cursor', 'default').selectAll('*').style('cursor', 'default');
                 break;
             default:
 
@@ -604,7 +613,10 @@ function prunePoints(points) {
 function confirmNewShape(shape, id, settings) {
     id = id.replace('canvas-e-', '');
     shape.classed('active', false);
-    shape.classed('active_f', false);
+    shape.classed('active_fb', false);
+    if (!settings || !settings.readonly) {
+        shape.classed('cobject', true);
+    }
     shape.attrs({
         'id': 'canvas-e-' + id,
         'stroke': settings && settings.stroke
@@ -631,12 +643,10 @@ function confirmNewShape(shape, id, settings) {
         default:
 
     }
-    modebit = 0;
-    canvas.style('cursor', 'default');
 }
 
 function selectRect(id) {
-    $('svg .selected').removeClass('selected');
+    canvas.selectAll('.selected').classed('selected', false);
     $('#' + id).addClass('selected');
     $('#crect-x').val($('#' + id).attr('x'));
     $('#crect-y').val($('#' + id).attr('y'));
@@ -648,7 +658,7 @@ function selectRect(id) {
 }
 
 function selectPolygon(id) {
-    $('svg .selected').removeClass('selected');
+    canvas.selectAll('.selected').classed('selected', false);
     $('#' + id).addClass('selected');
     $('#cpolygon-points').val($('#' + id).attr('points'));
     $('.tool-options > .row').hide();
@@ -657,7 +667,7 @@ function selectPolygon(id) {
 }
 
 function showMarkTool(id) {
-    $('svg .selected').removeClass('selected');
+    canvas.selectAll('.selected').classed('selected', false);
     $('#' + id).addClass('selected');
     var objIdx = _.findIndex(objects, function(o) {
         return o.id === id && o.type !== 'stacks';
@@ -669,7 +679,7 @@ function showMarkTool(id) {
 }
 
 function showStackTool(id) {
-    $('svg .selected').removeClass('selected');
+    canvas.selectAll('.selected').classed('selected', false);
     $('#' + id).addClass('selected');
     // $('#cmark-rows').val($('#' + id).attr('rows'));
     // $('#cmark-rotation').val($('#' + id).attr('rotation'));
@@ -679,28 +689,26 @@ function showStackTool(id) {
 
 function addClickHandlerToShape(e) {
     e.on('click', function() {
+        if (!e.classed('cobject')) {
+            return;
+        }
         switch (modebit) {
             case 0:
-                objects.forEach(function(obj) {
-                    if (obj.id === e.attr('id')) {
-                        switch (obj.type) {
-                            case 'rect':
-                                selectRect(obj.id);
-                                break;
-                            case 'polygon':
-                                selectPolygon(obj.id);
-                                break;
-                            default:
-
-                        }
-                    }
-                });
+                if (e.attr('points')) {
+                    selectPolygon(e.attr('id'));
+                } else if (e.classed('cobject') && e.attr('x')) {
+                    selectRect(e.attr('id'));
+                }
                 break;
             case 3:
-                showMarkTool(e.attr('id'));
+                if (!e.classed('cstack')) {
+                    showMarkTool(e.attr('id'));
+                }
                 break;
             case 5:
-                showStackTool(e.attr('id'));
+                if (e.classed('cstack')) {
+                    showStackTool(e.attr('id'));
+                }
                 break;
             default:
 
@@ -793,7 +801,7 @@ function initStacksInShape(e, rows, rotation) {
             'y': rect_center_rot[1] - row_thickness * 0.5,
             'width': centeroid_row_len,
             'height': row_thickness
-        });
+        }).classed('cstack', true);
 
         rect.attr('transform', 'rotate(' + rotation + ' ' + rect_center_rot[0] + ' ' + rect_center_rot[1] + ')');
 
