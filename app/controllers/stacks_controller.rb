@@ -35,7 +35,6 @@ class StacksController < ApplicationController
         stack.lx = params[:lx]
         stack.ly = params[:ly]
         stack.rotation = params[:rotation] ? params[:rotation] : 0
-        stack.geojson = params[:geojson]
         stack.start_class = params[:startClass]
         stack.start_subclass = params[:startSubclass] ? params[:startSubclass] : 0
         stack.end_class = params[:endClass]
@@ -53,7 +52,6 @@ class StacksController < ApplicationController
         stack.lx = params[:lx]
         stack.ly = params[:ly]
         stack.rotation = params[:rotation] ? params[:rotation] : 0
-        stack.geojson = params[:geojson]
         stack.start_class = params[:startClass]
         stack.start_subclass = params[:startSubclass] ? params[:startSubclass] : 0
         stack.end_class = params[:endClass]

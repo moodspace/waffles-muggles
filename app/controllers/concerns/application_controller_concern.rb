@@ -12,7 +12,6 @@ module ApplicationControllerConcern
                 lx: stack.lx,
                 ly: stack.ly,
                 rotation: stack.rotation,
-                geojson: stack.geojson,
                 startClass: stack.start_class,
                 startSubclass: stack.start_subclass,
                 endClass: stack.end_class,

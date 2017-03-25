@@ -422,28 +422,25 @@ definitions:
         format: "int32"
         description: "Unique ID representing a stack"
       cx:
-        type: "number"
-        format: "double"
+        type: "integer"
+        format: "int32"
         description: "Shape center (anchor) x"
       cy:
-        type: "number"
-        format: "double"
+        type: "integer"
+        format: "int32"
         description: "Shape center (anchor) y"
       lx:
-        type: "number"
-        format: "double"
+        type: "integer"
+        format: "int32"
         description: "Shape size x"
       ly:
-        type: "number"
-        format: "double"
+        type: "integer"
+        format: "int32"
         description: "Shape size y"
       rotation:
-        type: "number"
-        format: "double"
+        type: "integer"
+        format: "int32"
         description: "Shape rotation"
-      geojson:
-        type: "string"
-        description: "Fine shape"
       startClass:
         type: "string"
         description: "Start class alpha e.g. QA"
@@ -451,6 +448,9 @@ definitions:
         type: "integer"
         format: "int32"
         description: "Start class number e.g. 67"
+      startSubclass2:
+        type: "string"
+        description: "Additional startsubclass"
       endClass:
         type: "string"
         description: "End class alpha e.g. QB"
@@ -458,6 +458,9 @@ definitions:
         type: "integer"
         format: "int32"
         description: "End class number e.g. 67"
+      endSubclass2:
+        type: "string"
+        description: "Additional end subclass"
       oversize:
         type: "integer"
         format: "int32"
@@ -477,12 +480,12 @@ definitions:
         type: "string"
         description: "Name of floor"
       size_x:
-        type: "number"
-        format: "double"
+        type: "integer"
+        format: "int32"
         description: "Bounding box size x"
       size_y:
-        type: "number"
-        format: "double"
+        type: "integer"
+        format: "int32"
         description: "Bounding box size y"
       geojson:
         type: "string"
@@ -502,12 +505,10 @@ definitions:
         type: "string"
         description: "Name of library"
       latitude:
-        type: "number"
-        format: "double"
+        type: "string"
         description: "Latitude of library"
       longitude:
-        type: "number"
-        format: "double"
+        type: "string"
         description: "Longitude of library"
   SearchResult:
     type: "object"

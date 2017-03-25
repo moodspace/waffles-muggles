@@ -22,8 +22,8 @@ ActiveRecord::Schema.define(version: 0) do
 
   create_table "floors", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string "name"
-    t.decimal "size_x", precision: 10
-    t.decimal "size_y", precision: 10
+    t.integer "size_x"
+    t.integer "size_y"
     t.string "geojson"
     t.integer "library"
     t.datetime "created_at", null: false
@@ -32,8 +32,8 @@ ActiveRecord::Schema.define(version: 0) do
 
   create_table "libraries", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string "name"
-    t.decimal "latitude", precision: 10
-    t.decimal "longitude", precision: 10
+    t.string "latitude"
+    t.string "longitude"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -54,16 +54,17 @@ ActiveRecord::Schema.define(version: 0) do
   end
 
   create_table "stacks", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
-    t.decimal "cx", precision: 10
-    t.decimal "cy", precision: 10
-    t.decimal "lx", precision: 10
-    t.decimal "ly", precision: 10
-    t.decimal "rotation", precision: 10
-    t.string "geojson"
+    t.integer "cx"
+    t.integer "cy"
+    t.integer "lx"
+    t.integer "ly"
+    t.integer "rotation"
     t.string "start_class"
     t.integer "start_subclass"
+    t.string "start_subclass2"
     t.string "end_class"
     t.integer "end_subclass"
+    t.string "end_subclass2"
     t.integer "oversize"
     t.integer "floor"
     t.datetime "created_at", null: false

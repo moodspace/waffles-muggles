@@ -315,16 +315,17 @@ CS 5150 Navigation in Library Stacks.
 | Name | Type | Description | Required |
 | ---- | ---- | ----------- | -------- |
 | id | integer | Unique ID representing a stack | No |
-| cx | double | Shape center (anchor) x | No |
-| cy | double | Shape center (anchor) y | No |
-| lx | double | Shape size x | No |
-| ly | double | Shape size y | No |
-| rotation | double | Shape rotation | No |
-| geojson | string | Fine shape | No |
+| cx | integer | Shape center (anchor) x | No |
+| cy | integer | Shape center (anchor) y | No |
+| lx | integer | Shape size x | No |
+| ly | integer | Shape size y | No |
+| rotation | integer | Shape rotation | No |
 | startClass | string | Start class alpha e.g. QA | No |
 | startSubclass | integer | Start class number e.g. 67 | No |
+| startSubclass2 | string | Additional startsubclass | No |
 | endClass | string | End class alpha e.g. QB | No |
 | endSubclass | integer | End class number e.g. 67 | No |
+| endSubclass2 | string | Additional end subclass | No |
 | oversize | integer | Size property | No |
 | floor | integer | Floor located on | No |
 <a name="floor"></a>**Floor**  
@@ -333,8 +334,8 @@ CS 5150 Navigation in Library Stacks.
 | ---- | ---- | ----------- | -------- |
 | id | integer | Unique ID representing a floor | No |
 | name | string | Name of floor | No |
-| size_x | double | Bounding box size x | No |
-| size_y | double | Bounding box size y | No |
+| size_x | integer | Bounding box size x | No |
+| size_y | integer | Bounding box size y | No |
 | geojson | string | Fine shape | No |
 | library | integer | Library located in | No |
 <a name="library"></a>**Library**  
@@ -343,8 +344,8 @@ CS 5150 Navigation in Library Stacks.
 | ---- | ---- | ----------- | -------- |
 | id | integer | Unique ID representing a library | No |
 | name | string | Name of library | No |
-| latitude | double | Latitude of library | No |
-| longitude | double | Longitude of library | No |
+| latitude | string | Latitude of library | No |
+| longitude | string | Longitude of library | No |
 <a name="searchResult"></a>**SearchResult**  
 
 | Name | Type | Description | Required |

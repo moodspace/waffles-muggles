@@ -20,8 +20,8 @@ class InitTables < ActiveRecord::Migration[5.0]
         create_table 'floor'.pluralize.to_sym, id: false do |t|
             t.integer :id
             t.string :name
-            t.decimal :size_x
-            t.decimal :size_y
+            t.integer :size_x
+            t.integer :size_y
             t.string :geojson
             t.integer :library
 
@@ -33,8 +33,8 @@ class InitTables < ActiveRecord::Migration[5.0]
         create_table 'library'.pluralize.to_sym, id: false do |t|
             t.integer :id
             t.string :name
-            t.decimal :latitude
-            t.decimal :longitude
+            t.string :latitude
+            t.string :longitude
 
             t.timestamps
 
@@ -64,16 +64,17 @@ class InitTables < ActiveRecord::Migration[5.0]
 
         create_table 'stack'.pluralize.to_sym, id: false do |t|
             t.integer :id
-            t.decimal :cx
-            t.decimal :cy
-            t.decimal :lx
-            t.decimal :ly
-            t.decimal :rotation
-            t.string :geojson
+            t.integer :cx
+            t.integer :cy
+            t.integer :lx
+            t.integer :ly
+            t.integer :rotation
             t.string :start_class
             t.integer :start_subclass
+            t.string :start_subclass2
             t.string :end_class
             t.integer :end_subclass
+            t.string :end_subclass2
             t.integer :oversize
             t.integer :floor
 
