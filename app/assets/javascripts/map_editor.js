@@ -920,11 +920,19 @@ $(document).ready(() => {
       if (obj.type === 'stacks' && stackIdx >= 0) {
         const newObj = _.clone(obj);
         newObj.data[stackIdx].data.x = parseInt(shape.attr('x'), 10);
-        newObj.data[stackIdx].data.y = parseInt(shape.attr('y'), 19);
+        newObj.data[stackIdx].data.y = parseInt(shape.attr('y'), 10);
         newObj.data[stackIdx].data.width = parseInt(shape.attr(
           'width'), 10);
         newObj.data[stackIdx].data.height = parseInt(shape.attr(
           'height'), 10);
+        // update meta
+        newObj.data[stackIdx].meta.cx = newObj.data[stackIdx].data.x +
+          (newObj.data[stackIdx].data.width / 2);
+        newObj.data[stackIdx].meta.cy = newObj.data[stackIdx].data.y +
+          (newObj.data[stackIdx].data.height / 2);
+        newObj.data[stackIdx].meta.lx = newObj.data[stackIdx].data.width;
+        newObj.data[stackIdx].meta.ly = newObj.data[stackIdx].data.height;
+
         return newObj;
       }
       return obj;
