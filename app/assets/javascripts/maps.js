@@ -1,109 +1,114 @@
-function drawFloor(ctx, size, w, h, json) {
-    ctx.beginPath();
-    ctx.rect(size.scaleX(0), size.scaleY(0), size.scale(w), size.scale(h));
-    ctx.closePath();
-    ctx.fillStyle = '#F4F2EF';
-    ctx.fill();
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = 'black';
-    ctx.stroke();
+let mapCtx;
 
-    ctx.beginPath();
-    var geojson = JSON.parse(json);
-    ctx.moveTo(size.scaleX(geojson.coordinates[0][0]), size.scaleY(geojson.coordinates[0][1]));
-    ctx.lineWidth = 1;
-    geojson.coordinates.forEach(function(coords) {
-        ctx.lineTo(size.scaleX(coords[0]), size.scaleY(coords[1]));
-    });
-    ctx.closePath();
-    ctx.stroke();
+function drawFloor(size, w, h, json) {
+  const geojson = JSON.parse(json);
+
+  mapCtx.beginPath();
+  mapCtx.rect(size.scaleX(0), size.scaleY(0), size.scale(w), size.scale(h));
+  mapCtx.closePath();
+  mapCtx.fillStyle = '#F4F2EF';
+  mapCtx.fill();
+  mapCtx.lineWidth = 1;
+  mapCtx.strokeStyle = 'black';
+  mapCtx.stroke();
+
+  mapCtx.beginPath();
+  mapCtx.moveTo(size.scaleX(geojson.coordinates[0][0]), size.scaleY(geojson.coordinates[
+    0][1]));
+  geojson.coordinates.forEach((coords) => {
+    mapCtx.lineTo(size.scaleX(coords[0]), size.scaleY(coords[1]));
+  });
+  mapCtx.closePath();
+  mapCtx.stroke();
 }
 
-function drawStack(ctx, size, stack, highlighted) {
-    ctx.translate(size.scaleX(stack.cx), size.scaleY(stack.cy));
-    ctx.rotate(stack.rotation * Math.PI / 180);
-    ctx.beginPath();
-    ctx.rect(-size.scale(stack.lx) / 2, -size.scale(stack.ly) / 2, size.scale(stack.lx), size.scale(stack.ly));
-    ctx.closePath();
-    ctx.fillStyle = highlighted
-        ? 'red'
-        : '#FAF5ED';
-    ctx.fill();
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = 'black';
-    ctx.stroke();
-    ctx.rotate(-stack.rotation * Math.PI / 180);
-    ctx.translate(-size.scaleX(stack.cx), -size.scaleY(stack.cy));
+function drawStack(size, stack, highlighted) {
+  mapCtx.translate(size.scaleX(stack.cx), size.scaleY(stack.cy));
+  mapCtx.rotate((stack.rotation * Math.PI) / 180);
+  mapCtx.beginPath();
+  mapCtx.rect(-size.scale(stack.lx) * 0.5, -size.scale(stack.ly) * 0.5, size.scale(
+    stack.lx), size.scale(stack.ly));
+  mapCtx.closePath();
+  mapCtx.fillStyle = highlighted ?
+    'red' :
+    '#FAF5ED';
+  mapCtx.fill();
+  mapCtx.lineWidth = 1;
+  mapCtx.strokeStyle = 'black';
+  mapCtx.stroke();
+  mapCtx.rotate((-stack.rotation * Math.PI) / 180);
+  mapCtx.translate(-size.scaleX(stack.cx), -size.scaleY(stack.cy));
 }
 
-function updateStack(stack) {
-    $('#text-stack-id').text(stack.library.name + " " + stack.floor.name + " Stack " + stack.id);
-    $('#text-stack-range').text(stack.startClass + stack.startSubclass + " - " + stack.endClass + stack.endSubclass);
-    $('#text-stack-topic').text("LOL");
-    $('#text-stack-topic-more').text("LOLOLOL");
+function updateStack(s) {
+  $('#text-stack-id').text(
+    `${s.library.name} ${s.floor.name} Stack ${s.id}`);
+  $('#text-stack-range').text(
+    `${s.startClass}${s.startSubclass} - ${s.endClass}${s.endSubclass}`);
+  $('#text-stack-topic').text('LOL');
+  $('#text-stack-topic-more').text('LOLOLOL');
 }
+
 
 function loadMap(stackId) {
-    $.ajax({
-        url: "/v1/stacks/" + stackId, // Route to the Script Controller method
-        type: "GET",
-        success: function(s) {
-            var canvasW = $('#map-wrapper > .floor-map-wrapper').innerWidth();
-            var canvasH = $('#map-wrapper').innerHeight();
-            if ($('#map-wrapper > .floor-map-wrapper').position().top > 50) {
-                canvasH -= $('#map-wrapper > .stack-box-wrapper').innerHeight();
-            }
+  $.ajax({
+    url: `/v1/stacks/${stackId}`, // Route to the Script Controller method
+    type: 'GET',
+    success: (s) => {
+      const canvasW = $('#map-wrapper > .floor-map-wrapper').innerWidth();
+      let canvasH = $('#map-wrapper').innerHeight();
+      if ($('#map-wrapper > .floor-map-wrapper').position().top > 50) {
+        canvasH -= $('#map-wrapper > .stack-box-wrapper').innerHeight();
+      }
 
-            $('#map-canvas').attr('width', canvasW);
-            $('#map-canvas').attr('height', canvasH);
-            var map_ctx = $('#map-canvas')[0].getContext('2d');
-            var scale = Math.min(canvasW / s.floor.size_x, canvasH / s.floor.size_y);
-            var ctx_size = {
-                width: canvasW,
-                height: canvasH,
-                scale: function(v) {
-                    return scale * v;
-                },
-                scaleX: function(v) {
-                    return canvasW / 2 - scale * s.floor.size_x / 2 + scale * v;
-                },
-                scaleY: function(v) {
-                    return canvasH / 2 - scale * s.floor.size_y / 2 + scale * v;
-                }
-            };
-            drawFloor(map_ctx, ctx_size, s.floor.size_x, s.floor.size_y, s.floor.geojson);
-            updateStack(s);
-            $.ajax({
-                url: "/v1/stacks?floor_id=" + s.floor.id, // Route to the Script Controller method
-                type: "GET",
-                success: function(all_s) {
-                    all_s.forEach(function(e_s) {
-                        drawStack(map_ctx, ctx_size, e_s, e_s.id === s.id);
-                    });
-                }
-            });
-        }
-    });
+      $('#map-canvas').attr('width', canvasW);
+      $('#map-canvas').attr('height', canvasH);
+      mapCtx = $('#map-canvas')[0].getContext('2d');
+      const scale = Math.min(canvasW / s.floor.size_x, canvasH / s.floor.size_y);
+      const mapScales = {
+        width: canvasW,
+        height: canvasH,
+        scale: v => scale * v,
+        scaleX: v => ((canvasW * 0.5) - (scale * s.floor.size_x * 0.5)) +
+          (scale * v),
+        scaleY: v => ((canvasH * 0.5) - (scale * s.floor.size_y * 0.5)) +
+          (scale * v),
+      };
+      drawFloor(mapScales, s.floor.size_x, s.floor.size_y, s.floor
+        .geojson);
+      updateStack(s);
+      $.ajax({
+        url: `/v1/stacks?floor_id=${s.floor.id}`, // Route to the Script Controller method
+        type: 'GET',
+        success: (allStacks) => {
+          allStacks.forEach((stack) => {
+            drawStack(mapScales, stack, stack.id === s.id);
+          });
+        },
+      });
+    },
+  });
 }
 
-$(document).ready(function() {
-    var callno = $('#map-wrapper').data('callno');
-    var lib_id = $('#map-wrapper').data('libid');
-    $.ajax({
-        url: "/v1/search", // Route to the Script Controller method
-        type: "GET",
-        dataType: "json",
-        data: {
-            keyword: callno
-        },
-        success: function(data) {
-            var found = false;
-            data.forEach(function(search_result) {
-                if (!found && search_result.result.library.id === lib_id) {
-                    loadMap(search_result.result_id);
-                    found = true;
-                }
-            });
+$(document).ready(() => {
+  const callno = $('#map-wrapper').data('callno');
+  const libraryId = $('#map-wrapper').data('libid');
+  $.ajax({
+    url: '/v1/search', // Route to the Script Controller method
+    type: 'GET',
+    dataType: 'json',
+    data: {
+      keyword: callno,
+    },
+    success: (data) => {
+      let found = false;
+      data.forEach((searchResult) => {
+        if (!found && searchResult.result.library.id ===
+          libraryId) {
+          loadMap(searchResult.result_id);
+          found = true;
         }
-    });
+      });
+    },
+  });
 });
