@@ -96,6 +96,8 @@ $(document).ready(function() {
     initCanvas($('#workspace').width(), $('#workspace').height());
     $('.toolbox a.btn-flat').each(function(index) {
         $(this).click(function() {
+            $('.collapsible').collapsible('close', 0);
+
             if (modebit !== index) {
                 canvas.selectAll('.selected').classed('selected', false);
             }
@@ -203,7 +205,7 @@ $(document).ready(function() {
         shape.attr('width', $('#crect-width').val());
         shape.attr('height', $('#crect-height').val());
         objects = objects.map(function(obj) {
-            if (obj.id === shape.attr('id')) {
+            if (obj.id === shape.attr('id') && obj.type !== 'stacks') {
                 var new_obj = _.clone(obj);
                 new_obj.data = {
                     x: parseInt(shape.attr('x')),
@@ -221,6 +223,26 @@ $(document).ready(function() {
     $('.row.cpolygon input').change(function() {
         var shape = canvas.selectAll('.selected');
         shape.attr('points', $('#cpolygon-points').val());
+    });
+
+    $('.row.cstack input').change(function() {
+        var shape = canvas.selectAll('.selected');
+
+        objects = objects.map(function(obj) {
+            if (obj.type === 'stacks' && _.findIndex(obj.data, {id: shape.attr('id')}) >= 0) {
+                var stackIdx = _.findIndex(obj.data, {id: shape.attr('id')});
+                var new_meta = _.clone(obj.data[stackIdx].meta);
+                new_meta.oversize = $('#cstack-oversize').val();
+                new_meta.startClass = $('#cstack-startClass').val();
+                new_meta.startSubclass = parseInt($('#cstack-startSubclass').val());
+                new_meta.endClass = $('#cstack-endClass').val();
+                new_meta.endSubclass = parseInt($('#cstack-endSubclass').val());
+                obj.data[stackIdx].meta = new_meta;
+                return obj;
+            } else {
+                return obj;
+            }
+        });
     });
 
     $('#cfloor-btn-set').click(function() {
@@ -681,10 +703,19 @@ function showMarkTool(id) {
 function showStackTool(id) {
     canvas.selectAll('.selected').classed('selected', false);
     $('#' + id).addClass('selected');
-    // $('#cmark-rows').val($('#' + id).attr('rows'));
-    // $('#cmark-rotation').val($('#' + id).attr('rotation'));
-    $('.tool-options > .row:nth-child(' + modebit + ')').show();
-    Materialize.updateTextFields();
+    objects.forEach(function(obj) {
+        if (obj.type === 'stacks' && _.findIndex(obj.data, {id: id}) >= 0) {
+            var stackIdx = _.findIndex(obj.data, {id: id});
+            $('#cstack-oversize').val(obj.data[stackIdx].meta.oversize);
+            $('#cstack-rotation').val(obj.data[stackIdx].meta.rotation);
+            $('#cstack-startClass').val(obj.data[stackIdx].meta.startClass);
+            $('#cstack-startSubclass').val(obj.data[stackIdx].meta.startSubclass);
+            $('#cstack-endClass').val(obj.data[stackIdx].meta.endClass);
+            $('#cstack-endSubclass').val(obj.data[stackIdx].meta.endSubclass);
+            $('.tool-options > .row:nth-child(' + modebit + ')').show();
+            Materialize.updateTextFields();
+        }
+    });
 }
 
 function addClickHandlerToShape(e) {
