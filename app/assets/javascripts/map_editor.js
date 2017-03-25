@@ -2,6 +2,13 @@ let canvas;
 let modebit = 0; // 0: pointer, 1: rect, 2: poly, 3: mark, 4: layer, 5: stack
 let objects = [];
 let objectsRedo = [];
+let helpTextTimeout;
+let metaObjects = {};
+let libraries = [];
+let floors = [];
+let activeLibrary = -1;
+let activeFloor = -1;
+let saveCounter = 0;
 
 const helpText = [
   'Click to select an element on canvas.',
@@ -12,24 +19,65 @@ const helpText = [
   'Edit stack properties.',
 ];
 
-let helpTextTimeout;
-const metaObjects = {};
+function addGrids() {
+  const w = canvas.attr('width');
+  const h = canvas.attr('height');
+  const g = canvas.append('g');
+  const gridNum = [
+    Math.floor(w / 50),
+    Math.floor(h / 50),
+  ];
+  for (let i = 1; i <= gridNum[1]; i += 1) {
+    g.append('line').attrs({
+      x1: 0,
+      x2: w,
+      y1: i * 50,
+      y2: i * 50,
+      'stroke-dasharray': '1, 5',
+      'stroke-width': '1',
+      stroke: '#AAA',
+    });
+  }
 
-let libraries = [];
-let floors = [];
+  for (let j = 1; j <= gridNum[0]; j += 1) {
+    g.append('line').attrs({
+      y1: 0,
+      y2: h,
+      x1: j * 50,
+      x2: j * 50,
+      'stroke-dasharray': '1, 5',
+      'stroke-width': '1',
+      stroke: '#AAA',
+    });
+  }
+}
 
-let activeLibrary = 3;
-let activeFloor = 7;
+function clearCanvas() {
+  canvas.selectAll('*').remove();
+  addGrids();
+  modebit = 0;
+  objects = [];
+  objectsRedo = [];
+  metaObjects = {};
+  saveCounter = 0;
 
-let saveCounter = 0;
+  $('#workspace').css('background-image', '');
+  canvas.style('cursor', 'default');
+  $('.toolbox a.btn-flat').removeClass('light-blue');
+  $('.toolbox a.btn-flat:first-child').addClass('light-blue');
+  $('.tool-options > .row').hide();
+  $('.tool-options input').val(0);
+  $('.tool-options input').val('');
+  $('#cfloor-btn-set').removeClass('disabled');
+}
 
 function loadFloors(libraryId) {
   $.ajax({
     url: '/v1/floors/',
+    type: 'GET',
     data: {
       library_id: libraryId,
     },
-    type: 'GET',
     success: (data) => {
       floors = data;
 
@@ -55,15 +103,22 @@ function loadFloors(libraryId) {
         const floorId = _.findIndex(floors, {
           id: $(event.currentTarget).data('floor_id'),
         });
+        if (activeFloor === floors[floorId].id) {
+          // same library
+          return;
+        }
+
+        $('#floor-collection>a').removeClass('active');
+        clearCanvas();
+
+        activeFloor = floors[floorId].id;
         const fn =
           `${libraryShortName}-Level${floors[floorId].name}`;
-        $('#floor-collection>a').removeClass('active');
-        $(event.currentTarget).addClass('active');
-        activeFloor = floors[floorId].id;
         $('#workspace').css('background-image',
           `url('/assets/${fn}.png')`);
         $('#cfloor-name').val(floors[floorId].name);
         Materialize.updateTextFields();
+        $(event.currentTarget).addClass('active');
       });
 
       $('.collapsible').collapsible('close', 0);
@@ -96,12 +151,19 @@ function loadLibraries() {
         const libraryId = _.findIndex(libraries, {
           id: $(event.currentTarget).data('library_id'),
         });
-        activeLibrary = libraries[libraryId].id;
+        if (activeLibrary === libraries[libraryId].id) {
+          // same library
+          return;
+        }
+
         $('#library-collection>a').removeClass('active');
-        $(event.currentTarget).addClass('active');
         activeFloor = -1;
+        clearCanvas();
+
+        activeLibrary = libraries[libraryId].id;
         $('#workspace').css('background-image', '');
         loadFloors(activeLibrary);
+        $(event.currentTarget).addClass('active');
       });
 
       $('.collapsible').collapsible('close', 0);
@@ -354,38 +416,7 @@ function confirmNewShape(shape, id, settings) {
 function initCanvas(w, h) {
   // let x = d3.scaleLinear().domain([0, d3.max(data)]).range([0, width]);
   canvas = d3.select('#canvas').attr('width', w).attr('height', h);
-  let gridLine;
-  const gridNum = [
-    Math.floor(w / 50),
-    Math.floor(h / 50),
-  ];
-  for (let i = 1; i <= gridNum[1]; i += 1) {
-    gridLine = canvas.append('line').attrs({
-      x1: 0,
-      x2: w,
-      y1: i * 50,
-      y2: i * 50,
-    });
-    gridLine.attrs({
-      'stroke-dasharray': '1, 5',
-      'stroke-width': '1',
-      stroke: '#AAA',
-    });
-  }
-
-  for (let j = 1; j <= gridNum[0]; j += 1) {
-    gridLine = canvas.append('line').attrs({
-      y1: 0,
-      y2: h,
-      x1: j * 50,
-      x2: j * 50,
-    });
-    gridLine.attrs({
-      'stroke-dasharray': '1, 5',
-      'stroke-width': '1',
-      stroke: '#AAA',
-    });
-  }
+  addGrids();
 
   canvas.on('click', () => {
     const coords = d3.mouse(event.currentTarget);
@@ -715,6 +746,8 @@ function initStacksInShape(e, rows, rotation) {
     id: e.attr('id'),
     data: stacksData,
   });
+
+  // END initStacksInShape
 }
 
 $(document).ready(() => {
@@ -722,8 +755,8 @@ $(document).ready(() => {
 
   $('.tool-options > .row').hide();
   $('.dropdown-button').dropdown();
-  $('#workspace').height($('#workspace').height() - 64);
-  initCanvas($('#workspace').width(), $('#workspace').height());
+  $('#workspace').height($('#workspace').height() - 74);
+  initCanvas($('#workspace').width() - 10, $('#workspace').height() - 10);
   $('.toolbox a.btn-flat').each((index) => {
     $(`.toolbox a.btn-flat:nth-child(${index + 1})`).click(() => {
       $('.collapsible').collapsible('close', 0);
@@ -1002,4 +1035,52 @@ $(document).ready(() => {
       });
     });
   });
+
+  $('#btn-add-library').click(() => {
+    $('#modal-add-library input').val('');
+    $('.modal').modal();
+    $('#modal-add-library').modal('open');
+  });
+
+  $('#btn-add-floor').click(() => {
+    $('#modal-add-floor input').val('');
+    $('.modal').modal();
+    $('#modal-add-floor').modal('open');
+  });
+
+  $('#modal-add-library .modal-action').click(() => {
+    $.ajax({
+      url: '/v1/libraries',
+      type: 'POST',
+      dataType: 'json',
+      data: {
+        name: $('#modal-add-library input[name="name"]').val(),
+        latitude: $('#modal-add-library input[name="latitude"]').val(),
+        longitude: $('#modal-add-library input[name="longitude"]').val(),
+      },
+      success: () => {
+        loadLibraries();
+      },
+    });
+  });
+
+  $('#modal-add-floor .modal-action').click(() => {
+    $.ajax({
+      url: '/v1/floors',
+      type: 'POST',
+      dataType: 'json',
+      data: {
+        name: $('#modal-add-floor input[name="name"]').val(),
+        size_x: -1,
+        size_y: -1,
+        geojson: '',
+        library: activeLibrary,
+      },
+      success: () => {
+        loadFloors(activeLibrary);
+      },
+    });
+  });
+
+  // END $(document).ready
 });

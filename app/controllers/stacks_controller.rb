@@ -42,7 +42,7 @@ class StacksController < ApplicationController
         stack.oversize = params[:oversize] ? params[:oversize] : 0
         stack.floor = params[:floor]
         stack.save
-        render json: 'OK'.to_json
+        render json: stack.id.to_json
     end
 
     def stacks_put
