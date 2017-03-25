@@ -204,6 +204,8 @@ $(document).ready(function() {
         shape.attr('y', $('#crect-y').val());
         shape.attr('width', $('#crect-width').val());
         shape.attr('height', $('#crect-height').val());
+
+        // for area rect edit
         objects = objects.map(function(obj) {
             if (obj.id === shape.attr('id') && obj.type !== 'stacks') {
                 var new_obj = _.clone(obj);
@@ -214,6 +216,22 @@ $(document).ready(function() {
                     height: parseInt(shape.attr('height'))
                 };
                 return new_obj;
+            } else {
+                return obj;
+            }
+        });
+
+        // for stack rect edit
+        objects = objects.map(function(obj) {
+            if (obj.type === 'stacks' && _.findIndex(obj.data, {id: shape.attr('id')}) >= 0) {
+                var stackIdx = _.findIndex(obj.data, {id: shape.attr('id')});
+                var new_data = _.clone(obj.data[stackIdx].data);
+                new_data.x = parseInt(shape.attr('x'));
+                new_data.y = parseInt(shape.attr('y'));
+                new_data.width = parseInt(shape.attr('width'));
+                new_data.height = parseInt(shape.attr('height'));
+                obj.data[stackIdx].data = new_data;
+                return obj;
             } else {
                 return obj;
             }
@@ -232,7 +250,7 @@ $(document).ready(function() {
             if (obj.type === 'stacks' && _.findIndex(obj.data, {id: shape.attr('id')}) >= 0) {
                 var stackIdx = _.findIndex(obj.data, {id: shape.attr('id')});
                 var new_meta = _.clone(obj.data[stackIdx].meta);
-                new_meta.oversize = $('#cstack-oversize').val();
+                new_meta.oversize = parseInt($('#cstack-oversize').val());
                 new_meta.startClass = $('#cstack-startClass').val();
                 new_meta.startSubclass = parseInt($('#cstack-startSubclass').val());
                 new_meta.endClass = $('#cstack-endClass').val();
