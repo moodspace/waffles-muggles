@@ -1,4 +1,9 @@
-<div class="row" id="map-wrapper" data-callno='<%= @callno %>' data-libid='<%= @libid %>'>
+<script>
+    const libId = <%= @libid %>;
+    const callNo = '<%= @callno %>';
+    const bibId = <%= @bibid %>;
+</script>
+<div class="row" id="map-wrapper">
     <div class="col-lg-3 col-md-12 stack-box-wrapper">
         <%= render partial: "stack_box" %>
     </div>

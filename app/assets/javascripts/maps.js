@@ -1,4 +1,5 @@
 let mapCtx;
+let bibData;
 
 function drawFloor(size, w, h, json) {
   const geojson = JSON.parse(json);
@@ -90,25 +91,38 @@ function loadMap(stackId) {
   });
 }
 
+function loadHoldings() {
+  $.ajax({
+    url: `https://holdings4.library.cornell.edu/holdings/retrieve_detail_raw/${bibId}`,
+    type: 'GET',
+    success: (data) => {
+      bibData = data;
+      console.log(bibData);
+    },
+  });
+}
+
 $(document).ready(() => {
-  const callno = $('#map-wrapper').data('callno');
-  const libraryId = $('#map-wrapper').data('libid');
   $.ajax({
     url: '/v1/search', // Route to the Script Controller method
     type: 'GET',
     dataType: 'json',
     data: {
-      keyword: callno,
+      keyword: callNo,
     },
     success: (data) => {
       let found = false;
       data.forEach((searchResult) => {
         if (!found && searchResult.result.library.id ===
-          libraryId) {
+          libId) {
           loadMap(searchResult.result_id);
           found = true;
         }
       });
     },
   });
+
+  if (bibId) {
+    loadHoldings();
+  }
 });

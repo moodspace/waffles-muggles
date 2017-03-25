@@ -5,11 +5,16 @@
 # Controller to render maps
 #
 class MapsController < ApplicationController
-    layout "bootstrap"
+    include HTTParty
+
+    layout 'bootstrap'
 
     def show
+        prng = Random.new
+
         @callno = params[:callno]
-        @libid = params[:library_id]
+        @bibid = params[:bibid].to_i == 0 ? 'undefined' : params[:bibid].to_i
+        @libid = params[:library_id].to_i == 0 ? 'undefined' : params[:library_id].to_i
         render 'maps/full'
     end
 end
