@@ -61,7 +61,7 @@ function loadFloors(libraryId) {
         $(event.currentTarget).addClass('active');
         activeFloor = floors[floorId].id;
         $('#workspace').css('background-image',
-          `url('/assets/${fn}.gif')`);
+          `url('/assets/${fn}.png')`);
         $('#cfloor-name').val(floors[floorId].name);
         Materialize.updateTextFields();
       });
