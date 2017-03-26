@@ -2,6 +2,10 @@ nav {
     margin-bottom: 10px;
 }
 
+#modal-upload-ref > div > form > input[name="commit"] {
+    display: none;
+}
+
 main>.container {
     width: 100%;
     height: 100vh;

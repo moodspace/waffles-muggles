@@ -337,6 +337,7 @@ CS 5150 Navigation in Library Stacks.
 | size_x | integer | Bounding box size x | No |
 | size_y | integer | Bounding box size y | No |
 | geojson | string | Fine shape | No |
+| ref | string | Reference image url | No |
 | library | integer | Library located in | No |
 <a name="library"></a>**Library**  
 

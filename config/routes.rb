@@ -10,6 +10,7 @@ Rails.application.routes.draw do
     get '/maps', to: 'maps#show'
     get '/editor', to: 'map_editor#show'
     get '/holdings/:bibId', to: 'holdings#show'
+    post '/maps/uploadRefImg', to: 'maps#upload_ref'
 
     def add_swagger_route(http_method, path, opts = {})
         full_path = path.gsub(/{(.*?)}/, ':\1')

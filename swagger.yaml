@@ -490,6 +490,9 @@ definitions:
       geojson:
         type: "string"
         description: "Fine shape"
+      ref:
+        type: "string"
+        description: "Reference image url"
       library:
         type: "integer"
         format: "int32"

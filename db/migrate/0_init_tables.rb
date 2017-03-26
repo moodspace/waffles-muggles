@@ -23,6 +23,7 @@ class InitTables < ActiveRecord::Migration[5.0]
             t.integer :size_x
             t.integer :size_y
             t.string :geojson
+            t.string :ref
             t.integer :library
 
             t.timestamps

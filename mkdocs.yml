@@ -2,4 +2,3 @@ site_name: CS 5150
 docs_dir: docs
 site_dir: public/docs
 theme: simplex
-

@@ -18,6 +18,7 @@ class FloorsController < ApplicationController
                     size_x: floor.size_x,
                     size_y: floor.size_y,
                     geojson: floor.geojson,
+                    ref: floor.ref,
                     library: {
                         id: library.id,
                         name: library.name,
@@ -45,6 +46,7 @@ class FloorsController < ApplicationController
             size_x: floor.size_x,
             size_y: floor.size_y,
             geojson: floor.geojson,
+            ref: floor.ref,
             library: {
                 id: library.id,
                 name: library.name,
@@ -60,18 +62,19 @@ class FloorsController < ApplicationController
         floor.size_x = params[:size_x]
         floor.size_y = params[:size_y]
         floor.geojson = params[:geojson]
+        floor.ref = params[:ref]
         floor.library = params[:library]
         floor.save
         render json: floor.id.to_json
     end
 
     def floors_put
-        puts params[:name]
         floor = Floor.find(params[:id])
         floor.name = params[:name]
         floor.size_x = params[:size_x]
         floor.size_y = params[:size_y]
         floor.geojson = params[:geojson]
+        floor.ref = params[:ref]
         floor.library = params[:library]
         floor.save
         render json: 'OK'.to_json

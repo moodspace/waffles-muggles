@@ -215,9 +215,9 @@
                 </li>
             </ul>
             <ul class="right">
-                <!-- <li>
-                    <a href="sass.html">Upload</a>
-                </li> -->
+                <li>
+                    <a href="javascript:void(0)" id="btn-ref-upload">Upload</a>
+                </li>
                 <li>
                     <a href="javascript:void(0)" id="btn-output-save">Save</a>
                 </li>
@@ -277,5 +277,18 @@
     </div>
     <div class="modal-footer">
         <a href="javascript:void(0)" class="modal-action modal-close waves-effect waves-light-blue btn-flat">OK</a>
+    </div>
+</div>
+
+<div id="modal-upload-ref" class="modal">
+    <div id="ref-upload" class="modal-content">
+        <h5>Upload a reference</h5>
+        <%= form_tag('javascript:void(0)', multipart: true) do %>
+        <%= file_field_tag 'ref_img' %>
+        <%= hidden_field_tag(:floor_id) %>
+        <% end %>
+    </div>
+    <div class="modal-footer">
+        <a href="javascript:void(0)" id="btn-ref-commit-upload" class="modal-action modal-close waves-effect waves-light-blue btn-flat">Upload</a>
     </div>
 </div>

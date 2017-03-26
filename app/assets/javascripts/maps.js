@@ -97,7 +97,6 @@ function loadHoldings() {
     type: 'GET',
     success: (data) => {
       bibData = data;
-      console.log(bibData);
     },
   });
 }

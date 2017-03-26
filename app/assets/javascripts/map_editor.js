@@ -97,13 +97,10 @@ function loadFloors(libraryId) {
       });
 
       $('#floor-collection>a').click(() => {
-        const libraryShortName = libraries[_.findIndex(libraries, {
-          id: activeLibrary,
-        })].name.split(' ')[0];
-        const floorId = _.findIndex(floors, {
+        const floorIdx = _.findIndex(floors, {
           id: $(event.currentTarget).data('floor_id'),
         });
-        if (activeFloor === floors[floorId].id) {
+        if (activeFloor === floors[floorIdx].id) {
           // same library
           return;
         }
@@ -111,12 +108,14 @@ function loadFloors(libraryId) {
         $('#floor-collection>a').removeClass('active');
         clearCanvas();
 
-        activeFloor = floors[floorId].id;
-        const fn =
-          `${libraryShortName}-Level${floors[floorId].name}`;
-        $('#workspace').css('background-image',
-          `url('/assets/${fn}.png')`);
-        $('#cfloor-name').val(floors[floorId].name);
+        activeFloor = floors[floorIdx].id;
+        if (_.isEmpty(floors[floorIdx].ref)) {
+          $('#workspace').css('background-image', '');
+        } else {
+          $('#workspace').css('background-image',
+            `url('${floors[floorIdx].ref}')`);
+        }
+        $('#cfloor-name').val(floors[floorIdx].name);
         Materialize.updateTextFields();
         $(event.currentTarget).addClass('active');
       });
@@ -980,6 +979,27 @@ $(document).ready(() => {
     metaObjects.floor_border = undefined;
     $(event.currentTarget).addClass('disabled');
     canvas.style('cursor', 'crosshair');
+  });
+
+  $('#btn-ref-upload').click(() => {
+    $('#modal-upload-ref > div > form > input[name="floor_id"]').val(
+      activeFloor);
+    $('.modal').modal();
+    $('#modal-upload-ref').modal('open');
+  });
+
+  $('#btn-ref-commit-upload').click(() => {
+    $.ajax({
+      url: '/maps/uploadRefImg',
+      type: 'POST',
+      data: new FormData($('#modal-upload-ref > div > form')[0]),
+      success: (floor) => {
+        $('#workspace').css('background-image', `url('${floor.ref}')`);
+        loadFloors(activeLibrary);
+      },
+      contentType: false,
+      processData: false,
+    });
   });
 
   $('#btn-output-JSON').click(() => {

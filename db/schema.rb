@@ -25,6 +25,7 @@ ActiveRecord::Schema.define(version: 0) do
     t.integer "size_x"
     t.integer "size_y"
     t.string "geojson"
+    t.string "ref"
     t.integer "library"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
