@@ -9,8 +9,6 @@
 class StacksController < ApplicationController
     include ApplicationControllerConcern
 
-    skip_before_action :verify_authenticity_token, only: [:create]
-
     def index
         ret = []
         Stack.find_each do |stack|
