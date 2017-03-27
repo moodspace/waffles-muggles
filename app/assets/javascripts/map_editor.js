@@ -71,7 +71,23 @@ function clearCanvas() {
   $('#cfloor-btn-set').removeClass('disabled');
 }
 
+function setNav(toEnable) {
+  if (toEnable) {
+    $('.nav-wrapper a').removeClass('disabled');
+    $('.nav-wrapper input').prop('disabled', false);
+    $('#btn-output-save').addClass('disabled');
+    $('#btn-output-JSON').addClass('disabled');
+    $('.toolbox a.btn-flat').removeClass('disabled');
+  } else {
+    $('.nav-wrapper a').addClass('disabled');
+    $('.nav-wrapper input').prop('disabled', true);
+    $('.toolbox a.btn-flat').addClass('disabled');
+  }
+}
+
 function loadFloors(libraryId) {
+  $('#btn-add-floor').show();
+
   $.ajax({
     url: '/v1/floors/',
     type: 'GET',
@@ -109,6 +125,7 @@ function loadFloors(libraryId) {
         clearCanvas();
 
         activeFloor = floors[floorIdx].id;
+        setNav(true);
         if (_.isEmpty(floors[floorIdx].ref)) {
           $('#workspace').css('background-image', '');
         } else {
@@ -127,6 +144,7 @@ function loadFloors(libraryId) {
 }
 
 function loadLibraries() {
+  $('#btn-add-floor').hide();
   $.ajax({
     url: '/v1/libraries/',
     type: 'GET',
@@ -156,6 +174,7 @@ function loadLibraries() {
         }
 
         $('#library-collection>a').removeClass('active');
+        setNav(false);
         activeFloor = -1;
         clearCanvas();
 
@@ -325,7 +344,9 @@ function showMarkTool(id) {
   $(`#${id}`).addClass('selected');
   const objIdx = _.findIndex(objects, o => o.id === id && o.type !== 'stacks');
   $('#cmark-rows').val(objects[objIdx].meta.rows);
+  $('#cmark-rotation').material_select('destroy');
   $('#cmark-rotation').val(objects[objIdx].meta.rotation);
+  $('#cmark-rotation').material_select();
   $(`.tool-options > .row:nth-child(${modebit})`).show();
   Materialize.updateTextFields();
 }
@@ -338,12 +359,16 @@ function showStackTool(id) {
       id,
     });
     if (obj.type === 'stacks' && stackIdx >= 0) {
+      $('#cstack-oversize').material_select('destroy');
       $('#cstack-oversize').val(obj.data[stackIdx].meta.oversize);
+      $('#cstack-oversize').material_select();
       $('#cstack-rotation').val(obj.data[stackIdx].meta.rotation);
       $('#cstack-startClass').val(obj.data[stackIdx].meta.startClass);
       $('#cstack-startSubclass').val(obj.data[stackIdx].meta.startSubclass);
+      $('#cstack-startSubclass2').val(obj.data[stackIdx].meta.startSubclass2);
       $('#cstack-endClass').val(obj.data[stackIdx].meta.endClass);
       $('#cstack-endSubclass').val(obj.data[stackIdx].meta.endSubclass);
+      $('#cstack-endSubclass2').val(obj.data[stackIdx].meta.endSubclass2);
       $(`.tool-options > .row:nth-child(${modebit})`).show();
       Materialize.updateTextFields();
     }
@@ -615,6 +640,9 @@ function initCanvas(w, h) {
             });
           }
           $('#cfloor-btn-set').removeClass('disabled');
+          // re-enable output buttons that are always disabled in setNav
+          $('#btn-output-save').removeClass('disabled');
+          $('#btn-output-JSON').removeClass('disabled');
           canvas.style('cursor', 'default').selectAll('*').style('cursor',
             'default');
           break;
@@ -720,8 +748,10 @@ function initStacksInShape(e, rows, rotation) {
         oversize: 0,
         startClass: 'A',
         startSubclass: 0,
+        startSubclass2: '',
         endClass: 'Z',
         endSubclass: 0,
+        endSubclass2: '',
       },
       data: {
         x: parseFloat(rect.attr('x')),
@@ -876,7 +906,7 @@ $(document).ready(() => {
     }
   });
 
-  $('.row.cmark input').change(() => {
+  $('.row.cmark input, .row.cmark select').change(() => {
     const shape = canvas.selectAll('.selected');
     const irows = parseInt($('#cmark-rows').val(), 10);
     if (_.isNaN(irows) || irows <= 0) {
@@ -943,7 +973,7 @@ $(document).ready(() => {
     shape.attr('points', $('#cpolygon-points').val());
   });
 
-  $('.row.cstack input').change(() => {
+  $('.row.cstack input, .row.cstack select').change(() => {
     const shape = canvas.selectAll('.selected');
 
     objects = objects.map((obj) => {
@@ -955,16 +985,23 @@ $(document).ready(() => {
         newObj.data[stackIdx].meta.oversize = parseInt($(
             '#cstack-oversize').val(),
           10);
+        shape.classed('size0', false).classed('size1', false).classed(
+          'size2', false).classed(
+          `size${$('#cstack-oversize').val()}`, true);
         newObj.data[stackIdx].meta.startClass = $(
           '#cstack-startClass').val();
         newObj.data[stackIdx].meta.startSubclass = parseInt($(
             '#cstack-startSubclass')
           .val(), 10);
+        newObj.data[stackIdx].meta.startSubclass2 = $(
+          '#cstack-startSubclass2').val();
         newObj.data[stackIdx].meta.endClass = $('#cstack-endClass')
           .val();
         newObj.data[stackIdx].meta.endSubclass = parseInt($(
             '#cstack-endSubclass').val(),
           10);
+        newObj.data[stackIdx].meta.endSubclass2 = $(
+          '#cstack-endSubclass2').val();
         return newObj;
       }
       return obj;
@@ -982,6 +1019,9 @@ $(document).ready(() => {
   });
 
   $('#btn-ref-upload').click(() => {
+    if ($(event.currentTarget).hasClass('disabled')) {
+      return;
+    }
     $('#modal-upload-ref > div > form > input[name="floor_id"]').val(
       activeFloor);
     $('.modal').modal();
@@ -994,7 +1034,8 @@ $(document).ready(() => {
       type: 'POST',
       data: new FormData($('#modal-upload-ref > div > form')[0]),
       success: (floor) => {
-        $('#workspace').css('background-image', `url('${floor.ref}')`);
+        $('#workspace').css('background-image',
+          `url('${floor.ref}')`);
         loadFloors(activeLibrary);
       },
       contentType: false,
@@ -1003,6 +1044,9 @@ $(document).ready(() => {
   });
 
   $('#btn-output-JSON').click(() => {
+    if ($(event.currentTarget).hasClass('disabled')) {
+      return;
+    }
     $('#box-code-pop').html(JSON.stringify(exportFloorData(), null,
       '  '));
     $('.modal').modal();
@@ -1013,6 +1057,9 @@ $(document).ready(() => {
   });
 
   $('#btn-output-save').click(() => {
+    if ($(event.currentTarget).hasClass('disabled')) {
+      return;
+    }
     const data = exportFloorData();
     saveCounter = data.stacks.length + 1;
     $.ajax({
@@ -1022,8 +1069,8 @@ $(document).ready(() => {
       data: {
         id: activeFloor,
         name: data.floor.name,
-        size_x: data.floor.size_x,
-        size_y: data.floor.size_y,
+        size_x: parseInt(data.floor.size_x, 10),
+        size_y: parseInt(data.floor.size_y, 10),
         geojson: data.floor.geojson,
         library: activeLibrary,
       },
@@ -1041,15 +1088,21 @@ $(document).ready(() => {
         type: 'POST',
         dataType: 'json',
         data: {
-          cx: s.cx,
-          cy: s.cy,
-          lx: s.lx,
-          ly: s.ly,
+          cx: parseInt(s.cx, 10),
+          cy: parseInt(s.cy, 10),
+          lx: parseInt(s.lx, 10),
+          ly: parseInt(s.ly, 10),
           rotation: s.rotation,
           startClass: s.startClass,
-          startSubclass: s.startSubclass,
+          startSubclass: _.isNumber(s.startSubclass) ? undefined :
+            Math.floor(s.startSubclass),
+          startSubclass2: _.isEmpty(s.startSubclass2) ?
+            undefined : s.startSubclass2,
           endClass: s.endClass,
-          endSubclass: s.endSubclass,
+          endSubclass: _.isNumber(s.endSubclass) ? undefined : Math
+            .ceil(s.endSubclass),
+          endSubclass2: _.isEmpty(s.endSubclass2) ? undefined :
+            s.endSubclass2,
           oversize: s.oversize,
           floor: activeFloor,
         },
@@ -1110,6 +1163,14 @@ $(document).ready(() => {
       },
     });
   });
+
+  $('.tooltipped').tooltip({
+    delay: 50,
+  });
+
+  $('select').material_select();
+
+  setNav(false);
 
   // END $(document).ready
 });

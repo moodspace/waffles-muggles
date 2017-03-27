@@ -47,53 +47,53 @@
             <div class="divider"></div>
         </li>
         <li>
-            <a class="subheader">Drawing</a>
+            <a class="subheader">Toolbox</a>
         </li>
         <li>
             <div class="toolbox">
                 <div class="row">
-                    <a class="btn-flat col s4 light-blue">
+                    <a class="btn-flat col s4 light-blue tooltipped" data-position="right" data-delay="50" data-tooltip="Select tool">
                         <i class="material-icons">navigation</i>
                     </a>
-                    <a class="btn-flat col s4">
+                    <a class="btn-flat col s4 tooltipped" data-position="right" data-delay="50" data-tooltip="Rectangle tool (area)">
                         <i class="material-icons">crop_landscape</i>
                     </a>
-                    <a class="btn-flat col s4">
+                    <a class="btn-flat col s4 tooltipped" data-position="right" data-delay="50" data-tooltip="Polygon tool (area)">
                         <i class="material-icons">label_outline</i>
                     </a>
-                    <a class="btn-flat col s4">
+                    <a class="btn-flat col s4 tooltipped" data-position="right" data-delay="50" data-tooltip="Area scaffolding tool">
                         <i class="material-icons">flag</i>
                     </a>
-                    <a class="btn-flat col s4">
+                    <a class="btn-flat col s4 tooltipped" data-position="right" data-delay="50" data-tooltip="Floor properties">
                         <i class="material-icons">layers</i>
                     </a>
-                    <a class="btn-flat col s4">
+                    <a class="btn-flat col s4 tooltipped" data-position="right" data-delay="50" data-tooltip="Stack properties">
                         <i class="material-icons">theaters</i>
                     </a>
                 </div>
             </div>
         </li>
         <li>
-            <a class="subheader">Tool Options</a>
+            <a class="subheader">Tool options</a>
         </li>
         <li>
             <div class="tool-options">
                 <div class="row crect">
                     <div class="input-field col s3">
                         <input id="crect-x" type="text">
-                        <label for="crect-x">x</label>
+                        <label for="crect-x" class="tooltipped" data-position="right" data-delay="50" data-tooltip="Not depending on rotation">Left</label>
                     </div>
                     <div class="input-field col s3">
                         <input id="crect-y" type="text">
-                        <label for="crect-y">y</label>
+                        <label for="crect-y" class="tooltipped" data-position="right" data-delay="50" data-tooltip="Not depending on rotation">Top</label>
                     </div>
                     <div class="input-field col s3">
                         <input id="crect-width" type="text">
-                        <label for="crect-width">width</label>
+                        <label for="crect-width">Width</label>
                     </div>
                     <div class="input-field col s3">
                         <input id="crect-height" type="text">
-                        <label for="crect-height">height</label>
+                        <label for="crect-height">Height</label>
                     </div>
                 </div>
                 <!-- cpolygon | polygon plotter -->
@@ -104,54 +104,95 @@
                     </div>
                 </div>
                 <div class="row cmark">
-                    <div class="input-field col s3">
+                    <div class="input-field col s6">
                         <input id="cmark-rows" type="text">
-                        <label for="cmark-rows">rows</label>
+                        <label for="cmark-rows" class="tooltipped" data-position="right" data-delay="50" data-tooltip="Quickly generate rows of stacks">rows</label>
                     </div>
-                    <div class="input-field col s3">
-                        <input id="cmark-rotation" type="text">
-                        <label for="cmark-rotation">rotation</label>
+                    <div class="input-field col s6">
+                        <select id="cmark-rotation">
+                            <option value="0">0</option>
+                            <option value="90">90</option>
+                            <option value="180">180</option>
+                            <option value="270">270</option>
+                        </select>
+                        <label for="cmark-rotation" class="tooltipped under" data-position="right" data-delay="50" data-tooltip="0: looking down, 90: left, 180: up, 270: right">rotation</label>
                     </div>
                 </div>
                 <!-- cfloor | floor configurator -->
                 <div class="row cfloor">
-                    <div class="input-field col s12">
+                    <h6>
+                        Spatial
+                    </h6>
+                    <!-- <div class="input-field col s12">
                         <label for="cfloor-range-scale">Set map scale</label>
                         <input type="range" id="cfloor-range-scale" min="1" max="1000"/>
+                    </div> -->
+                    <label>Hint: importing a reference floor map speeds up the plot.</label>
+                    <div class="col s12">
+                        <a class="waves-effect waves-light btn-flat tooltipped" data-position="right" data-delay="50" data-tooltip="Helps creating a coordinate system for map elements" id="cfloor-btn-set">Draw floor border</a>
+                        <br/><br/>
                     </div>
+                    <h6>
+                        Misc
+                    </h6>
+                    <label>Hint: each library must have distinct floor names.</label>
                     <div class="input-field col s12">
-                        <a class="waves-effect waves-light btn" id="cfloor-btn-set">Draw floor border</a>
-                    </div>
-                    <div class="input-field col s3">
                         <input id="cfloor-name" type="text">
-                        <label for="cfloor-name">name</label>
+                        <label for="cfloor-name">Name this floor</label>
                     </div>
                 </div>
                 <!-- cstack | stack meta -->
                 <div class="row cstack">
                     <div class="input-field col s6">
-                        <input id="cstack-oversize" type="text">
+                        <select id="cstack-oversize">
+                            <option value="0">Regular</option>
+                            <option value="1">+ Size</option>
+                            <option value="2">++ Size</option>
+                        </select>
                         <label for="cstack-oversize">oversize</label>
                     </div>
                     <div class="input-field col s6">
                         <input id="cstack-rotation" disabled type="text">
                         <label for="cstack-rotation">rotation</label>
                     </div>
-                    <div class="input-field col s6">
+                    <h6>
+                        Start
+                    </h6>
+                    <div class="col s12">
+                        <label>Hint: empty or = 0 subclass means 0 on this endpoint.</label>
+                    </div>
+                    <div class="input-field col s4">
                         <input id="cstack-startClass" type="text">
-                        <label for="cstack-startClass">startClass</label>
+                        <label for="cstack-startClass" class="tooltipped" data-position="right" data-delay="50" data-tooltip="e.g. 'DS' in DS778.C5245 C475x 2003">Class</label>
                     </div>
-                    <div class="input-field col s6">
+                    <div class="input-field col s4">
                         <input id="cstack-startSubclass" type="text">
-                        <label for="cstack-startSubclass">startSubclass</label>
+                        <label for="cstack-startSubclass" class="tooltipped" data-position="right" data-delay="50" data-tooltip="e.g. '778' in DS778.C5245 C475x 2003">Subclass</label>
                     </div>
-                    <div class="input-field col s6">
+                    <div class="input-field col s4">
+                        <input id="cstack-startSubclass2" type="text">
+                        <label for="cstack-startSubclass2" class="tooltipped" data-position="right" data-delay="50" data-tooltip="e.g. 'C' in DS778.C5245 C475x 2003">Subclass2</label>
+                    </div>
+                    <h6>
+                        End
+                        <a class="">
+                            <i class="material-icons">help_outline</i>
+                        </a>
+                    </h6>
+                    <div class="col s12">
+                        <label>Hint: empty or = 0 subclass means infinity on this endpoint.</label>
+                    </div>
+                    <div class="input-field col s4">
                         <input id="cstack-endClass" type="text">
-                        <label for="cstack-endClass">endClass</label>
+                        <label for="cstack-endClass" class="tooltipped" data-position="right" data-delay="50" data-tooltip="e.g. 'E' in 'E183.8.J3 S94 2005'">Class</label>
                     </div>
-                    <div class="input-field col s6">
+                    <div class="input-field col s4">
                         <input id="cstack-endSubclass" type="text">
-                        <label for="cstack-endSubclass">endSubclass</label>
+                        <label for="cstack-endSubclass" class="tooltipped right" data-position="right" data-delay="50" data-tooltip="e.g. '183.8' in 'E183.8.J3 S94 2005'">Subclass</label>
+                    </div>
+                    <div class="input-field col s4">
+                        <input id="cstack-endSubclass2" type="text">
+                        <label for="cstack-endSubclass2" class="tooltipped right" data-position="right" data-delay="50" data-tooltip="e.g. 'J' in 'E183.8.J3 S94 2005'">Subclass2</label>
                     </div>
                 </div>
             </div>
@@ -208,7 +249,7 @@
                         <label style="color: #fff">
                             <i class="material-icons" style="display: inline-block;">layers</i>
                             <input id="viewmode-toggle" type="checkbox" checked>
-                            <span class="lever" style="top: -8px;"></span>
+                            <span class="lever light-blue lighten-2" style="top: -8px;"></span>
                             <i class="material-icons" style="display: inline-block;">theaters</i>
                         </label>
                     </a>
@@ -216,7 +257,7 @@
             </ul>
             <ul class="right">
                 <li>
-                    <a href="javascript:void(0)" id="btn-ref-upload">Upload</a>
+                    <a class="disabled" href="javascript:void(0)" id="btn-ref-upload">Upload</a>
                 </li>
                 <li>
                     <a href="javascript:void(0)" id="btn-output-save">Save</a>

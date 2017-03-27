@@ -2,7 +2,7 @@ nav {
     margin-bottom: 10px;
 }
 
-#modal-upload-ref > div > form > input[name="commit"] {
+#modal-upload-ref>div>form>input[name="commit"] {
     display: none;
 }
 
@@ -45,6 +45,14 @@ svg g.hidden {
     visibility: hidden;
 }
 
+.cstack.size1 {
+    stroke-dasharray: 10 5;
+}
+
+.cstack.size2 {
+    stroke-dasharray: 20 20;
+}
+
 main {
     padding-left: 300px;
 }
@@ -65,4 +73,34 @@ main {
 svg polygon.fb {
     stroke-width: 8px;
     stroke-opacity: 0.5;
+}
+
+label.tooltipped.active, label.tooltipped.under {
+    border-bottom: 2px dotted #999;
+}
+
+.switch label input[type=checkbox]:checked+.lever:after {
+    background-color: #29b6f6 !important;
+}
+
+nav a.disabled, nav a.disabled i {
+    color: #bdbdbd;
+    cursor: default;
+}
+
+nav .disabled * {
+    cursor: default !important;
+}
+
+nav a.disabled:hover {
+    background-color: transparent;
+}
+
+.collection a.collection-item.active {
+    background-color: #039be5;
+    color: #fff !important;
+}
+
+.collection a.collection-item {
+    color: #039be5 !important;
 }
