@@ -32,12 +32,12 @@ class StacksController < ApplicationController
         stack.cy = params[:cy]
         stack.lx = params[:lx]
         stack.ly = params[:ly]
-        stack.rotation = params[:rotation] ? params[:rotation] : 0
+        stack.rotation = params[:rotation]
         stack.start_class = params[:startClass]
-        stack.start_subclass = params[:startSubclass] ? params[:startSubclass] : 0
+        stack.start_subclass = params[:startSubclass]
         stack.end_class = params[:endClass]
         stack.end_subclass = params[:endSubclass]
-        stack.oversize = params[:oversize] ? params[:oversize] : 0
+        stack.oversize = params[:oversize]
         stack.floor = params[:floor]
         stack.save
         render json: stack.id.to_json
@@ -45,17 +45,17 @@ class StacksController < ApplicationController
 
     def stacks_put
         stack = Stack.find(params[:id])
-        stack.cx = params[:cx]
-        stack.cy = params[:cy]
-        stack.lx = params[:lx]
-        stack.ly = params[:ly]
-        stack.rotation = params[:rotation] ? params[:rotation] : 0
-        stack.start_class = params[:startClass]
-        stack.start_subclass = params[:startSubclass] ? params[:startSubclass] : 0
-        stack.end_class = params[:endClass]
-        stack.end_subclass = params[:endSubclass]
-        stack.oversize = params[:oversize] ? params[:oversize] : 0
-        stack.floor = params[:floor]
+        stack.cx = params[:cx] || stack.cx
+        stack.cy = params[:cy] || stack.cy
+        stack.lx = params[:lx] || stack.lx
+        stack.ly = params[:ly] || stack.ly
+        stack.rotation = params[:rotation] || stack.rotation
+        stack.start_class = params[:startClass] || stack.start_class
+        stack.start_subclass = params[:startSubclass] || stack.start_subclass
+        stack.end_class = params[:endClass] || stack.end_class
+        stack.end_subclass = params[:endSubclass] || stack.end_subclass
+        stack.oversize = params[:oversize] || stack.oversize
+        stack.floor = params[:floor] || stack.floor
         stack.save
         render json: 'OK'.to_json
     end

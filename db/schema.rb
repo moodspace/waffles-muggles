@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 0) do
+ActiveRecord::Schema.define(version: 1) do
 
   create_table "errors", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.integer "code"
@@ -24,11 +24,12 @@ ActiveRecord::Schema.define(version: 0) do
     t.string "name"
     t.integer "size_x"
     t.integer "size_y"
-    t.string "geojson"
+    t.text "geojson"
     t.string "ref"
-    t.integer "library"
+    t.bigint "library"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["library", "name"], name: "index_floors_on_library_and_name"
   end
 
   create_table "libraries", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
@@ -47,13 +48,6 @@ ActiveRecord::Schema.define(version: 0) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "search_results", primary_key: "result_id", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
-    t.string "result_type"
-    t.string "result"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
   create_table "stacks", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.integer "cx"
     t.integer "cy"
@@ -67,9 +61,12 @@ ActiveRecord::Schema.define(version: 0) do
     t.integer "end_subclass"
     t.string "end_subclass2"
     t.integer "oversize"
-    t.integer "floor"
+    t.bigint "floor"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["floor"], name: "fk_rails_7e8ff62bb5"
   end
 
+  add_foreign_key "floors", "libraries", column: "library"
+  add_foreign_key "stacks", "floors", column: "floor"
 end

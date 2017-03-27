@@ -33,9 +33,7 @@ class MapsController < ApplicationController
         floor.ref = "uploads/ref/#{md5digest}.png"
         floor.save
 
-        floor = Floor.find(floor.id)
         library = Library.find(floor.library)
-
         render json: {
             id: floor.id,
             name: floor.name,

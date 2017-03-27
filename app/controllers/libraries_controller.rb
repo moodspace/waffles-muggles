@@ -36,9 +36,9 @@ class LibrariesController < ApplicationController
 
     def libraries_put
         library = Library.find(params[:id])
-        library.name = params[:name]
-        library.latitude = params[:latitude]
-        library.longitude = params[:longitude]
+        library.name = params[:name] || library.name
+        library.latitude = params[:latitude] || library.latitude
+        library.longitude = params[:longitude] || library.longitude
         library.save
         render json: 'OK'.to_json
     end

@@ -1046,7 +1046,6 @@ $(document).ready(() => {
           lx: s.lx,
           ly: s.ly,
           rotation: s.rotation,
-          geojson: '',
           startClass: s.startClass,
           startSubclass: s.startSubclass,
           endClass: s.endClass,
@@ -1077,14 +1076,19 @@ $(document).ready(() => {
   });
 
   $('#modal-add-library .modal-action').click(() => {
+    let lat = $('#modal-add-library input[name="latitude"]').val();
+    lat = _.isEmpty(lat) ? undefined : lat;
+    let longt = $('#modal-add-library input[name="longitude"]').val();
+    longt = _.isEmpty(longt) ? undefined : longt;
+
     $.ajax({
       url: '/v1/libraries',
       type: 'POST',
       dataType: 'json',
       data: {
         name: $('#modal-add-library input[name="name"]').val(),
-        latitude: $('#modal-add-library input[name="latitude"]').val(),
-        longitude: $('#modal-add-library input[name="longitude"]').val(),
+        latitude: lat,
+        longitude: longt,
       },
       success: () => {
         loadLibraries();
@@ -1099,9 +1103,6 @@ $(document).ready(() => {
       dataType: 'json',
       data: {
         name: $('#modal-add-floor input[name="name"]').val(),
-        size_x: -1,
-        size_y: -1,
-        geojson: '',
         library: activeLibrary,
       },
       success: () => {

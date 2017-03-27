@@ -8,4 +8,6 @@
 #
 
 class Rule < ApplicationRecord
+    validates :call_number, presence: true, length: { in: 1..255 }
+    validates :rule_type, presence: true
 end

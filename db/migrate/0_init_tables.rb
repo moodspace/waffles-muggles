@@ -18,13 +18,13 @@ class InitTables < ActiveRecord::Migration[5.0]
         end
 
         create_table 'floor'.pluralize.to_sym, id: false do |t|
-            t.integer :id
+            t.bigint :id
             t.string :name
             t.integer :size_x
             t.integer :size_y
-            t.string :geojson
+            t.text :geojson
             t.string :ref
-            t.integer :library
+            t.bigint :library
 
             t.timestamps
 
@@ -32,7 +32,7 @@ class InitTables < ActiveRecord::Migration[5.0]
         end
 
         create_table 'library'.pluralize.to_sym, id: false do |t|
-            t.integer :id
+            t.bigint :id
             t.string :name
             t.string :latitude
             t.string :longitude
@@ -44,7 +44,7 @@ class InitTables < ActiveRecord::Migration[5.0]
 
         create_table 'rule'.pluralize.to_sym, id: false do |t|
             t.string :rule_type
-            t.integer :rule_id
+            t.bigint :rule_id
             t.string :call_number
             t.string :rule
 
@@ -53,18 +53,8 @@ class InitTables < ActiveRecord::Migration[5.0]
             t.primary_key :rule_id
         end
 
-        create_table 'search_result'.pluralize.to_sym, id: false do |t|
-            t.string :result_type
-            t.integer :result_id
-            t.string :result
-
-            t.timestamps
-
-            t.primary_key :result_id
-        end
-
         create_table 'stack'.pluralize.to_sym, id: false do |t|
-            t.integer :id
+            t.bigint :id
             t.integer :cx
             t.integer :cy
             t.integer :lx
@@ -77,7 +67,7 @@ class InitTables < ActiveRecord::Migration[5.0]
             t.integer :end_subclass
             t.string :end_subclass2
             t.integer :oversize
-            t.integer :floor
+            t.bigint :floor
 
             t.timestamps
 

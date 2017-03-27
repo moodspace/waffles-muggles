@@ -70,12 +70,12 @@ class FloorsController < ApplicationController
 
     def floors_put
         floor = Floor.find(params[:id])
-        floor.name = params[:name]
-        floor.size_x = params[:size_x]
-        floor.size_y = params[:size_y]
-        floor.geojson = params[:geojson]
-        floor.ref = params[:ref]
-        floor.library = params[:library]
+        floor.name = params[:name] || floor.name
+        floor.size_x = params[:size_x] || floor.size_x
+        floor.size_y = params[:size_y] || floor.size_y
+        floor.geojson = params[:geojson] || floor.geojson
+        floor.ref = params[:ref] || floor.ref
+        floor.library = params[:library] || floor.library
         floor.save
         render json: 'OK'.to_json
     end
