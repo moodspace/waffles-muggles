@@ -39,7 +39,7 @@ class StacksController < ApplicationController
         stack.end_subclass = params[:endSubclass]
         stack.oversize = params[:oversize]
         stack.floor = params[:floor]
-        stack.save
+        stack.save!
         render json: stack.id.to_json
     end
 
@@ -56,7 +56,7 @@ class StacksController < ApplicationController
         stack.end_subclass = params[:endSubclass] || stack.end_subclass
         stack.oversize = params[:oversize] || stack.oversize
         stack.floor = params[:floor] || stack.floor
-        stack.save
+        stack.save!
         render json: 'OK'.to_json
     end
 end

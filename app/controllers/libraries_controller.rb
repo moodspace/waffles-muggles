@@ -30,7 +30,7 @@ class LibrariesController < ApplicationController
         library.name = params[:name]
         library.latitude = params[:latitude]
         library.longitude = params[:longitude]
-        library.save
+        library.save!
         render json: library.id.to_json
     end
 
@@ -39,7 +39,7 @@ class LibrariesController < ApplicationController
         library.name = params[:name] || library.name
         library.latitude = params[:latitude] || library.latitude
         library.longitude = params[:longitude] || library.longitude
-        library.save
+        library.save!
         render json: 'OK'.to_json
     end
 end

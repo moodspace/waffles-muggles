@@ -101,7 +101,7 @@ function loadFloors(libraryId) {
           id: $(event.currentTarget).data('floor_id'),
         });
         if (activeFloor === floors[floorIdx].id) {
-          // same library
+          // same floor
           return;
         }
 

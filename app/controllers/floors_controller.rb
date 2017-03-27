@@ -64,7 +64,7 @@ class FloorsController < ApplicationController
         floor.geojson = params[:geojson]
         floor.ref = params[:ref]
         floor.library = params[:library]
-        floor.save
+        floor.save!
         render json: floor.id.to_json
     end
 
@@ -76,7 +76,7 @@ class FloorsController < ApplicationController
         floor.geojson = params[:geojson] || floor.geojson
         floor.ref = params[:ref] || floor.ref
         floor.library = params[:library] || floor.library
-        floor.save
+        floor.save!
         render json: 'OK'.to_json
     end
 end

@@ -31,7 +31,7 @@ class MapsController < ApplicationController
 
         floor = Floor.find(params[:floor_id])
         floor.ref = "uploads/ref/#{md5digest}.png"
-        floor.save
+        floor.save!
 
         library = Library.find(floor.library)
         render json: {

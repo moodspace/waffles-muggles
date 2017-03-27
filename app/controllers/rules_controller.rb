@@ -31,7 +31,7 @@ class RulesController < ApplicationController
         rule.rule_id = params[:rule_id]
         rule.call_number = params[:call_number]
         rule.rule = params[:rule]
-        rule.save
+        rule.save!
         render json: rule.id.to_json
     end
 end
