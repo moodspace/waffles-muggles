@@ -7,10 +7,10 @@ function drawFloor(size, w, h, json) {
   mapCtx.beginPath();
   mapCtx.rect(size.scaleX(0), size.scaleY(0), size.scale(w), size.scale(h));
   mapCtx.closePath();
-  mapCtx.fillStyle = '#F4F2EF';
+  mapCtx.fillStyle = '#E4E4E4';
   mapCtx.fill();
-  mapCtx.lineWidth = 1;
-  mapCtx.strokeStyle = 'black';
+  mapCtx.lineWidth = 3;
+  mapCtx.strokeStyle = '#B1BBBC';
   mapCtx.stroke();
 
   mapCtx.beginPath();
@@ -42,21 +42,21 @@ function drawStack(size, stack, highlighted) {
 }
 
 function updateStack(s) {
-  $('#text-stack-id').text(
-    `${s.library.name} ${s.floor.name} Stack ${s.id}`);
+  $('#text-floor-id').html(
+    `<h1>${s.library.name} <small>${s.floor.name}</small></h1>`);
+  $('#text-stack-id').text(`Stack ${s.id}`);
   $('#text-stack-range').text(
-    `${s.startClass}${s.startSubclass} - ${s.endClass}${s.endSubclass}`);
-  $('#text-stack-topic').text('LOL');
-  $('#text-stack-topic-more').text('LOLOLOL');
+    `${s.startClass}${s.startSubclass || ''} ${s.startSubclass2 || ''}
+    - ${s.endClass}${s.endSubclass || ''} ${s.endSubclass2 || ''}`,
+  );
 }
-
 
 function loadMap(stackId) {
   $.ajax({
     url: `/v1/stacks/${stackId}`, // Route to the Script Controller method
     type: 'GET',
     success: (s) => {
-      const canvasW = $('#map-wrapper > .floor-map-wrapper').innerWidth();
+      const canvasW = $('#map-canvas').parent().innerWidth();
       let canvasH = $('#map-wrapper').innerHeight();
       if ($('#map-wrapper > .floor-map-wrapper').position().top > 50) {
         canvasH -= $('#map-wrapper > .stack-box-wrapper').innerHeight();
@@ -93,10 +93,52 @@ function loadMap(stackId) {
 
 function loadHoldings() {
   $.ajax({
-    url: `https://holdings4.library.cornell.edu/holdings/retrieve_detail_raw/${bibId}`,
+    url: `/holdings/${bibId}`,
     type: 'GET',
     success: (data) => {
-      bibData = data;
+      const d = data[0].item_status.itemdata[0];
+      if (!d) {
+        return;
+      }
+      const itemData = {
+        callNumber: d.callNumber || null,
+        caption: d.caption,
+        chron: d.chron,
+        copy: d.copy,
+        enumeration: d.enumeration,
+        excludeLocationId: d.exclude_location_id,
+        freeText: d.freeText,
+        href: d.href,
+        itemBarcode: d.itemBarcode,
+        itemId: parseInt(d.itemid, 10),
+        itemNote: d.itemNote,
+        itemStatus: d.itemStatus,
+        location: d.location,
+        locationId: parseInt(d.location_id, 10),
+        onReserve: d.onReserve !== 'N',
+        permLocation: d.permLocation,
+        spineLabel: d.spineLabel,
+        tempLocation: d.tempLocation,
+        tempType: parseInt(d.tempType, 10),
+        typeCode: parseInt(d.typeCode, 10),
+        typeDesc: d.typeDesc,
+        year: d.year,
+      };
+
+      bibData = itemData;
+      console.log(bibData)
+      if (bibData.itemStatus.toLowerCase() === 'not charged') {
+        $('#bibCheckedOut').addClass('hidden');
+      } else if (bibData.itemStatus.toLowerCase().includes('due')) {
+        $('#bibCheckedOut').removeClass('hidden');
+      }
+
+      if (!bibData.onReserve) {
+        $('#bibOnReserve').addClass('hidden');
+      } else {
+        $('#bibOnReserve').removeClass('hidden');
+      }
+      $('#text-bib-name').text(d.callNumber);
     },
   });
 }
