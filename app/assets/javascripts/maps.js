@@ -119,6 +119,9 @@ $(document).ready(() => {
         }
       });
     },
+    error: (req, status, e) => {
+      console.log(status)
+    },
   });
 
   if (bibId) {
