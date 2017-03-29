@@ -1,3 +1,13 @@
-.card-title {
-    text-shadow: 1px 1px 2px black;
+#map-wrapper {
+    width: 70vw;
+    height: 70vh;
+}
+
+#text-stack-id {
+    font-weight: 400;
+}
+
+#text-stack-range {
+    font-weight: 600;
+    font-size: 2em;
 }
