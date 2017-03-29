@@ -33,7 +33,7 @@ class LibrariesController < ApplicationController
     if library.save
       render json: library.id.to_json
     else
-      render json: {error: 'bad request', code: 400, message: 'unable to save'}, status: 400
+      render json: {error: 'bad request', code: 400, message: 'unable to create record'}, status: 400
     end
   end
 
@@ -45,7 +45,7 @@ class LibrariesController < ApplicationController
     if library.save
       render json: 'OK'.to_json
     else
-      render json: {error: 'bad request', code: 400, message: 'unable to update'}, status: 400
+      render json: {error: 'bad request', code: 400, message: 'unable to update record'}, status: 400
     end
   end
 end

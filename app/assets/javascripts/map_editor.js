@@ -3,6 +3,7 @@ let modebit = 0; // 0: pointer, 1: rect, 2: poly, 3: mark, 4: layer, 5: stack
 let objects = [];
 let objectsRedo = [];
 let helpTextTimeout;
+let errorTextTimeout;
 let metaObjects = {};
 let libraries = [];
 let floors = [];
@@ -18,6 +19,29 @@ const helpText = [
   'Edit floor properties.',
   'Edit stack properties.',
 ];
+
+function showHelp(help) {
+  $('.help-text').html(`<span class="white-text">${help}</span>`);
+  $('.help-text').fadeIn();
+  if (helpTextTimeout) {
+    clearInterval(helpTextTimeout);
+  }
+  helpTextTimeout = setTimeout(() => {
+    $('.help-text').fadeOut();
+  }, 5000);
+}
+
+function showError(error) {
+  const errTxt = error.charAt(0).toUpperCase() + error.slice(1);
+  $('.error-text').html(`<span class="white-text">${errTxt}.</span>`);
+  $('.error-text').fadeIn();
+  if (errorTextTimeout) {
+    clearInterval(errorTextTimeout);
+  }
+  errorTextTimeout = setTimeout(() => {
+    $('.error-text').fadeOut();
+  }, 5000);
+}
 
 function addGrids() {
   const w = canvas.attr('width');
@@ -140,6 +164,9 @@ function loadFloors(libraryId) {
       $('.collapsible').collapsible('close', 0);
       $('.collapsible').collapsible('open', 0);
     },
+    error: (e) => {
+      showError(e.responseJSON.message);
+    },
   });
 }
 
@@ -186,6 +213,9 @@ function loadLibraries() {
 
       $('.collapsible').collapsible('close', 0);
       $('.collapsible').collapsible('open', 0);
+    },
+    error: (e) => {
+      showError(e.responseJSON.message);
     },
   });
 }
@@ -297,17 +327,6 @@ function exportFloorData() {
     floor: floorJson,
     stacks: stacksJson,
   };
-}
-
-function showHelp(help) {
-  $('.help-text').html(`<span class="white-text">${help}</span>`);
-  $('.help-text').fadeIn();
-  if (helpTextTimeout) {
-    clearInterval(helpTextTimeout);
-  }
-  helpTextTimeout = setTimeout(() => {
-    $('.help-text').fadeOut();
-  }, 5000);
 }
 
 function randomId() {
@@ -1035,6 +1054,9 @@ $(document).ready(() => {
           `url('${floor.ref}')`);
         loadFloors(activeLibrary);
       },
+      error: (e) => {
+        showError(e.responseJSON.message);
+      },
       contentType: false,
       processData: false,
     });
@@ -1077,6 +1099,9 @@ $(document).ready(() => {
           showHelp('Save complete!');
         }
       },
+      error: (e) => {
+        showError(e.responseJSON.message);
+      },
     });
 
     data.stacks.forEach((s) => {
@@ -1108,6 +1133,9 @@ $(document).ready(() => {
           if (saveCounter === 0) {
             showHelp('Save complete!');
           }
+        },
+        error: (e) => {
+          showError(e.responseJSON.message);
         },
       });
     });
@@ -1143,6 +1171,9 @@ $(document).ready(() => {
       success: () => {
         loadLibraries();
       },
+      error: (e) => {
+        showError(e.responseJSON.message);
+      },
     });
   });
 
@@ -1157,6 +1188,9 @@ $(document).ready(() => {
       },
       success: () => {
         loadFloors(activeLibrary);
+      },
+      error: (e) => {
+        showError(e.responseJSON.message);
       },
     });
   });

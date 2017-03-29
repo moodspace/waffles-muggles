@@ -34,7 +34,7 @@ class RulesController < ApplicationController
     if rule.save
       render json: rule.id.to_json
     else
-      render json: {error: 'bad request', code: 400, message: 'unable to save'}, status: 400
+      render json: {error: 'bad request', code: 400, message: 'unable to create record'}, status: 400
     end
   end
 end

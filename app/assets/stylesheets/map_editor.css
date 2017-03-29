@@ -63,11 +63,14 @@ main {
     }
 }
 
-.card-panel.help-text {
-    display: none;
+#message-area {
     position: fixed;
     right: 20px;
     bottom: 20px;
+}
+
+#message-area>div {
+    display: none;
 }
 
 svg polygon.fb {
