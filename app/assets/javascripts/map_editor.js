@@ -276,8 +276,8 @@ function exportFloorData() {
 
   floorJson = {
     name: $('#cfloor-name').val(),
-    size_x: d3.max(floorPoints, e => e[0]) - deltaX,
-    size_y: d3.max(floorPoints, e => e[1]) - deltaY,
+    size_x: parseInt(d3.max(floorPoints, e => e[0]) - deltaX, 10),
+    size_y: parseInt(d3.max(floorPoints, e => e[1]) - deltaY, 10),
     geojson: JSON.stringify({
       type: 'polygon',
       coordinates: offsetPoints(floorPoints, -deltaX, -deltaY),
@@ -983,25 +983,22 @@ $(document).ready(() => {
       if (obj.type === 'stacks' && stackIdx >= 0) {
         const newObj = _.clone(obj);
         newObj.data[stackIdx].meta.oversize = parseInt($(
-            '#cstack-oversize').val(),
-          10);
+          '#cstack-oversize').val(), 10);
         shape.classed('size0', false).classed('size1', false).classed(
           'size2', false).classed(
           `size${$('#cstack-oversize').val()}`, true);
         newObj.data[stackIdx].meta.startClass = $(
-          '#cstack-startClass').val();
-        newObj.data[stackIdx].meta.startSubclass = parseInt($(
-            '#cstack-startSubclass')
-          .val(), 10);
+          '#cstack-startClass').val().trim().toUpperCase();
+        newObj.data[stackIdx].meta.startSubclass = Math.floor(
+          parseFloat($('#cstack-startSubclass').val(), 10));
         newObj.data[stackIdx].meta.startSubclass2 = $(
-          '#cstack-startSubclass2').val();
+          '#cstack-startSubclass2').val().trim().toUpperCase();
         newObj.data[stackIdx].meta.endClass = $('#cstack-endClass')
-          .val();
-        newObj.data[stackIdx].meta.endSubclass = parseInt($(
-            '#cstack-endSubclass').val(),
-          10);
+          .val().trim().toUpperCase();
+        newObj.data[stackIdx].meta.endSubclass = Math.ceil(
+          parseFloat($('#cstack-endSubclass').val(), 10));
         newObj.data[stackIdx].meta.endSubclass2 = $(
-          '#cstack-endSubclass2').val();
+          '#cstack-endSubclass2').val().trim().toUpperCase();
         return newObj;
       }
       return obj;
@@ -1069,8 +1066,8 @@ $(document).ready(() => {
       data: {
         id: activeFloor,
         name: data.floor.name,
-        size_x: parseInt(data.floor.size_x, 10),
-        size_y: parseInt(data.floor.size_y, 10),
+        size_x: data.floor.size_x,
+        size_y: data.floor.size_y,
         geojson: data.floor.geojson,
         library: activeLibrary,
       },
@@ -1094,13 +1091,13 @@ $(document).ready(() => {
           ly: parseInt(s.ly, 10),
           rotation: s.rotation,
           startClass: s.startClass,
-          startSubclass: _.isNumber(s.startSubclass) ? undefined :
-            Math.floor(s.startSubclass),
+          startSubclass: !_.isNumber(s.startSubclass) ?
+            undefined : s.startSubclass,
           startSubclass2: _.isEmpty(s.startSubclass2) ?
             undefined : s.startSubclass2,
           endClass: s.endClass,
-          endSubclass: _.isNumber(s.endSubclass) ? undefined : Math
-            .ceil(s.endSubclass),
+          endSubclass: !_.isNumber(s.endSubclass) ? undefined :
+            s.endSubclass,
           endSubclass2: _.isEmpty(s.endSubclass2) ? undefined :
             s.endSubclass2,
           oversize: s.oversize,
