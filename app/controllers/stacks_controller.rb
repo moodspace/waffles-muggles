@@ -41,8 +41,11 @@ class StacksController < ApplicationController
     stack.end_subclass2 = params[:endSubclass2]
     stack.oversize = params[:oversize]
     stack.floor = params[:floor]
-    stack.save!
-    render json: stack.id.to_json
+    if stack.save
+      render json: stack.id.to_json
+    else
+      render json: {code: 2, message: 'unable to save'}
+    end
   end
 
   def stacks_put
@@ -60,7 +63,10 @@ class StacksController < ApplicationController
     stack.end_subclass2 = params[:endSubclass2] || stack.end_subclass2
     stack.oversize = params[:oversize] || stack.oversize
     stack.floor = params[:floor] || stack.floor
-    stack.save!
-    render json: 'OK'.to_json
+    if stack.save
+      render json: 'OK'.to_json
+    else
+      render json: {code: 3, message: 'unable to update'}
+    end
   end
 end

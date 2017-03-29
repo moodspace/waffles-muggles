@@ -30,23 +30,30 @@ class MapsController < ApplicationController
     image.write "#{fn}.png"
 
     floor = Floor.find(params[:floor_id])
+    if floor.ref && floor.ref.end_with?('.png') && File.exists?(Rails.root.join('public', floor.ref))
+      File.delete(Rails.root.join('public', floor.ref))
+    end
     floor.ref = "uploads/ref/#{md5digest}.png"
-    floor.save!
 
-    library = Library.find(floor.library)
-    render json: {
-      id: floor.id,
-      name: floor.name,
-      size_x: floor.size_x,
-      size_y: floor.size_y,
-      geojson: floor.geojson,
-      ref: floor.ref,
-      library: {
-        id: library.id,
-        name: library.name,
-        latitude: library.latitude,
-        longitude: library.longitude
+    if floor.save
+      library = Library.find(floor.library)
+      render json: {
+        id: floor.id,
+        name: floor.name,
+        size_x: floor.size_x,
+        size_y: floor.size_y,
+        geojson: floor.geojson,
+        ref: floor.ref,
+        library: {
+          id: library.id,
+          name: library.name,
+          latitude: library.latitude,
+          longitude: library.longitude
+        }
       }
-    }
+    else
+      File.delete("#{fn}.png")
+      render json: {code: 4, message: 'unable to upload'}
+    end
   end
 end

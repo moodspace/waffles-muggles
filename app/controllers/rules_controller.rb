@@ -31,7 +31,10 @@ class RulesController < ApplicationController
     rule.rule_id = params[:rule_id]
     rule.call_number = params[:call_number]
     rule.rule = params[:rule]
-    rule.save!
-    render json: rule.id.to_json
+    if rule.save
+      render json: rule.id.to_json
+    else
+      render json: {code: 2, message: 'unable to save'}
+    end
   end
 end

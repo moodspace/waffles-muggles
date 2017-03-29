@@ -30,8 +30,11 @@ class LibrariesController < ApplicationController
     library.name = params[:name]
     library.latitude = params[:latitude]
     library.longitude = params[:longitude]
-    library.save!
-    render json: library.id.to_json
+    if library.save
+      render json: library.id.to_json
+    else
+      render json: {code: 2, message: 'unable to save'}
+    end
   end
 
   def libraries_put
@@ -39,7 +42,10 @@ class LibrariesController < ApplicationController
     library.name = params[:name] || library.name
     library.latitude = params[:latitude] || library.latitude
     library.longitude = params[:longitude] || library.longitude
-    library.save!
-    render json: 'OK'.to_json
+    if library.save
+      render json: 'OK'.to_json
+    else
+      render json: {code: 3, message: 'unable to update'}
+    end
   end
 end

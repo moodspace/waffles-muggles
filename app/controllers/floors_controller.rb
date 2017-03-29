@@ -64,8 +64,11 @@ class FloorsController < ApplicationController
     floor.geojson = params[:geojson]
     floor.ref = params[:ref]
     floor.library = params[:library]
-    floor.save!
-    render json: floor.id.to_json
+    if floor.save
+      render json: floor.id.to_json
+    else
+      render json: {code: 2, message: 'unable to save'}
+    end
   end
 
   def floors_put
@@ -76,7 +79,10 @@ class FloorsController < ApplicationController
     floor.geojson = params[:geojson] || floor.geojson
     floor.ref = params[:ref] || floor.ref
     floor.library = params[:library] || floor.library
-    floor.save!
-    render json: 'OK'.to_json
+    if floor.save
+      render json: 'OK'.to_json
+    else
+      render json: {code: 3, message: 'unable to update'}
+    end
   end
 end
