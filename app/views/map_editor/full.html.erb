@@ -80,18 +80,18 @@
             <div class="tool-options">
                 <div class="row crect">
                     <div class="input-field col s3">
-                        <input id="crect-x" type="text">
+                        <input id="crect-x" type="text" maxlength="10">
                         <label for="crect-x" class="tooltipped" data-position="right" data-delay="50" data-tooltip="Not depending on rotation">Left</label>
                     </div>
                     <div class="input-field col s3">
-                        <input id="crect-y" type="text">
+                        <input id="crect-y" type="text" maxlength="10">
                         <label for="crect-y" class="tooltipped" data-position="right" data-delay="50" data-tooltip="Not depending on rotation">Top</label>
                     </div>
-                    <div class="input-field col s3">
+                    <div class="input-field col s3" maxlength="10">
                         <input id="crect-width" type="text">
                         <label for="crect-width">Width</label>
                     </div>
-                    <div class="input-field col s3">
+                    <div class="input-field col s3" maxlength="10">
                         <input id="crect-height" type="text">
                         <label for="crect-height">Height</label>
                     </div>
@@ -100,13 +100,13 @@
                 <div class="row cpolygon">
                     <div class="input-field col s12">
                         <input id="cpolygon-points" type="text">
-                        <label for="cpolygon-points">points</label>
+                        <label for="cpolygon-points" class="tooltipped" data-position="right" data-delay="50" data-tooltip="x1,y1 x2,y2, ...">Points</label>
                     </div>
                 </div>
                 <div class="row cmark">
                     <div class="input-field col s6">
-                        <input id="cmark-rows" type="text">
-                        <label for="cmark-rows" class="tooltipped" data-position="right" data-delay="50" data-tooltip="Quickly generate rows of stacks">rows</label>
+                        <input id="cmark-rows" type="text" maxlength="2">
+                        <label for="cmark-rows" class="tooltipped" data-position="right" data-delay="50" data-tooltip="Quickly generate rows of stacks">Rows</label>
                     </div>
                     <div class="input-field col s6">
                         <select id="cmark-rotation">
@@ -115,7 +115,7 @@
                             <option value="180">180</option>
                             <option value="270">270</option>
                         </select>
-                        <label for="cmark-rotation" class="tooltipped under" data-position="right" data-delay="50" data-tooltip="0: looking down, 90: left, 180: up, 270: right">rotation</label>
+                        <label for="cmark-rotation" class="tooltipped under" data-position="right" data-delay="50" data-tooltip="0: looking down, 90: left, 180: up, 270: right">Rotation</label>
                     </div>
                 </div>
                 <!-- cfloor | floor configurator -->
@@ -137,7 +137,7 @@
                     </h6>
                     <label>Hint: each library must have distinct floor names.</label>
                     <div class="input-field col s12">
-                        <input id="cfloor-name" type="text">
+                        <input id="cfloor-name" type="text" maxlength="255">
                         <label for="cfloor-name">Name this floor</label>
                     </div>
                 </div>
@@ -152,7 +152,7 @@
                         <label for="cstack-oversize">oversize</label>
                     </div>
                     <div class="input-field col s6">
-                        <input id="cstack-rotation" disabled type="text">
+                        <input id="cstack-rotation" disabled type="text" maxlength="3">
                         <label for="cstack-rotation">rotation</label>
                     </div>
                     <h6>
@@ -162,15 +162,15 @@
                         <label>Hint: empty or = 0 subclass means 0 on this endpoint.</label>
                     </div>
                     <div class="input-field col s4">
-                        <input id="cstack-startClass" type="text">
+                        <input id="cstack-startClass" type="text" maxlength="3">
                         <label for="cstack-startClass" class="tooltipped" data-position="right" data-delay="50" data-tooltip="e.g. 'DS' in DS778.C5245 C475x 2003">Class</label>
                     </div>
                     <div class="input-field col s4">
-                        <input id="cstack-startSubclass" type="text">
+                        <input id="cstack-startSubclass" type="text" maxlength="6">
                         <label for="cstack-startSubclass" class="tooltipped" data-position="right" data-delay="50" data-tooltip="e.g. '778' in DS778.C5245 C475x 2003">Subclass</label>
                     </div>
                     <div class="input-field col s4">
-                        <input id="cstack-startSubclass2" type="text">
+                        <input id="cstack-startSubclass2" type="text" maxlength="3">
                         <label for="cstack-startSubclass2" class="tooltipped" data-position="right" data-delay="50" data-tooltip="e.g. 'C' in DS778.C5245 C475x 2003">Subclass2</label>
                     </div>
                     <h6>
@@ -183,15 +183,15 @@
                         <label>Hint: empty or = 0 subclass means infinity on this endpoint.</label>
                     </div>
                     <div class="input-field col s4">
-                        <input id="cstack-endClass" type="text">
+                        <input id="cstack-endClass" type="text" maxlength="3">
                         <label for="cstack-endClass" class="tooltipped" data-position="right" data-delay="50" data-tooltip="e.g. 'E' in 'E183.8.J3 S94 2005'">Class</label>
                     </div>
                     <div class="input-field col s4">
-                        <input id="cstack-endSubclass" type="text">
+                        <input id="cstack-endSubclass" type="text" maxlength="6">
                         <label for="cstack-endSubclass" class="tooltipped right" data-position="right" data-delay="50" data-tooltip="e.g. '183.8' in 'E183.8.J3 S94 2005'">Subclass</label>
                     </div>
                     <div class="input-field col s4">
-                        <input id="cstack-endSubclass2" type="text">
+                        <input id="cstack-endSubclass2" type="text" maxlength="3">
                         <label for="cstack-endSubclass2" class="tooltipped right" data-position="right" data-delay="50" data-tooltip="e.g. 'J' in 'E183.8.J3 S94 2005'">Subclass2</label>
                     </div>
                 </div>
@@ -227,12 +227,12 @@
         <div class="nav-wrapper light-blue darken-1">
             <ul class="left">
                 <li>
-                    <a id="nav-undo" href="javascript:void(0)">
+                    <a id="nav-undo" href="javascript:void(0)" class="tooltipped" data-position="bottom" data-delay="50" data-tooltip="Undo">
                         <i class="material-icons">undo</i>
                     </a>
                 </li>
                 <li>
-                    <a id="nav-redo" href="javascript:void(0)">
+                    <a id="nav-redo" href="javascript:void(0)" class="tooltipped" data-position="bottom" data-delay="50" data-tooltip="Redo">
                         <i class="material-icons">redo</i>
                     </a>
                 </li>
@@ -250,23 +250,23 @@
                 <li>
                     <a class="switch" style="height: 64px">
                         <label style="color: #fff">
-                            <i class="material-icons" style="display: inline-block;">layers</i>
+                            <i class="material-icons tooltipped" data-position="bottom" data-delay="50" data-tooltip="Hide stacks" style="display: inline-block;">layers</i>
                             <input id="viewmode-toggle" type="checkbox" checked>
                             <span class="lever light-blue lighten-2" style="top: -8px;"></span>
-                            <i class="material-icons" style="display: inline-block;">theaters</i>
+                            <i class="material-icons tooltipped" data-position="bottom" data-delay="50" data-tooltip="Show all" style="display: inline-block;">theaters</i>
                         </label>
                     </a>
                 </li>
             </ul>
             <ul class="right">
                 <li>
-                    <a class="disabled" href="javascript:void(0)" id="btn-ref-upload">Upload</a>
+                    <a class="disabled tooltipped" data-position="bottom" data-delay="50" data-tooltip="Choose a reference floor image" href="javascript:void(0)" id="btn-ref-upload">Upload</a>
                 </li>
                 <li>
-                    <a href="javascript:void(0)" id="btn-output-save">Save</a>
+                    <a class="disabled tooltipped" data-position="bottom" data-delay="50" data-tooltip="Save map to database" href="javascript:void(0)" id="btn-output-save">Save</a>
                 </li>
                 <li>
-                    <a href="javascript:void(0)" id="btn-output-JSON">JSON</a>
+                    <a class="disabled tooltipped" data-position="bottom" data-delay="50" data-tooltip="Show JSON (for debugging)" href="javascript:void(0)" id="btn-output-JSON">JSON</a>
                 </li>
             </ul>
         </div>
@@ -289,15 +289,15 @@
         <h5>Add a library</h5>
         <div class="row">
             <div class="input-field col s4">
-                <input name="name" type="text" class="validate">
+                <input name="name" type="text" maxlength="255">
                 <label for="name">Name</label>
             </div>
             <div class="input-field col s4">
-                <input name="latitude" type="text" class="validate">
+                <input name="latitude" type="text" maxlength="10">
                 <label for="latitude">Latitude</label>
             </div>
             <div class="input-field col s4">
-                <input name="longitude" type="text" class="validate">
+                <input name="longitude" type="text" maxlength="10">
                 <label for="longitude">Longitude</label>
             </div>
         </div>
@@ -313,7 +313,7 @@
         <div class="row">
             <div class="col s4"></div>
             <div class="input-field col s4">
-                <input name="name" type="text" class="validate">
+                <input name="name" type="text" maxlength="255">
                 <label for="name">Name</label>
             </div>
             <div class="col s4"></div>
