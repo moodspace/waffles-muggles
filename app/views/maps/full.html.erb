@@ -3,11 +3,14 @@
     const callNo = '<%= @callno %>';
     const bibId = <%= @bibid %>;
 </script>
+
 <div class="row" id="map-wrapper">
     <div class="col-lg-3 col-md-12 stack-box-wrapper">
         <%= render partial: "stack_box" %>
     </div>
     <div class="col-lg-9 col-md-12 floor-map-wrapper">
-        <canvas id="map-canvas" width="100" height="100"></canvas>
+        <div>
+            <canvas id="map-canvas" width="100" height="100"></canvas>
+        </div>
     </div>
 </div>

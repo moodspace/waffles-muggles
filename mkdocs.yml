@@ -1,4 +1,4 @@
 site_name: CS 5150
 docs_dir: docs
-site_dir: public/docs
+site_dir: public/docs/tmp
 theme: simplex

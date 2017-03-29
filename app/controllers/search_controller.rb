@@ -12,6 +12,10 @@ class SearchController < ApplicationController
   def index
     re = /([A-Z]{1,3})(\d+(?:\.[A-Z]*\d+)*)\s+([^+]*)([+]*)/
     callno_dec = re.match(params[:keyword].strip.upcase)
+    if !callno_dec || callno_dec.length < 5
+      render json: { error: 'bad request', code: 400, message: 'cannot parse call number' }, status: 400
+      return
+    end
     oversize = callno_dec[4].length
     rules = []
     Rule.find_each do |rule|
@@ -34,9 +38,6 @@ class SearchController < ApplicationController
   end
 
   def classSearch(c_in, sc_in, sc2_in, oversize)
-    puts '***************'
-    puts sc2_in
-    puts '***************'
     ret = []
     sc_in = sc_in ? sc_in.to_i : 0
     sc2_in ||= ''

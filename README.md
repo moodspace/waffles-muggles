@@ -4,32 +4,21 @@ MIT
 
 ## Usage
 
-### Test on local computer
+### Test on local computer (Unix / Linux)
 
-- Install Ruby 2.4 and Rails 5.0, [rvm](https://rvm.io/) recommended.
+- Install Ruby 2.4 and Rails 5.0, [rvm](https://rvm.io/) recommended
+- Install Node 6.10.1 (comes with npm)
 - Clone this repo
 - Set up a local MySQL (MariaDB) installation with user/pw: root/password
 - `cd proj_dir`, `bundle`, `rake db:create`, `rake db:migrate`
-- `cd proj_dir`, `rails server`
-- Install Postman (Chrome extension)
-- Import ```swagger.yaml``` from this repo
-- All entry points callable from Postman client
+- `npm i` installs Babel for assets transpiling
+- `rails server` starts the server, running at [localhost](http://127.0.0.1:8000/)
 
 ### Remote API access
 
 The API is currently live [here](https://boiling-woodland-25300.herokuapp.com/v1/).
 
 - Install Postman (Chrome extension)
-- Import ```muggles-waffles.postman_collection.json``` from this repo
+- Read the [docs](https://boiling-woodland-25300.herokuapp.com/docs/) for supported methods
 - All entry points callable from Postman client
-
-Standalone API documentation is available [here](https://boiling-woodland-25300.herokuapp.com/docs/v1).
-
-### Stack Map
-
-A prototype of stack map is available [here](https://boiling-woodland-25300.herokuapp.com/maps?callno=&library_id=). You can test with the following query:
-
-| Name | Value |
-| ---- | ----- |
-| callno | `"QA76.73.P98 B439 2013"` |
-| library_id | `4` |
+- You may need to send a CSRF token along with some requests, [read more](http://guides.rubyonrails.org/security.html#csrf-countermeasures)

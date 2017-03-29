@@ -5,9 +5,9 @@
 # Controller to render index
 #
 class IndexController < ApplicationController
-    layout "materialize"
+  layout 'bootstrap'
 
-    def index
-        render 'index/full'
-    end
+  def index
+    render 'index/full'
+  end
 end
