@@ -108,16 +108,21 @@ function searchItem(callback) {
         }
       });
     },
-    error: (req, status, e) => {
-      callback(e);
+    error: (e) => {
+      callback(e.responseJSON);
     },
   });
 }
 
 function showModal(e) {
   if (!e) {
-    $('#map-popup').modal('show');
+    $('#map-popup .modal-title').text('');
+    $('#map-popup .modal-body > div').show();
+  } else {
+    $('#map-popup .modal-title').text(e.message);
+    $('#map-popup .modal-body > div').hide();
   }
+  $('#map-popup').modal('show');
 }
 
 $(document).ready(() => {

@@ -53,7 +53,7 @@ class MapsController < ApplicationController
       }
     else
       File.delete("#{fn}.png")
-      render json: {code: 4, message: 'unable to upload'}
+      render json: {error: 'bad request', code: 400, message: 'unable to update'}, status: 400
     end
   end
 end

@@ -67,7 +67,7 @@ class FloorsController < ApplicationController
     if floor.save
       render json: floor.id.to_json
     else
-      render json: {code: 2, message: 'unable to save'}
+      render json: {error: 'bad request', code: 400, message: 'unable to save'}, status: 400
     end
   end
 
@@ -82,7 +82,7 @@ class FloorsController < ApplicationController
     if floor.save
       render json: 'OK'.to_json
     else
-      render json: {code: 3, message: 'unable to update'}
+      render json: {error: 'bad request', code: 400, message: 'unable to update'}, status: 400
     end
   end
 end

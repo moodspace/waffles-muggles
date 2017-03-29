@@ -9,15 +9,12 @@
 class SearchController < ApplicationController
   include ApplicationControllerConcern
 
-  rescue_from ActionController::BadRequest do
-    render nothing: true, status: 400
-  end
-
   def index
     re = /([A-Z]{1,3})(\d+(?:\.[A-Z]*\d+)*)\s+([^+]*)([+]*)/
     callno_dec = re.match(params[:keyword].strip.upcase)
     if !callno_dec || callno_dec.length < 5
-      raise ActionController::BadRequest, 'cannot parse call number'
+      render json: { error: 'bad request', code: 400, message: 'cannot parse call number' }, status: 400
+      return
     end
     oversize = callno_dec[4].length
     rules = []
