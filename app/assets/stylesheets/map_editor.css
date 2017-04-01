@@ -6,12 +6,13 @@ nav {
     display: none;
 }
 
-main>.container {
-    width: 100%;
-    height: 100vh;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
+main {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    overflow: hidden;
 }
 
 .side-nav>li>.collapsible>li>.collapsible-header {
@@ -37,11 +38,24 @@ main>.container {
     padding-right: 24px;
 }
 
-svg .selected {
+#workspace {
+    position: absolute;
+    top: 68px;
+    left: 300px;
+    bottom: 0;
+    right: 0;
+}
+
+#workspace>svg {
+    position: relative;
+    border: 1px solid #000;
+}
+
+#workspace>svg .selected {
     stroke-width: 3px;
 }
 
-svg g.hidden {
+#workspace>svg g.hidden {
     visibility: hidden;
 }
 
@@ -73,7 +87,11 @@ main {
     display: none;
 }
 
-svg polygon.fb {
+#workspace>svg {
+    background-color: #fff;
+}
+
+#workspace>svg polygon.fb {
     stroke-width: 8px;
     stroke-opacity: 0.5;
 }
@@ -106,4 +124,8 @@ nav a.disabled:hover {
 
 .collection a.collection-item {
     color: #039be5 !important;
+}
+
+body {
+    background-color: #606060;
 }

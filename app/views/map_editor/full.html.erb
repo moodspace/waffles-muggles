@@ -204,7 +204,7 @@
         <div class="card-panel light-blue darken-1 help-text"></div>
         <div class="card-panel red darken-1 error-text"></div>
     </div>
-    <ul id="dropdown2" class="dropdown-content">
+    <ul id="dropdown-zoom" class="dropdown-content">
         <li>
             <a href="javascript:void(0)">50%</a>
         </li>
@@ -220,7 +220,7 @@
         </li>
         <li class="divider"></li>
         <li>
-            <a href="javascript:void(0)">Fit</a>
+            <a href="javascript:void(0)">Fit width</a>
         </li>
     </ul>
     <nav>
@@ -241,12 +241,12 @@
                         <i class="material-icons">history</i>
                     </a>
                 </li> -->
-                <!-- <li>
-                    <a class="dropdown-button" href="javascript:void(0)" data-activates="dropdown2">
-                        Fit
+                <li>
+                    <a id ="btn-zoom" class="dropdown-button" href="javascript:void(0)" data-activates="dropdown-zoom">
+                        100%
                         <i class="material-icons right">arrow_drop_down</i>
                     </a>
-                </li> -->
+                </li>
                 <li>
                     <a class="switch" style="height: 64px">
                         <label style="color: #fff">
@@ -260,7 +260,7 @@
             </ul>
             <ul class="right">
                 <li>
-                    <a class="disabled tooltipped" data-position="bottom" data-delay="50" data-tooltip="Choose a reference floor image" href="javascript:void(0)" id="btn-ref-upload">Upload</a>
+                    <a class="disabled tooltipped" data-position="bottom" data-delay="50" data-tooltip="Choose a reference floor image" href="javascript:void(0)" id="btn-canvas-new">New</a>
                 </li>
                 <li>
                     <a class="disabled tooltipped" data-position="bottom" data-delay="50" data-tooltip="Save map to database" href="javascript:void(0)" id="btn-output-save">Save</a>
@@ -271,9 +271,9 @@
             </ul>
         </div>
     </nav>
-    <div class="container" id="workspace">
+    <div id="workspace">
         <!-- Workspace -->
-        <svg id="canvas"></svg>
+        <svg id="canvas" class="z-depth-1" width='0' height='0'></svg>
     </div>
 </main>
 
@@ -324,15 +324,26 @@
     </div>
 </div>
 
-<div id="modal-upload-ref" class="modal">
-    <div id="ref-upload" class="modal-content">
+<div id="modal-new-canvas" class="modal">
+    <div id="canvas-new" class="modal-content">
         <h5>Upload a reference</h5>
         <%= form_tag('javascript:void(0)', multipart: true) do %>
         <%= file_field_tag 'ref_img' %>
         <%= hidden_field_tag(:floor_id) %>
         <% end %>
+        <div class="row">
+            <div class="input-field col s4">
+                <input name="width" type="text" maxlength="255">
+                <label for="width">Width</label>
+            </div>
+            <div class="input-field col s4">
+                <input name="height" type="text" maxlength="255">
+                <label for="height">Height</label>
+            </div>
+            <div class="col s4"></div>
+        </div>
     </div>
     <div class="modal-footer">
-        <a href="javascript:void(0)" id="btn-ref-commit-upload" class="modal-action modal-close waves-effect waves-light-blue btn-flat">Upload</a>
+        <a href="javascript:void(0)" id="btn-canvas-commit-new" class="modal-action modal-close waves-effect waves-light-blue btn-flat">OK</a>
     </div>
 </div>
