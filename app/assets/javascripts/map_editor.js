@@ -10,6 +10,9 @@ let floors = [];
 let activeLibrary = -1;
 let activeFloor = -1;
 let saveCounter = 0;
+let zoomLevel = 1;
+let rawFloorSize = [0, 0];
+let mousedownPoint;
 
 const helpText = [
   'Click to select an element on canvas.',
@@ -18,6 +21,7 @@ const helpText = [
   'Add interactivity to an area on canvas.',
   'Edit floor properties.',
   'Edit stack properties.',
+  'Drag and move the canvas.',
 ];
 
 function showHelp(help) {
@@ -43,7 +47,43 @@ function showError(error) {
   }, 5000);
 }
 
+/**
+ * Scale a physical point on svg canvas to coordinates stored in data.
+ * @param  {[x,y]} p [a physical point on svg canvas]
+ * @return {[x',y']} p [coordinates stored in data]
+ */
+function scalePhysical(p) {
+  if (_.isArray(p)) {
+    if (p.length === 2 && _.isNumber(p[0]) && _.isNumber(p[0])) {
+      return [p[0] / zoomLevel, p[1] / zoomLevel];
+    }
+    return p.map(pt => [pt[0] / zoomLevel, pt[1] / zoomLevel]);
+  } else if (_.isNumber(p)) {
+    return p / zoomLevel;
+  }
+  return false;
+}
+
+/**
+ * Scale coordinates stored in data to a physical point on svg canvas.
+ * @param {[x',y']} p [coordinates stored in data]
+ * @return  {[x,y]} p [a physical point on svg canvas]
+ */
+function scale(p) {
+  if (_.isArray(p)) {
+    if (p.length === 2 && _.isNumber(p[0]) && _.isNumber(p[0])) {
+      return [p[0] * zoomLevel, p[1] * zoomLevel];
+    }
+    return p.map(pt => [pt[0] * zoomLevel, pt[1] * zoomLevel]);
+  } else if (_.isNumber(p)) {
+    return p * zoomLevel;
+  }
+  return false;
+}
+
 function addGrids() {
+  canvas.selectAll('g:first-child').remove();
+
   const w = canvas.attr('width');
   const h = canvas.attr('height');
   const g = canvas.append('g');
@@ -76,148 +116,92 @@ function addGrids() {
   }
 }
 
-function clearCanvas() {
-  canvas.selectAll('*').remove();
-  addGrids();
-  modebit = 0;
-  objects = [];
-  objectsRedo = [];
-  metaObjects = {};
-  saveCounter = 0;
+function setTools(level) {
+  // level 0 or nil: disable all
+  // level 1: only 'new' buttons
+  // level 2: toolbox, nav except save / json
+  // level 3: all
+  $('.nav-wrapper > ul > li > a').addClass('disabled');
+  $('.nav-wrapper input').prop('disabled', true);
+  $('#btn-output-save').addClass('disabled');
+  $('#btn-output-JSON').addClass('disabled');
+  $('.toolbox a.btn-flat').addClass('disabled');
 
-  $('#workspace').css('background-image', '');
-  canvas.style('cursor', 'default');
-  $('.toolbox a.btn-flat').removeClass('light-blue');
-  $('.toolbox a.btn-flat:first-child').addClass('light-blue');
-  $('.tool-options > .row').hide();
-  $('.tool-options input').val(0);
-  $('.tool-options input').val('');
-  $('#cfloor-btn-set').removeClass('disabled');
-}
-
-function setNav(toEnable) {
-  if (toEnable) {
-    $('.nav-wrapper a').removeClass('disabled');
+  if (level > 0) {
+    $('#btn-canvas-new').removeClass('disabled');
+  }
+  if (level > 1) {
+    $('.nav-wrapper > ul.left > li > a').removeClass('disabled');
     $('.nav-wrapper input').prop('disabled', false);
-    $('#btn-output-save').addClass('disabled');
-    $('#btn-output-JSON').addClass('disabled');
     $('.toolbox a.btn-flat').removeClass('disabled');
-  } else {
-    $('.nav-wrapper a').addClass('disabled');
-    $('.nav-wrapper input').prop('disabled', true);
-    $('.toolbox a.btn-flat').addClass('disabled');
+    $('.dropdown-button').dropdown({
+      belowOrigin: true,
+    });
+  }
+  if (level > 2) {
+    $('.nav-wrapper > ul.right > li > a').removeClass('disabled');
   }
 }
 
-function loadFloors(libraryId) {
-  $('#btn-add-floor').show();
 
-  $.ajax({
-    url: '/v1/floors/',
-    type: 'GET',
-    data: {
-      library_id: libraryId,
-    },
-    success: (data) => {
-      floors = data;
+/**
+ * Called upon changing zoom level
+ * @return {[type]}              [description]
+ */
+function rerender() {
+  addGrids();
+  if (metaObjects.floor_border) {
+    const obj = metaObjects.floor_border;
+    const points = obj.data.points.map(c => scale(c).join(',')).join(' ');
+    canvas.select(`#${obj.id}`).attr('points', points);
+  }
 
-      $('#floor-collection').html('');
-      floors.forEach((floor) => {
-        const floorItem = $(
-          ['<a href="javascript:void(0)" class="collection-item"',
-            `data-floor_id=${floor.id}>${floor.name}</a>`,
-          ].join(' '),
-        ).appendTo($(
-          '#floor-collection'));
-        if (floor.id === activeFloor) {
-          floorItem.addClass('active');
-          $('#cfloor-name').val(floor.name);
-          Materialize.updateTextFields();
-        }
+  objects.forEach((obj) => {
+    if (obj.type === 'rect') {
+      canvas.select(`#${obj.id}`).attrs({
+        x: scale(obj.data.x),
+        y: scale(obj.data.y),
+        width: scale(obj.data.width),
+        height: scale(obj.data.height),
       });
-
-      $('#floor-collection>a').click(() => {
-        const floorIdx = _.findIndex(floors, {
-          id: $(event.currentTarget).data('floor_id'),
+    } else if (obj.type === 'polygon') {
+      const points = obj.data.points.map(c => scale(c).join(',')).join(' ');
+      canvas.select(`#${obj.id}`).attr('points', points);
+    } else if (obj.type === 'stacks') {
+      obj.data.forEach((stack) => {
+        const center = scale([stack.meta.cx, stack.meta.cy]);
+        const rotation = stack.meta.rotation;
+        canvas.select(`#${stack.id}`).attrs({
+          x: scale(stack.data.x),
+          y: scale(stack.data.y),
+          width: scale(stack.data.width),
+          height: scale(stack.data.height),
+          transform: `rotate(${rotation} ${center[0]} ${center[1]})`,
         });
-        if (activeFloor === floors[floorIdx].id) {
-          // same floor
-          return;
-        }
-
-        $('#floor-collection>a').removeClass('active');
-        clearCanvas();
-
-        activeFloor = floors[floorIdx].id;
-        setNav(true);
-        if (_.isEmpty(floors[floorIdx].ref)) {
-          $('#workspace').css('background-image', '');
-        } else {
-          $('#workspace').css('background-image',
-            `url('${floors[floorIdx].ref}')`);
-        }
-        $('#cfloor-name').val(floors[floorIdx].name);
-        Materialize.updateTextFields();
-        $(event.currentTarget).addClass('active');
       });
-
-      $('.collapsible').collapsible('close', 0);
-      $('.collapsible').collapsible('open', 0);
-    },
-    error: (e) => {
-      showError(e.responseJSON.message);
-    },
+    }
   });
 }
 
-function loadLibraries() {
-  $('#btn-add-floor').hide();
-  $.ajax({
-    url: '/v1/libraries/',
-    type: 'GET',
-    success: (data) => {
-      libraries = data;
+function setZoomLevel(level) {
+  const oldZoomLevel = zoomLevel;
 
-      $('#library-collection').html('');
-      libraries.forEach((lib) => {
-        const item = $([
-          '<a href="javascript:void(0)" class="collection-item"',
-          `data-library_id=${lib.id}>${lib.name}</a>`,
-        ].join(' ')).appendTo($(
-          '#library-collection'));
-        if (lib.id === activeLibrary) {
-          item.addClass('active');
-          loadFloors(lib.id);
-        }
-      });
-
-      $('#library-collection>a').click(() => {
-        const libraryId = _.findIndex(libraries, {
-          id: $(event.currentTarget).data('library_id'),
-        });
-        if (activeLibrary === libraries[libraryId].id) {
-          // same library
-          return;
-        }
-
-        $('#library-collection>a').removeClass('active');
-        setNav(false);
-        activeFloor = -1;
-        clearCanvas();
-
-        activeLibrary = libraries[libraryId].id;
-        $('#workspace').css('background-image', '');
-        loadFloors(activeLibrary);
-        $(event.currentTarget).addClass('active');
-      });
-
-      $('.collapsible').collapsible('close', 0);
-      $('.collapsible').collapsible('open', 0);
-    },
-    error: (e) => {
-      showError(e.responseJSON.message);
-    },
+  if (level.includes('%')) {
+    zoomLevel = parseFloat(level.replace('%', '')) / 100;
+  } else if (level === 'Fit width') {
+    zoomLevel = $('#workspace').width() / rawFloorSize[0];
+  }
+  const w = zoomLevel * rawFloorSize[0];
+  const h = zoomLevel * rawFloorSize[1];
+  canvas.attrs({
+    width: w,
+    height: h,
   });
+
+  canvas.style('left', Math.max(0, 0.5 * ($('#workspace').width() - w)));
+  canvas.style('top', Math.max(0, 0.5 * ($(window).height() - h - 64)));
+
+  rerender(oldZoomLevel);
 }
 
 function offsetPoints(points, dx, dy) {
@@ -243,10 +227,10 @@ function pointsToArray(strPoints) {
 
 function rectToArray(rect) {
   const attrs = [
-    parseFloat(rect.attr('x')),
-    parseFloat(rect.attr('y')),
-    parseFloat(rect.attr('width')),
-    parseFloat(rect.attr('height')),
+    parseInt(rect.attr('x'), 10),
+    parseInt(rect.attr('y'), 10),
+    parseInt(rect.attr('width'), 10),
+    parseInt(rect.attr('height'), 10),
   ];
   return [
     [
@@ -299,15 +283,15 @@ function exportFloorData() {
     };
   }
   let floorJson = {};
-  const floorPoints = pointsToArray(metaObjects.floor_border.data.points);
+  const floorPoints = metaObjects.floor_border.data.points;
 
   const deltaX = d3.min(floorPoints, e => e[0]);
   const deltaY = d3.min(floorPoints, e => e[1]);
 
   floorJson = {
     name: $('#cfloor-name').val(),
-    size_x: parseInt(d3.max(floorPoints, e => e[0]) - deltaX, 10),
-    size_y: parseInt(d3.max(floorPoints, e => e[1]) - deltaY, 10),
+    size_x: parseInt(canvas.attr('width'), 10),
+    size_y: parseInt(canvas.attr('height'), 10),
     geojson: JSON.stringify({
       type: 'polygon',
       coordinates: offsetPoints(floorPoints, -deltaX, -deltaY),
@@ -456,13 +440,47 @@ function confirmNewShape(shape, id, settings) {
   }
 }
 
-function initCanvas(w, h) {
-  // let x = d3.scaleLinear().domain([0, d3.max(data)]).range([0, width]);
-  canvas = d3.select('#canvas').attr('width', w).attr('height', h);
+function initCanvas(w, h, bgimageUrl) {
+  $('#workspace').html('');
+  canvas = d3.select('#workspace').append('svg').attrs({
+    id: 'canvas',
+    width: w,
+    height: h,
+  }).classed('z-depth-1', true);
+  canvas.style('left', Math.max(0, 0.5 * ($('#workspace').width() - w)));
+  canvas.style('top', Math.max(0, 0.5 * ($(window).height() - h - 64)));
+  rawFloorSize = [w, h];
+
+  canvas.selectAll('*').remove();
+
+  canvas.append('image').attrs({
+    id: 'canvas-e-bgimg',
+    'xlink:href': bgimageUrl,
+    width: '100%',
+    height: '100%',
+  });
+
   addGrids();
+  modebit = 0;
+  objects = [];
+  objectsRedo = [];
+  metaObjects = {};
+  saveCounter = 0;
+
+  canvas.style('cursor', 'default');
+  $('#btn-zoom').text('100%');
+  $('.toolbox a.btn-flat').removeClass('light-blue lighten-2');
+  $('.toolbox a.btn-flat:first-child').addClass('light-blue lighten-2');
+  $('.tool-options > .row').hide();
+  $('.tool-options input').val(0);
+  $('.tool-options input').val('');
+  $('#cfloor-btn-set').removeClass('disabled');
+
+  setTools(2);
 
   canvas.on('click', () => {
-    const coords = d3.mouse(event.currentTarget);
+    const point = d3.mouse(event.currentTarget);
+
     switch (modebit) {
       case 1:
         {
@@ -470,26 +488,26 @@ function initCanvas(w, h) {
           if (activeRect.empty()) {
             const rect = canvas.append('rect').classed('active', true);
             rect.attrs({
-              x: coords[0],
-              y: coords[1],
+              x: point[0],
+              y: point[1],
               'stroke-width': '1',
               stroke: '#F66',
               fill: 'rgba(239, 108, 0, 0.5)',
             });
             rect.attrs({
-              x0: coords[0],
-              y0: coords[1],
+              x0: point[0],
+              y0: point[1],
             });
           } else {
-            const rectW = Math.abs(coords[0] - activeRect.attr('x0'));
-            const rectH = Math.abs(coords[1] - activeRect.attr('y0'));
-            if (coords[0] < activeRect.attr('x0')) {
-              activeRect.attr('x', coords[0]);
+            const rectW = Math.abs(point[0] - activeRect.attr('x0'));
+            const rectH = Math.abs(point[1] - activeRect.attr('y0'));
+            if (point[0] < activeRect.attr('x0')) {
+              activeRect.attr('x', point[0]);
             } else {
               activeRect.attr('x', activeRect.attr('x0'));
             }
-            if (coords[1] < activeRect.attr('y0')) {
-              activeRect.attr('y', coords[1]);
+            if (point[1] < activeRect.attr('y0')) {
+              activeRect.attr('y', point[1]);
             } else {
               activeRect.attr('y', activeRect.attr('y0'));
             }
@@ -504,10 +522,12 @@ function initCanvas(w, h) {
                 rotation: 0,
               },
               data: {
-                x: parseInt(activeRect.attr('x'), 10),
-                y: parseInt(activeRect.attr('y'), 10),
-                width: parseInt(activeRect.attr('width'), 10),
-                height: parseInt(activeRect.attr('height'), 10),
+                x: scalePhysical(parseInt(activeRect.attr('x'), 10)),
+                y: scalePhysical(parseInt(activeRect.attr('y'), 10)),
+                width: scalePhysical(parseInt(activeRect.attr('width'),
+                  10)),
+                height: scalePhysical(parseInt(activeRect.attr('height'),
+                  10)),
               },
             });
             confirmNewShape(activeRect, rid);
@@ -519,14 +539,14 @@ function initCanvas(w, h) {
           const activePolygon = canvas.select('polygon.active');
           if (activePolygon.empty()) {
             canvas.append('polygon').classed('active', true).attrs({
-              points: coords.join(','),
+              points: point.join(','),
               'stroke-width': '1',
               stroke: '#F66',
               fill: 'rgba(239, 108, 0, 0.5)',
             });
           } else {
             activePolygon.attr('points',
-              `${activePolygon.attr('points')} ${coords.join(',')}`);
+              `${activePolygon.attr('points')} ${point.join(',')}`);
           }
           break;
         }
@@ -537,17 +557,17 @@ function initCanvas(w, h) {
           }
           const activeFbPolygon = canvas.select('polygon.active_fb');
           if (activeFbPolygon.empty()) {
-            canvas.insert('polygon', ':first-child').classed('active_fb',
+            canvas.insert('polygon', ':nth-child(2)').classed('active_fb',
                 true)
               .attrs({
-                points: coords.join(','),
+                points: point.join(','),
                 'stroke-width': '1',
                 stroke: '#F66',
                 fill: 'rgba(239, 108, 0, 0.5)',
               });
           } else {
             activeFbPolygon.attr('points',
-              `${activeFbPolygon.attr('points')} ${coords.join(',')}`);
+              `${activeFbPolygon.attr('points')} ${point.join(',')}`);
           }
           break;
         }
@@ -556,22 +576,37 @@ function initCanvas(w, h) {
     }
   });
 
+  canvas.on('mousedown', () => {
+    switch (modebit) {
+      case 6:
+        mousedownPoint = d3.mouse(event.currentTarget);
+        break;
+      default:
+        mousedownPoint = undefined;
+    }
+  });
+
+  canvas.on('mouseup', () => {
+    mousedownPoint = undefined;
+  });
+
   canvas.on('mousemove', () => {
-    const coords = d3.mouse(event.currentTarget);
+    const point = d3.mouse(event.currentTarget);
+
     switch (modebit) {
       case 1:
         {
           const activeRect = canvas.select('rect.active');
           if (!activeRect.empty()) {
-            const rectW = Math.abs(coords[0] - activeRect.attr('x0'));
-            const rectH = Math.abs(coords[1] - activeRect.attr('y0'));
-            if (coords[0] < activeRect.attr('x0')) {
-              activeRect.attr('x', coords[0]);
+            const rectW = Math.abs(point[0] - activeRect.attr('x0'));
+            const rectH = Math.abs(point[1] - activeRect.attr('y0'));
+            if (point[0] < activeRect.attr('x0')) {
+              activeRect.attr('x', point[0]);
             } else {
               activeRect.attr('x', activeRect.attr('x0'));
             }
-            if (coords[1] < activeRect.attr('y0')) {
-              activeRect.attr('y', coords[1]);
+            if (point[1] < activeRect.attr('y0')) {
+              activeRect.attr('y', point[1]);
             } else {
               activeRect.attr('y', activeRect.attr('y0'));
             }
@@ -586,7 +621,7 @@ function initCanvas(w, h) {
             activePolygon.attr('points', [
               activePolygon.attr('points').replace(
                 /\s+[-\d.]+,[-\d.]+$/, ''),
-              coords.join(','),
+              point.join(','),
             ].join(' '));
           }
           break;
@@ -598,9 +633,33 @@ function initCanvas(w, h) {
             activeFbPolygon.attr('points', [
               activeFbPolygon.attr('points').replace(
                 /\s+[-\d.]+,[-\d.]+$/, ''),
-              coords.join(','),
+              point.join(','),
             ].join(' '));
           }
+          break;
+        }
+      case 6:
+        {
+          if (!mousedownPoint) {
+            break;
+          }
+          const cLeftOffset = point[0] - mousedownPoint[0];
+          const cTopOffset = point[1] - mousedownPoint[1];
+          const orig = [
+            parseInt(canvas.style('left'), 10),
+            parseInt(canvas.style('top'), 10),
+          ];
+          if (orig[0] + cLeftOffset > $('#workspace').width() / 2 ||
+            $('#workspace > svg').width() + orig[0] + cLeftOffset < $(
+              '#workspace').width() / 2 ||
+            orig[1] + cTopOffset > $('#workspace').height() / 2 ||
+            $('#workspace > svg').height() + orig[1] + cTopOffset < $(
+              '#workspace').height() / 2) {
+            mousedownPoint = undefined;
+            break;
+          }
+          canvas.style('left', orig[0] + cLeftOffset);
+          canvas.style('top', orig[1] + cTopOffset);
           break;
         }
       default:
@@ -609,7 +668,7 @@ function initCanvas(w, h) {
   });
 
   canvas.on('dblclick', () => {
-    const coords = d3.mouse(event.currentTarget);
+    const point = d3.mouse(event.currentTarget);
 
     switch (modebit) {
       case 2:
@@ -617,8 +676,9 @@ function initCanvas(w, h) {
           const activePolygon = canvas.select('polygon.active');
           if (!activePolygon.empty()) {
             let newPoints =
-              `${activePolygon.attr('points')} ${coords.join(',')}`;
-            newPoints = arrayToPoints(prunePoints(pointsToArray(newPoints)));
+              `${activePolygon.attr('points')} ${point.join(',')}`;
+            const newPointsArr = prunePoints(pointsToArray(newPoints));
+            newPoints = arrayToPoints(newPointsArr);
             activePolygon.attr('points', newPoints);
             // polygon created and stored
             const rid = randomId();
@@ -630,7 +690,7 @@ function initCanvas(w, h) {
                 rotation: 0,
               },
               data: {
-                points: activePolygon.attr('points'),
+                points: scalePhysical(newPointsArr),
               },
             });
             confirmNewShape(activePolygon, rid);
@@ -642,8 +702,9 @@ function initCanvas(w, h) {
           const activeFbPolygon = canvas.select('polygon.active_fb');
           if (!activeFbPolygon.empty()) {
             let newPoints =
-              `${activeFbPolygon.attr('points')} ${coords.join(',')}`;
-            newPoints = arrayToPoints(prunePoints(pointsToArray(newPoints)));
+              `${activeFbPolygon.attr('points')} ${point.join(',')}`;
+            const newPointsArr = prunePoints(pointsToArray(newPoints));
+            newPoints = arrayToPoints(newPointsArr);
             activeFbPolygon.attr('points', newPoints).classed('fb', true);
             // polygon created and stored
             const rid = randomId();
@@ -651,7 +712,7 @@ function initCanvas(w, h) {
               type: 'f_border',
               id: `canvas-e-${rid}`,
               data: {
-                points: activeFbPolygon.attr('points'),
+                points: scalePhysical(newPointsArr),
               },
             };
             confirmNewShape(activeFbPolygon, rid, {
@@ -659,9 +720,8 @@ function initCanvas(w, h) {
             });
           }
           $('#cfloor-btn-set').removeClass('disabled');
-          // re-enable output buttons that are always disabled in setNav
-          $('#btn-output-save').removeClass('disabled');
-          $('#btn-output-JSON').removeClass('disabled');
+          // re-enable output buttons that are always disabled in setTools
+          setTools(3);
           canvas.style('cursor', 'default').selectAll('*').style('cursor',
             'default');
           break;
@@ -669,6 +729,114 @@ function initCanvas(w, h) {
       default:
 
     }
+  });
+}
+
+function loadFloors(libraryId) {
+  $('#btn-add-floor').show();
+
+  $.ajax({
+    url: '/v1/floors/',
+    type: 'GET',
+    data: {
+      library_id: libraryId,
+    },
+    success: (data) => {
+      floors = data;
+
+      $('#floor-collection').html('');
+      floors.forEach((floor) => {
+        const floorItem = $(
+          [
+            '<a href="javascript:void(0)" class="collection-item blue-grey-text text-lighten-5',
+            `blue-grey darken-4" data-floor_id=${floor.id}>${floor.name}</a>`,
+          ].join(' '),
+        ).appendTo($(
+          '#floor-collection'));
+        if (floor.id === activeFloor) {
+          floorItem.addClass('active');
+          $('#cfloor-name').val(floor.name);
+          Materialize.updateTextFields();
+        }
+      });
+
+      $('#floor-collection>a').click(() => {
+        const floorIdx = _.findIndex(floors, {
+          id: $(event.currentTarget).data('floor_id'),
+        });
+        if (activeFloor === floors[floorIdx].id) {
+          // same floor
+          return;
+        }
+
+        $('#floor-collection>a').removeClass('active');
+
+        activeFloor = floors[floorIdx].id;
+        setTools(1);
+        if (floors[floorIdx].ref) {
+          initCanvas(floors[floorIdx].size_x, floors[floorIdx].size_y,
+            floors[floorIdx].ref);
+        }
+
+        $('#cfloor-name').val(floors[floorIdx].name);
+        Materialize.updateTextFields();
+        $(event.currentTarget).addClass('active');
+      });
+
+      $('.collapsible').collapsible('close', 0);
+      $('.collapsible').collapsible('open', 0);
+    },
+    error: (e) => {
+      showError(e.responseJSON.message);
+    },
+  });
+}
+
+function loadLibraries() {
+  $('#btn-add-floor').hide();
+  $.ajax({
+    url: '/v1/libraries/',
+    type: 'GET',
+    success: (data) => {
+      libraries = data;
+
+      $('#library-collection').html('');
+      libraries.forEach((lib) => {
+        const item = $([
+          '<a href="javascript:void(0)" class="collection-item blue-grey-text text-lighten-5',
+          `blue-grey darken-4" data-library_id=${lib.id}>${lib.name}</a>`,
+        ].join(' ')).appendTo($(
+          '#library-collection'));
+        if (lib.id === activeLibrary) {
+          item.addClass('active');
+          loadFloors(lib.id);
+        }
+      });
+
+      $('#library-collection>a').click(() => {
+        const libraryId = _.findIndex(libraries, {
+          id: $(event.currentTarget).data('library_id'),
+        });
+        if (activeLibrary === libraries[libraryId].id) {
+          // same library
+          return;
+        }
+
+        $('#library-collection>a').removeClass('active');
+        setTools(0);
+        activeFloor = -1;
+
+        activeLibrary = libraries[libraryId].id;
+        loadFloors(activeLibrary);
+        $(event.currentTarget).addClass('active');
+      });
+
+      $('.collapsible').collapsible('close', 0);
+      $('.collapsible').collapsible('open', 0);
+    },
+    error: (e) => {
+      showError(e.responseJSON.message);
+    },
   });
 }
 
@@ -759,11 +927,11 @@ function initStacksInShape(e, rows, rotation) {
       type: 'stack',
       id: `canvas-e-${rid}`,
       meta: {
-        cx: rectCenterRotated[0],
-        cy: rectCenterRotated[1],
-        lx: centeroidRowLen,
-        ly: rowThickness,
-        rotation,
+        cx: scalePhysical(rectCenterRotated[0]),
+        cy: scalePhysical(rectCenterRotated[1]),
+        lx: scalePhysical(centeroidRowLen),
+        ly: scalePhysical(rowThickness),
+        rotation: parseInt(rotation, 10),
         oversize: 0,
         startClass: 'A',
         startSubclass: 0,
@@ -773,11 +941,10 @@ function initStacksInShape(e, rows, rotation) {
         endSubclass2: '',
       },
       data: {
-        x: parseFloat(rect.attr('x')),
-        y: parseFloat(rect.attr('y')),
-        width: parseFloat(rect.attr('width')),
-        height: parseFloat(rect.attr('height')),
-        rotation: parseFloat(rotation),
+        x: scalePhysical(parseInt(rect.attr('x'), 10)),
+        y: scalePhysical(parseInt(rect.attr('y'), 10)),
+        width: scalePhysical(parseInt(rect.attr('width'), 10)),
+        height: scalePhysical(parseInt(rect.attr('height'), 10)),
       },
     });
 
@@ -802,9 +969,7 @@ $(document).ready(() => {
   loadLibraries();
 
   $('.tool-options > .row').hide();
-  $('.dropdown-button').dropdown();
-  $('#workspace').height($('#workspace').height() - 74);
-  initCanvas($('#workspace').width() - 10, $('#workspace').height() - 10);
+
   $('.toolbox a.btn-flat').each((index) => {
     $(`.toolbox a.btn-flat:nth-child(${index + 1})`).click(() => {
       $('.collapsible').collapsible('close', 0);
@@ -820,6 +985,9 @@ $(document).ready(() => {
       if (modebit === 1 || modebit === 2) {
         canvas.style('cursor', 'crosshair').selectAll('*').style(
           'cursor', 'crosshair');
+      } else if (modebit === 6) {
+        canvas.style('cursor', 'move').selectAll('*').style(
+          'cursor', 'move');
       } else {
         canvas.style('cursor', 'default').selectAll('*').style(
           'cursor', 'default');
@@ -833,7 +1001,7 @@ $(document).ready(() => {
         }
       }
       $('.tool-options > .row').hide();
-      $('.toolbox a.btn-flat').removeClass('light-blue');
+      $('.toolbox a.btn-flat').removeClass('light-blue lighten-2');
       if (!canvas.selectAll('.selected').empty()) {
         $(`.tool-options > .row:nth-child(${index})`).show();
       }
@@ -842,7 +1010,7 @@ $(document).ready(() => {
       if (modebit === 4) {
         $(`.tool-options > .row:nth-child(${index})`).show();
       }
-      $(event.currentTarget).addClass('light-blue');
+      $(event.currentTarget).addClass('light-blue lighten-2');
       showHelp(helpText[index]);
     });
   });
@@ -877,7 +1045,12 @@ $(document).ready(() => {
       case 'rect':
         {
           const rect = canvas.append('rect');
-          rect.attrs(obj.data);
+          rect.attrs({
+            x: scale(obj.data.x),
+            y: scale(obj.data.y),
+            width: scale(obj.data.width),
+            height: scale(obj.data.height),
+          });
           // rect redrawn and restored
           objects.push(obj);
           confirmNewShape(rect, obj.id, {
@@ -888,7 +1061,7 @@ $(document).ready(() => {
       case 'polygon':
         {
           const polygon = canvas.append('polygon');
-          polygon.attrs(obj.data);
+          polygon.attr('points', arrayToPoints(scale(obj.data.points)));
           // rect redrawn and restored
           objects.push(obj);
           confirmNewShape(polygon, obj.id, {
@@ -900,15 +1073,19 @@ $(document).ready(() => {
         {
           const group = canvas.append('g').attr('for', obj.id);
           obj.data.forEach((r) => {
-            const rect = group.append('rect').attrs(r.data).classed(
-              'cstack', true);
+            const rect = group.append('rect').attrs({
+              x: scale(r.data.x),
+              y: scale(r.data.y),
+              width: scale(r.data.width),
+              height: scale(r.data.height),
+            }).classed('cstack', true);
             const rectCenter = [];
             rectCenter[0] = r.data.x + (r.data.width * 0.5);
             rectCenter[1] = r.data.y + (r.data.height * 0.5);
             const transVals = [
-              r.data.rotation,
-              rectCenter[0],
-              rectCenter[1],
+              r.meta.rotation,
+              scale(rectCenter[0]),
+              scale(rectCenter[1]),
             ].join(' ');
             rect.attr('transform', `rotate(${transVals})`);
             confirmNewShape(rect, r.id, {
@@ -1031,27 +1208,38 @@ $(document).ready(() => {
     }
     metaObjects.floor_border = undefined;
     $(event.currentTarget).addClass('disabled');
-    canvas.style('cursor', 'crosshair');
+    canvas.style('cursor', 'crosshair').selectAll('*').style(
+      'cursor', 'crosshair');
   });
 
-  $('#btn-ref-upload').click(() => {
+  $('#dropdown-zoom > li > a').click(() => {
+    const zoomLevelVal = $(event.currentTarget).text();
+    $('#btn-zoom').text(zoomLevelVal);
+    setZoomLevel(zoomLevelVal);
+    $('.dropdown-button').dropdown('close');
+  });
+
+  $('#btn-canvas-new').click(() => {
     if ($(event.currentTarget).hasClass('disabled')) {
       return;
     }
-    $('#modal-upload-ref > div > form > input[name="floor_id"]').val(
+    $('#modal-new-canvas > div > form > input[name="floor_id"]').val(
       activeFloor);
     $('.modal').modal();
-    $('#modal-upload-ref').modal('open');
+    $('#modal-new-canvas').modal('open');
   });
 
-  $('#btn-ref-commit-upload').click(() => {
+  $('#btn-canvas-commit-new').click(() => {
     $.ajax({
       url: '/maps/uploadRefImg',
       type: 'POST',
-      data: new FormData($('#modal-upload-ref > div > form')[0]),
+      data: new FormData($('#modal-new-canvas > div > form')[0]),
       success: (floor) => {
-        $('#workspace').css('background-image',
-          `url('${floor.ref}')`);
+        const w = $(
+          '#modal-new-canvas>div>div>div:nth-child(1)>input').val();
+        const h = $(
+          '#modal-new-canvas>div>div>div:nth-child(2)>input').val();
+        initCanvas(parseInt(w, 10), parseInt(h, 10), floor.ref);
         loadFloors(activeLibrary);
       },
       error: (e) => {
@@ -1201,7 +1389,7 @@ $(document).ready(() => {
 
   $('select').material_select();
 
-  setNav(false);
+  setTools(0);
 
   // END $(document).ready
 });
