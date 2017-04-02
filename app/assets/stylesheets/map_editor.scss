@@ -1,5 +1,6 @@
 $accent-color: #4fc3f7;
-$client-color: #263238;
+$client-color-bg: #263238;
+$client-color: #eceff1;
 
 nav {
     margin-bottom: 10px;
@@ -28,6 +29,13 @@ main {
 .dropdown-content li.selected,
 .dropdown-content li:hover {
     background-color: $accent-color !important;
+}
+
+.select-dropdown li > span {
+    color: $client-color-bg !important;
+}
+
+.select-wrapper > .caret {
     color: $client-color !important;
 }
 
@@ -70,6 +78,7 @@ main {
     left: 300px;
     bottom: 0;
     right: 0;
+    overflow: scroll;
 }
 
 #workspace > svg {
@@ -106,6 +115,7 @@ main {
     position: fixed;
     right: 20px;
     bottom: 20px;
+    z-index: 1;
 }
 
 #message-area > div {
@@ -161,7 +171,7 @@ label.tooltipped.under {
 
 .side-nav .collection a.collection-item.active {
     background-color: $accent-color !important;
-    color: $client-color !important;
+    color: $client-color-bg !important;
 }
 
 .collection a.collection-item {

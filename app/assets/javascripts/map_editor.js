@@ -12,6 +12,7 @@ let activeFloor = -1;
 let saveCounter = 0;
 let zoomLevel = 1;
 let rawFloorSize = [0, 0];
+let mousedownPoint;
 
 const helpText = [
   'Click to select an element on canvas.',
@@ -20,6 +21,7 @@ const helpText = [
   'Add interactivity to an area on canvas.',
   'Edit floor properties.',
   'Edit stack properties.',
+  'Drag and move the canvas.',
 ];
 
 function showHelp(help) {
@@ -196,121 +198,10 @@ function setZoomLevel(level) {
     height: h,
   });
 
-  canvas.style('left', Math.max(0.5 * ($('#workspace').width() - w)));
+  canvas.style('left', Math.max(0, 0.5 * ($('#workspace').width() - w)));
   canvas.style('top', Math.max(0, 0.5 * ($(window).height() - h - 64)));
 
   rerender(oldZoomLevel);
-}
-
-function loadFloors(libraryId) {
-  $('#btn-add-floor').show();
-
-  $.ajax({
-    url: '/v1/floors/',
-    type: 'GET',
-    data: {
-      library_id: libraryId,
-    },
-    success: (data) => {
-      floors = data;
-
-      $('#floor-collection').html('');
-      floors.forEach((floor) => {
-        const floorItem = $(
-          [
-            '<a href="javascript:void(0)" class="collection-item blue-grey-text text-lighten-5',
-            `blue-grey darken-4" data-floor_id=${floor.id}>${floor.name}</a>`,
-          ].join(' '),
-        ).appendTo($(
-          '#floor-collection'));
-        if (floor.id === activeFloor) {
-          floorItem.addClass('active');
-          $('#cfloor-name').val(floor.name);
-          Materialize.updateTextFields();
-        }
-      });
-
-      $('#floor-collection>a').click(() => {
-        const floorIdx = _.findIndex(floors, {
-          id: $(event.currentTarget).data('floor_id'),
-        });
-        if (activeFloor === floors[floorIdx].id) {
-          // same floor
-          return;
-        }
-
-        $('#floor-collection>a').removeClass('active');
-
-        activeFloor = floors[floorIdx].id;
-        setTools(1);
-
-        // canvas.append('image').attrs({
-        //   id: 'canvas-e-bgimg',
-        //   'xlink:href': floors[floorIdx].ref,
-        //   width: '100%',
-        //   height: '100%',
-        // });
-
-        $('#cfloor-name').val(floors[floorIdx].name);
-        Materialize.updateTextFields();
-        $(event.currentTarget).addClass('active');
-      });
-
-      $('.collapsible').collapsible('close', 0);
-      $('.collapsible').collapsible('open', 0);
-    },
-    error: (e) => {
-      showError(e.responseJSON.message);
-    },
-  });
-}
-
-function loadLibraries() {
-  $('#btn-add-floor').hide();
-  $.ajax({
-    url: '/v1/libraries/',
-    type: 'GET',
-    success: (data) => {
-      libraries = data;
-
-      $('#library-collection').html('');
-      libraries.forEach((lib) => {
-        const item = $([
-          '<a href="javascript:void(0)" class="collection-item blue-grey-text text-lighten-5',
-          `blue-grey darken-4" data-library_id=${lib.id}>${lib.name}</a>`,
-        ].join(' ')).appendTo($(
-          '#library-collection'));
-        if (lib.id === activeLibrary) {
-          item.addClass('active');
-          loadFloors(lib.id);
-        }
-      });
-
-      $('#library-collection>a').click(() => {
-        const libraryId = _.findIndex(libraries, {
-          id: $(event.currentTarget).data('library_id'),
-        });
-        if (activeLibrary === libraries[libraryId].id) {
-          // same library
-          return;
-        }
-
-        $('#library-collection>a').removeClass('active');
-        setTools(0);
-        activeFloor = -1;
-
-        activeLibrary = libraries[libraryId].id;
-        loadFloors(activeLibrary);
-        $(event.currentTarget).addClass('active');
-      });
-
-      $('.collapsible').collapsible('close', 0);
-      $('.collapsible').collapsible('open', 0);
-    },
-    error: (e) => {
-      showError(e.responseJSON.message);
-    },
-  });
 }
 
 function offsetPoints(points, dx, dy) {
@@ -399,8 +290,8 @@ function exportFloorData() {
 
   floorJson = {
     name: $('#cfloor-name').val(),
-    size_x: parseInt(d3.max(floorPoints, e => e[0]) - deltaX, 10),
-    size_y: parseInt(d3.max(floorPoints, e => e[1]) - deltaY, 10),
+    size_x: parseInt(canvas.attr('width'), 10),
+    size_y: parseInt(canvas.attr('height'), 10),
     geojson: JSON.stringify({
       type: 'polygon',
       coordinates: offsetPoints(floorPoints, -deltaX, -deltaY),
@@ -556,7 +447,7 @@ function initCanvas(w, h, bgimageUrl) {
     width: w,
     height: h,
   }).classed('z-depth-1', true);
-  canvas.style('left', Math.max(0.5 * ($('#workspace').width() - w)));
+  canvas.style('left', Math.max(0, 0.5 * ($('#workspace').width() - w)));
   canvas.style('top', Math.max(0, 0.5 * ($(window).height() - h - 64)));
   rawFloorSize = [w, h];
 
@@ -577,6 +468,7 @@ function initCanvas(w, h, bgimageUrl) {
   saveCounter = 0;
 
   canvas.style('cursor', 'default');
+  $('#btn-zoom').text('100%');
   $('.toolbox a.btn-flat').removeClass('light-blue lighten-2');
   $('.toolbox a.btn-flat:first-child').addClass('light-blue lighten-2');
   $('.tool-options > .row').hide();
@@ -684,6 +576,20 @@ function initCanvas(w, h, bgimageUrl) {
     }
   });
 
+  canvas.on('mousedown', () => {
+    switch (modebit) {
+      case 6:
+        mousedownPoint = d3.mouse(event.currentTarget);
+        break;
+      default:
+        mousedownPoint = undefined;
+    }
+  });
+
+  canvas.on('mouseup', () => {
+    mousedownPoint = undefined;
+  });
+
   canvas.on('mousemove', () => {
     const point = d3.mouse(event.currentTarget);
 
@@ -730,6 +636,30 @@ function initCanvas(w, h, bgimageUrl) {
               point.join(','),
             ].join(' '));
           }
+          break;
+        }
+      case 6:
+        {
+          if (!mousedownPoint) {
+            break;
+          }
+          const cLeftOffset = point[0] - mousedownPoint[0];
+          const cTopOffset = point[1] - mousedownPoint[1];
+          const orig = [
+            parseInt(canvas.style('left'), 10),
+            parseInt(canvas.style('top'), 10),
+          ];
+          if (orig[0] + cLeftOffset > $('#workspace').width() / 2 ||
+            $('#workspace > svg').width() + orig[0] + cLeftOffset < $(
+              '#workspace').width() / 2 ||
+            orig[1] + cTopOffset > $('#workspace').height() / 2 ||
+            $('#workspace > svg').height() + orig[1] + cTopOffset < $(
+              '#workspace').height() / 2) {
+            mousedownPoint = undefined;
+            break;
+          }
+          canvas.style('left', orig[0] + cLeftOffset);
+          canvas.style('top', orig[1] + cTopOffset);
           break;
         }
       default:
@@ -799,6 +729,114 @@ function initCanvas(w, h, bgimageUrl) {
       default:
 
     }
+  });
+}
+
+function loadFloors(libraryId) {
+  $('#btn-add-floor').show();
+
+  $.ajax({
+    url: '/v1/floors/',
+    type: 'GET',
+    data: {
+      library_id: libraryId,
+    },
+    success: (data) => {
+      floors = data;
+
+      $('#floor-collection').html('');
+      floors.forEach((floor) => {
+        const floorItem = $(
+          [
+            '<a href="javascript:void(0)" class="collection-item blue-grey-text text-lighten-5',
+            `blue-grey darken-4" data-floor_id=${floor.id}>${floor.name}</a>`,
+          ].join(' '),
+        ).appendTo($(
+          '#floor-collection'));
+        if (floor.id === activeFloor) {
+          floorItem.addClass('active');
+          $('#cfloor-name').val(floor.name);
+          Materialize.updateTextFields();
+        }
+      });
+
+      $('#floor-collection>a').click(() => {
+        const floorIdx = _.findIndex(floors, {
+          id: $(event.currentTarget).data('floor_id'),
+        });
+        if (activeFloor === floors[floorIdx].id) {
+          // same floor
+          return;
+        }
+
+        $('#floor-collection>a').removeClass('active');
+
+        activeFloor = floors[floorIdx].id;
+        setTools(1);
+        if (floors[floorIdx].ref) {
+          initCanvas(floors[floorIdx].size_x, floors[floorIdx].size_y,
+            floors[floorIdx].ref);
+        }
+
+        $('#cfloor-name').val(floors[floorIdx].name);
+        Materialize.updateTextFields();
+        $(event.currentTarget).addClass('active');
+      });
+
+      $('.collapsible').collapsible('close', 0);
+      $('.collapsible').collapsible('open', 0);
+    },
+    error: (e) => {
+      showError(e.responseJSON.message);
+    },
+  });
+}
+
+function loadLibraries() {
+  $('#btn-add-floor').hide();
+  $.ajax({
+    url: '/v1/libraries/',
+    type: 'GET',
+    success: (data) => {
+      libraries = data;
+
+      $('#library-collection').html('');
+      libraries.forEach((lib) => {
+        const item = $([
+          '<a href="javascript:void(0)" class="collection-item blue-grey-text text-lighten-5',
+          `blue-grey darken-4" data-library_id=${lib.id}>${lib.name}</a>`,
+        ].join(' ')).appendTo($(
+          '#library-collection'));
+        if (lib.id === activeLibrary) {
+          item.addClass('active');
+          loadFloors(lib.id);
+        }
+      });
+
+      $('#library-collection>a').click(() => {
+        const libraryId = _.findIndex(libraries, {
+          id: $(event.currentTarget).data('library_id'),
+        });
+        if (activeLibrary === libraries[libraryId].id) {
+          // same library
+          return;
+        }
+
+        $('#library-collection>a').removeClass('active');
+        setTools(0);
+        activeFloor = -1;
+
+        activeLibrary = libraries[libraryId].id;
+        loadFloors(activeLibrary);
+        $(event.currentTarget).addClass('active');
+      });
+
+      $('.collapsible').collapsible('close', 0);
+      $('.collapsible').collapsible('open', 0);
+    },
+    error: (e) => {
+      showError(e.responseJSON.message);
+    },
   });
 }
 
@@ -932,8 +970,6 @@ $(document).ready(() => {
 
   $('.tool-options > .row').hide();
 
-  $('#workspace').height($('#workspace').height() - 74);
-
   $('.toolbox a.btn-flat').each((index) => {
     $(`.toolbox a.btn-flat:nth-child(${index + 1})`).click(() => {
       $('.collapsible').collapsible('close', 0);
@@ -949,6 +985,9 @@ $(document).ready(() => {
       if (modebit === 1 || modebit === 2) {
         canvas.style('cursor', 'crosshair').selectAll('*').style(
           'cursor', 'crosshair');
+      } else if (modebit === 6) {
+        canvas.style('cursor', 'move').selectAll('*').style(
+          'cursor', 'move');
       } else {
         canvas.style('cursor', 'default').selectAll('*').style(
           'cursor', 'default');
@@ -1169,14 +1208,13 @@ $(document).ready(() => {
     }
     metaObjects.floor_border = undefined;
     $(event.currentTarget).addClass('disabled');
-    canvas.style('cursor', 'crosshair');
+    canvas.style('cursor', 'crosshair').selectAll('*').style(
+      'cursor', 'crosshair');
   });
 
   $('#dropdown-zoom > li > a').click(() => {
     const zoomLevelVal = $(event.currentTarget).text();
-    $('#btn-zoom').html(
-      `${zoomLevelVal}<i class="material-icons right">arrow_drop_down</i>`,
-    );
+    $('#btn-zoom').text(zoomLevelVal);
     setZoomLevel(zoomLevelVal);
     $('.dropdown-button').dropdown('close');
   });
