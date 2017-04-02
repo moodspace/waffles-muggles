@@ -1,19 +1,5 @@
 <header>
-    <ul id="slide-out" class="side-nav fixed">
-        <li>
-            <div class="userView">
-                <div class="background">
-                    <img src="assets/book.jpg">
-                </div>
-                <a href="javascript:void(0)"><img class="circle" src="assets/user.png"></a>
-                <a href="javascript:void(0)">
-                    <span class="white-text name">John Doe</span>
-                </a>
-                <a href="javascript:void(0)">
-                    <span class="white-text email">jdandturk@gmail.com</span>
-                </a>
-            </div>
-        </li>
+    <ul id="slide-out" class="side-nav fixed blue-grey darken-4 blue-grey-text text-lighten-5">
         <li>
             <ul class="collapsible" data-collapsible="accordion">
                 <li>
@@ -52,23 +38,23 @@
         <li>
             <div class="toolbox">
                 <div class="row">
-                    <a class="btn-flat col s4 light-blue tooltipped" data-position="right" data-delay="50" data-tooltip="Select tool">
-                        <i class="material-icons">navigation</i>
+                    <a class="btn-flat col s4 light-blue lighten-2 tooltipped" data-position="right" data-delay="50" data-tooltip="Select tool">
+                        <i class="material-icons blue-grey-text text-lighten-5">navigation</i>
                     </a>
                     <a class="btn-flat col s4 tooltipped" data-position="right" data-delay="50" data-tooltip="Rectangle tool (area)">
-                        <i class="material-icons">crop_landscape</i>
+                        <i class="material-icons blue-grey-text text-lighten-5">crop_landscape</i>
                     </a>
                     <a class="btn-flat col s4 tooltipped" data-position="right" data-delay="50" data-tooltip="Polygon tool (area)">
-                        <i class="material-icons">label_outline</i>
+                        <i class="material-icons blue-grey-text text-lighten-5">label_outline</i>
                     </a>
                     <a class="btn-flat col s4 tooltipped" data-position="right" data-delay="50" data-tooltip="Area scaffolding tool">
-                        <i class="material-icons">flag</i>
+                        <i class="material-icons blue-grey-text text-lighten-5">flag</i>
                     </a>
                     <a class="btn-flat col s4 tooltipped" data-position="right" data-delay="50" data-tooltip="Floor properties">
-                        <i class="material-icons">layers</i>
+                        <i class="material-icons blue-grey-text text-lighten-5">layers</i>
                     </a>
                     <a class="btn-flat col s4 tooltipped" data-position="right" data-delay="50" data-tooltip="Stack properties">
-                        <i class="material-icons">theaters</i>
+                        <i class="material-icons blue-grey-text text-lighten-5">theaters</i>
                     </a>
                 </div>
             </div>
@@ -129,7 +115,7 @@
                     </div> -->
                     <label>Hint: importing a reference floor map speeds up the plot.</label>
                     <div class="col s12">
-                        <a class="waves-effect waves-light btn-flat tooltipped" data-position="right" data-delay="50" data-tooltip="Helps creating a coordinate system for map elements" id="cfloor-btn-set">Draw floor border</a>
+                        <a class="waves-effect waves-light btn-flat tooltipped light-blue-text text-lighten-2" data-position="right" data-delay="50" data-tooltip="Helps creating a coordinate system for map elements" id="cfloor-btn-set">Draw floor border</a>
                         <br/><br/>
                     </div>
                     <h6>
@@ -201,30 +187,30 @@
 </header>
 <main>
     <div id="message-area">
-        <div class="card-panel light-blue darken-1 help-text"></div>
+        <div class="card-panel blue-grey darken-4 help-text"></div>
         <div class="card-panel red darken-1 error-text"></div>
     </div>
-    <ul id="dropdown-zoom" class="dropdown-content">
+    <ul id="dropdown-zoom" class="dropdown-content blue-grey darken-4">
         <li>
-            <a href="javascript:void(0)">50%</a>
+            <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">50%</a>
         </li>
         <li>
-            <a href="javascript:void(0)">100%</a>
-        </li>
-        <li class="divider"></li>
-        <li>
-            <a href="javascript:void(0)">150%</a>
-        </li>
-        <li>
-            <a href="javascript:void(0)">200%</a>
+            <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">100%</a>
         </li>
         <li class="divider"></li>
         <li>
-            <a href="javascript:void(0)">Fit width</a>
+            <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">150%</a>
+        </li>
+        <li>
+            <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">200%</a>
+        </li>
+        <li class="divider"></li>
+        <li>
+            <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">Fit width</a>
         </li>
     </ul>
     <nav>
-        <div class="nav-wrapper light-blue darken-1">
+        <div class="nav-wrapper blue-grey darken-4">
             <ul class="left">
                 <li>
                     <a id="nav-undo" href="javascript:void(0)" class="tooltipped" data-position="bottom" data-delay="50" data-tooltip="Undo">
@@ -242,9 +228,8 @@
                     </a>
                 </li> -->
                 <li>
-                    <a id ="btn-zoom" class="dropdown-button" href="javascript:void(0)" data-activates="dropdown-zoom">
+                    <a id="btn-zoom" class="dropdown-button tooltipped" data-position="bottom" data-delay="50" data-tooltip="Zoom level" href="javascript:void(0)" data-activates="dropdown-zoom">
                         100%
-                        <i class="material-icons right">arrow_drop_down</i>
                     </a>
                 </li>
                 <li>
@@ -252,7 +237,7 @@
                         <label style="color: #fff">
                             <i class="material-icons tooltipped" data-position="bottom" data-delay="50" data-tooltip="Hide stacks" style="display: inline-block;">layers</i>
                             <input id="viewmode-toggle" type="checkbox" checked>
-                            <span class="lever light-blue lighten-2" style="top: -8px;"></span>
+                            <span class="lever blue-grey lighten-2" style="top: -8px;"></span>
                             <i class="material-icons tooltipped" data-position="bottom" data-delay="50" data-tooltip="Show all" style="display: inline-block;">theaters</i>
                         </label>
                     </a>
@@ -273,7 +258,6 @@
     </nav>
     <div id="workspace">
         <!-- Workspace -->
-        <svg id="canvas" class="z-depth-1" width='0' height='0'></svg>
     </div>
 </main>
 
@@ -303,7 +287,7 @@
         </div>
     </div>
     <div class="modal-footer">
-        <a href="javascript:void(0)" class="modal-action modal-close waves-effect waves-light-blue btn-flat">OK</a>
+        <a href="javascript:void(0)" class="modal-action modal-close waves-effect waves-blue-grey btn-flat">OK</a>
     </div>
 </div>
 
@@ -320,7 +304,7 @@
         </div>
     </div>
     <div class="modal-footer">
-        <a href="javascript:void(0)" class="modal-action modal-close waves-effect waves-light-blue btn-flat">OK</a>
+        <a href="javascript:void(0)" class="modal-action modal-close waves-effect waves-blue-grey btn-flat">OK</a>
     </div>
 </div>
 
@@ -344,6 +328,6 @@
         </div>
     </div>
     <div class="modal-footer">
-        <a href="javascript:void(0)" id="btn-canvas-commit-new" class="modal-action modal-close waves-effect waves-light-blue btn-flat">OK</a>
+        <a href="javascript:void(0)" id="btn-canvas-commit-new" class="modal-action modal-close waves-effect waves-blue-grey btn-flat">OK</a>
     </div>
 </div>

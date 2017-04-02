@@ -132,6 +132,9 @@ function setTools(level) {
     $('.nav-wrapper > ul.left > li > a').removeClass('disabled');
     $('.nav-wrapper input').prop('disabled', false);
     $('.toolbox a.btn-flat').removeClass('disabled');
+    $('.dropdown-button').dropdown({
+      belowOrigin: true,
+    });
   }
   if (level > 2) {
     $('.nav-wrapper > ul.right > li > a').removeClass('disabled');
@@ -214,8 +217,9 @@ function loadFloors(libraryId) {
       $('#floor-collection').html('');
       floors.forEach((floor) => {
         const floorItem = $(
-          ['<a href="javascript:void(0)" class="collection-item"',
-            `data-floor_id=${floor.id}>${floor.name}</a>`,
+          [
+            '<a href="javascript:void(0)" class="collection-item blue-grey-text text-lighten-5',
+            `blue-grey darken-4" data-floor_id=${floor.id}>${floor.name}</a>`,
           ].join(' '),
         ).appendTo($(
           '#floor-collection'));
@@ -272,8 +276,8 @@ function loadLibraries() {
       $('#library-collection').html('');
       libraries.forEach((lib) => {
         const item = $([
-          '<a href="javascript:void(0)" class="collection-item"',
-          `data-library_id=${lib.id}>${lib.name}</a>`,
+          '<a href="javascript:void(0)" class="collection-item blue-grey-text text-lighten-5',
+          `blue-grey darken-4" data-library_id=${lib.id}>${lib.name}</a>`,
         ].join(' ')).appendTo($(
           '#library-collection'));
         if (lib.id === activeLibrary) {
@@ -546,8 +550,12 @@ function confirmNewShape(shape, id, settings) {
 }
 
 function initCanvas(w, h, bgimageUrl) {
-  // let x = d3.scaleLinear().domain([0, d3.max(data)]).range([0, width]);
-  canvas = d3.select('#canvas').attr('width', w).attr('height', h);
+  $('#workspace').html('');
+  canvas = d3.select('#workspace').append('svg').attrs({
+    id: 'canvas',
+    width: w,
+    height: h,
+  }).classed('z-depth-1', true);
   canvas.style('left', Math.max(0.5 * ($('#workspace').width() - w)));
   canvas.style('top', Math.max(0, 0.5 * ($(window).height() - h - 64)));
   rawFloorSize = [w, h];
@@ -569,8 +577,8 @@ function initCanvas(w, h, bgimageUrl) {
   saveCounter = 0;
 
   canvas.style('cursor', 'default');
-  $('.toolbox a.btn-flat').removeClass('light-blue');
-  $('.toolbox a.btn-flat:first-child').addClass('light-blue');
+  $('.toolbox a.btn-flat').removeClass('light-blue lighten-2');
+  $('.toolbox a.btn-flat:first-child').addClass('light-blue lighten-2');
   $('.tool-options > .row').hide();
   $('.tool-options input').val(0);
   $('.tool-options input').val('');
@@ -923,7 +931,7 @@ $(document).ready(() => {
   loadLibraries();
 
   $('.tool-options > .row').hide();
-  $('.dropdown-button').dropdown();
+
   $('#workspace').height($('#workspace').height() - 74);
 
   $('.toolbox a.btn-flat').each((index) => {
@@ -954,7 +962,7 @@ $(document).ready(() => {
         }
       }
       $('.tool-options > .row').hide();
-      $('.toolbox a.btn-flat').removeClass('light-blue');
+      $('.toolbox a.btn-flat').removeClass('light-blue lighten-2');
       if (!canvas.selectAll('.selected').empty()) {
         $(`.tool-options > .row:nth-child(${index})`).show();
       }
@@ -963,7 +971,7 @@ $(document).ready(() => {
       if (modebit === 4) {
         $(`.tool-options > .row:nth-child(${index})`).show();
       }
-      $(event.currentTarget).addClass('light-blue');
+      $(event.currentTarget).addClass('light-blue lighten-2');
       showHelp(helpText[index]);
     });
   });
