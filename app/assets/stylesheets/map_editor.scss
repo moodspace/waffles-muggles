@@ -20,7 +20,7 @@ main {
 }
 
 .dropdown-content .divider,
-.side-nav.fixed .divider {
+ul.side-nav.fixed .divider {
     background-color: rgba(255, 255, 255, 0.1);
     margin: 0;
 }
@@ -39,11 +39,11 @@ main {
     color: $client-color !important;
 }
 
-.side-nav.fixed .subheader {
+ul.side-nav.fixed .subheader {
     color: rgba(255, 255, 255, 0.54);
 }
 
-.side-nav > li > .collapsible > li > .collapsible-header {
+ul.side-nav.fixed > li > .collapsible > li > .collapsible-header {
     padding-left: 32px;
     color: rgba(255, 255, 255, 0.54);
     font-size: 14px;
@@ -51,7 +51,7 @@ main {
     line-height: 48px;
 }
 
-.side-nav > li > .collapsible > li > .collapsible-body > div > a {
+ul.side-nav.fixed > li > .collapsible > li > .collapsible-body > div > a {
     padding-left: 42px;
 }
 
@@ -105,11 +105,6 @@ main {
 main {
     padding-left: 300px;
 }
-@media only screen and (max-width: 992px) {
-    main {
-        padding-left: 0;
-    }
-}
 
 #message-area {
     position: fixed;
@@ -149,27 +144,27 @@ nav a.disabled:hover {
     background-color: transparent;
 }
 
-.side-nav label.tooltipped.active,
-label.tooltipped.under {
+label.tooltipped.under,
+ul.side-nav.fixed label.tooltipped.active {
     border-bottom: 2px dotted $accent-color;
 }
 
-.side-nav input[type=text]:focus:not([readonly]),
-.side-nav textarea.materialize-textarea:focus:not([readonly]) {
+ul.side-nav.fixed input[type=text]:focus:not([readonly]),
+ul.side-nav.fixed textarea.materialize-textarea:focus:not([readonly]) {
     border-bottom: 1px solid $accent-color;
     box-shadow: 0 1px 0 0 $accent-color;
 }
 
-.side-nav input[type=text]:focus:not([readonly])+label,
-.side-nav textarea.materialize-textarea:focus:not([readonly])+label {
+ul.side-nav.fixed input[type=text]:focus:not([readonly])+label,
+ul.side-nav.fixed textarea.materialize-textarea:focus:not([readonly])+label {
     color: $accent-color;
 }
 
-.side-nav .collection {
+ul.side-nav.fixed .collection {
     border-radius: 0;
 }
 
-.side-nav .collection a.collection-item.active {
+ul.side-nav.fixed .collection a.collection-item.active {
     background-color: $accent-color !important;
     color: $client-color-bg !important;
 }
@@ -180,4 +175,71 @@ label.tooltipped.under {
 
 body {
     background-color: #37474f;
+}
+@media only screen and (max-width: 992px) {
+    header,
+    header > ul {
+        height: 300px !important;
+    }
+
+    ul.side-nav.fixed > li,
+    ul.side-nav.fixed > li .collection > a {
+        background-color: #222c31 !important;
+    }
+
+    main {
+        padding-left: 0;
+        top: 300px;
+    }
+
+    ul.side-nav.fixed {
+        padding: 0;
+        background-color: #222c31 !important;
+        transform: none !important;
+        -webkit-transform: none !important;
+        position: static !important;
+        width: 100%;
+    }
+
+    ul.side-nav.fixed > li {
+        width: 50%;
+        margin-left: auto;
+        left: auto;
+        right: auto;
+        float: left;
+        box-sizing: border-box;
+        padding: 0 0.75rem;
+        min-height: 1px;
+    }
+
+    ul.side-nav.fixed > li > .divider {
+        display: none;
+    }
+
+    #workspace {
+        top: 64px;
+        left: 0;
+    }
+
+    nav .switch {
+        display: none;
+    }
+}
+@media only screen and (max-width: 768px) {
+    ul.side-nav.fixed > li {
+        width: 100%;
+    }
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background-color: rgba(0,0,0,0.1);
+}
+
+::-webkit-scrollbar-thumb {
+    background: $accent-color;
 }
