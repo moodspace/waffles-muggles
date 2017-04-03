@@ -382,10 +382,13 @@ function showStackTool(id) {
 }
 
 function addClickHandlerToShape(e) {
-  e.on('click', () => {
+  e.on('mousedown', () => {
     if (!e.classed('cobject')) {
       return;
     }
+    e.each(() => {
+      d3.event.target.parentNode.appendChild(d3.event.target);
+    });
     switch (modebit) {
       case 0:
         if (e.attr('points')) {
@@ -404,6 +407,39 @@ function addClickHandlerToShape(e) {
           showStackTool(e.attr('id'));
         }
         break;
+      default:
+
+    }
+  });
+}
+
+function addPanHandlerToShape(e) {
+  e.on('mousemove', () => {
+    const point = d3.mouse(event.currentTarget);
+    if (!e.classed('cobject')) {
+      return;
+    }
+    switch (modebit) {
+      case 0:
+        {
+          if (e.classed('selected') && mousedownPoint) {
+            const cLeftOffset = point[0] - mousedownPoint[0];
+            const cTopOffset = point[1] - mousedownPoint[1];
+            const orig = [
+              parseInt(e.attr('x'), 10),
+              parseInt(e.attr('y'), 10),
+            ];
+            if (point[0] < 0 || point[0] >= canvas.attr('width') || point[1] <
+              0 || point[1] >= canvas.attr('height')) {
+              mousedownPoint = undefined;
+              break;
+            }
+            e.attr('x', orig[0] + cLeftOffset);
+            e.attr('y', orig[1] + cTopOffset);
+            mousedownPoint = point;
+          }
+          break;
+        }
       default:
 
     }
@@ -430,6 +466,7 @@ function confirmNewShape(shape, id, settings) {
 
   if (!settings || !settings.readonly) {
     addClickHandlerToShape(shape);
+    addPanHandlerToShape(shape);
   }
   switch (modebit) {
     case 1:
@@ -581,6 +618,9 @@ function initCanvas(w, h, bgimageUrl) {
 
   canvas.on('mousedown', () => {
     switch (modebit) {
+      case 0:
+        mousedownPoint = d3.mouse(event.currentTarget);
+        break;
       case 6:
         mousedownPoint = d3.mouse(event.currentTarget);
         break;
