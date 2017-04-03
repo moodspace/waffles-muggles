@@ -189,7 +189,10 @@ function setZoomLevel(level) {
   if (level.includes('%')) {
     zoomLevel = parseFloat(level.replace('%', '')) / 100;
   } else if (level === 'Fit width') {
-    zoomLevel = $('#workspace').width() / rawFloorSize[0];
+    zoomLevel = ($('#workspace').width() - 20) / rawFloorSize[0];
+  } else if (level === 'Fit window') {
+    zoomLevel = Math.min(($('#workspace').width() - 20) / rawFloorSize[0],
+      ($('#workspace').height() - 20) / rawFloorSize[1]);
   }
   const w = zoomLevel * rawFloorSize[0];
   const h = zoomLevel * rawFloorSize[1];

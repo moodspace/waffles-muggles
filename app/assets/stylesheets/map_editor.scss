@@ -1,245 +1,255 @@
 $accent-color: #4fc3f7;
 $client-color-bg: #263238;
 $client-color: #eceff1;
+$min-width: 320px;
+$min-height: 480px;
+$bar-height: 64px;
+$bar-offset: $bar-height + 4px;
+$nav-width: 300px;
+$nav-responsive-height: 300px;
 
 nav {
-    margin-bottom: 10px;
+  margin-bottom: 10px;
 }
 
 #modal-upload-ref > div > form > input[name="commit"] {
-    display: none;
+  display: none;
 }
 
 main {
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    overflow: hidden;
+  bottom: 0;
+  left: 0;
+  overflow: hidden;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
 .dropdown-content .divider,
 ul.side-nav.fixed .divider {
-    background-color: rgba(255, 255, 255, 0.1);
-    margin: 0;
+  background-color: rgba(255, 255, 255, 0.1);
+  margin: 0;
 }
 
 .dropdown-content li.active,
 .dropdown-content li.selected,
 .dropdown-content li:hover {
-    background-color: $accent-color !important;
+  background-color: $accent-color !important;
 }
 
 .select-dropdown li > span {
-    color: $client-color-bg !important;
+  color: $client-color-bg !important;
 }
 
 .select-wrapper > .caret {
-    color: $client-color !important;
+  color: $client-color !important;
 }
 
 ul.side-nav.fixed .subheader {
-    color: rgba(255, 255, 255, 0.54);
+  color: rgba(255, 255, 255, 0.54);
 }
 
 ul.side-nav.fixed > li > .collapsible > li > .collapsible-header {
-    padding-left: 32px;
-    color: rgba(255, 255, 255, 0.54);
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 48px;
+  color: rgba(255, 255, 255, 0.54);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 48px;
+  padding-left: 32px;
 }
 
 ul.side-nav.fixed > li > .collapsible > li > .collapsible-body > div > a {
-    padding-left: 42px;
+  padding-left: 42px;
 }
 
 .tool-options *,
 .toolbox * {
-    line-height: 1.5;
+  line-height: 1.5;
 }
 
 .toolbox a.btn-flat {
-    line-height: 36px;
-    text-align: center;
-    cursor: default;
+  cursor: default;
+  line-height: 36px;
+  text-align: center;
 }
 
 .tool-options,
 .toolbox {
-    padding-left: 24px;
-    padding-right: 24px;
+  padding-left: 24px;
+  padding-right: 24px;
 }
 
 #workspace {
-    position: absolute;
-    top: 68px;
-    left: 300px;
-    bottom: 0;
-    right: 0;
-    overflow: scroll;
+  bottom: 0;
+  left: $nav-width;
+  overflow: scroll;
+  position: absolute;
+  right: 0;
+  top: $bar-offset;
 }
 
 #workspace > svg {
-    position: relative;
-    border: 1px solid #000;
+  background-color: #fff;
+  border: 1px solid #000;
+  position: relative;
 }
 
 #workspace > svg .selected {
-    stroke-width: 3px;
+  stroke-width: 3px;
 }
 
 #workspace > svg g.hidden {
-    visibility: hidden;
-}
-
-.cstack.size1 {
-    stroke-dasharray: 10 5;
-}
-
-.cstack.size2 {
-    stroke-dasharray: 20 20;
-}
-
-main {
-    padding-left: 300px;
-}
-
-#message-area {
-    position: fixed;
-    right: 20px;
-    bottom: 20px;
-    z-index: 1;
-}
-
-#message-area > div {
-    display: none;
-}
-
-#workspace > svg {
-    background-color: #fff;
+  visibility: hidden;
 }
 
 #workspace > svg polygon.fb {
-    stroke-width: 8px;
-    stroke-opacity: 0.5;
+  stroke-opacity: .5;
+  stroke-width: 8px;
+}
+
+.cstack.size1 {
+  stroke-dasharray: 10 5;
+}
+
+.cstack.size2 {
+  stroke-dasharray: 20 20;
+}
+
+main {
+  padding-left: $nav-width;
+}
+
+#message-area {
+  bottom: 20px;
+  position: fixed;
+  right: 20px;
+  z-index: 1;
+}
+
+#message-area > div {
+  display: none;
 }
 
 nav .switch:not(.disabled) label input[type=checkbox]:checked+.lever:after {
-    background-color: $accent-color !important;
+  background-color: $accent-color !important;
 }
 
 nav a.disabled,
 nav a.disabled i {
-    color: #37474f;
-    cursor: default;
+  color: #37474f;
+  cursor: default;
 }
 
 nav .disabled * {
-    cursor: default !important;
+  cursor: default !important;
 }
 
 nav a.disabled:hover {
-    background-color: transparent;
+  background-color: transparent;
 }
 
 label.tooltipped.under,
 ul.side-nav.fixed label.tooltipped.active {
-    border-bottom: 2px dotted $accent-color;
+  border-bottom: 2px dotted $accent-color;
 }
 
 ul.side-nav.fixed input[type=text]:focus:not([readonly]),
 ul.side-nav.fixed textarea.materialize-textarea:focus:not([readonly]) {
-    border-bottom: 1px solid $accent-color;
-    box-shadow: 0 1px 0 0 $accent-color;
+  border-bottom: 1px solid $accent-color;
+  box-shadow: 0 1px 0 0 $accent-color;
 }
 
 ul.side-nav.fixed input[type=text]:focus:not([readonly])+label,
 ul.side-nav.fixed textarea.materialize-textarea:focus:not([readonly])+label {
-    color: $accent-color;
+  color: $accent-color;
 }
 
 ul.side-nav.fixed .collection {
-    border-radius: 0;
+  border-radius: 0;
 }
 
 ul.side-nav.fixed .collection a.collection-item.active {
-    background-color: $accent-color !important;
-    color: $client-color-bg !important;
+  background-color: $accent-color !important;
+  color: $client-color-bg !important;
 }
 
 .collection a.collection-item {
-    border-bottom: none;
+  border-bottom: 0;
+}
+
+html {
+  height: 100%;
 }
 
 body {
-    background-color: #37474f;
+  background-color: #37474f;
+  height: 100%;
+  min-height: $min-height;
+  min-width: $min-width;
+  position: relative;
 }
 @media only screen and (max-width: 992px) {
-    header,
-    header > ul {
-        height: 300px !important;
-    }
+  header,
+  header > ul {
+    height: $nav-responsive-height !important;
+  }
 
-    ul.side-nav.fixed > li,
-    ul.side-nav.fixed > li .collection > a {
-        background-color: #222c31 !important;
-    }
+  ul.side-nav.fixed > li,
+  ul.side-nav.fixed > li .collection > a {
+    background-color: #222c31 !important;
+  }
 
-    main {
-        padding-left: 0;
-        top: 300px;
-    }
+  main {
+    padding-left: 0;
+    top: $nav-responsive-height;
+  }
 
-    ul.side-nav.fixed {
-        padding: 0;
-        background-color: #222c31 !important;
-        transform: none !important;
-        -webkit-transform: none !important;
-        position: static !important;
-        width: 100%;
-    }
+  ul.side-nav.fixed {
+    -webkit-transform: none !important;
+    background-color: #222c31 !important;
+    padding: 0;
+    position: static !important;
+    transform: none !important;
+    width: 100%;
+  }
 
-    ul.side-nav.fixed > li {
-        width: 50%;
-        margin-left: auto;
-        left: auto;
-        right: auto;
-        float: left;
-        box-sizing: border-box;
-        padding: 0 0.75rem;
-        min-height: 1px;
-    }
+  ul.side-nav.fixed > li {
+    box-sizing: border-box;
+    float: left;
+    left: auto;
+    margin-left: auto;
+    min-height: 1px;
+    padding: 0 .75rem;
+    right: auto;
+    width: 50%;
+  }
 
-    ul.side-nav.fixed > li > .divider {
-        display: none;
-    }
+  ul.side-nav.fixed > li > .divider {
+    display: none;
+  }
 
-    #workspace {
-        top: 64px;
-        left: 0;
-    }
+  #workspace {
+    left: 0;
+  }
 
-    nav .switch {
-        display: none;
-    }
+  nav .switch {
+    display: none;
+  }
 }
 @media only screen and (max-width: 768px) {
-    ul.side-nav.fixed > li {
-        width: 100%;
-    }
+  ul.side-nav.fixed > li {
+    width: 100%;
+  }
 }
 
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+  height: 8px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-    background-color: rgba(0,0,0,0.1);
+  background-color: rgba(0,0,0,0.1);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: $accent-color;
+  background: $accent-color;
 }
