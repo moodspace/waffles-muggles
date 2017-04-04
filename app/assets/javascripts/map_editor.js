@@ -635,6 +635,15 @@ function initCanvas(w, h, bgimageUrl) {
 
   canvas.on('mousemove', () => {
     const point = d3.mouse(event.currentTarget);
+    const scaledPt = scalePhysical(point);
+    scaledPt[0] = parseInt(scaledPt[0], 10);
+    scaledPt[1] = parseInt(scaledPt[1], 10);
+
+    if (scaledPt[0] > -1 && scaledPt[1] > -1) {
+      $('#label-coords').text(scaledPt.join(', '));
+    } else {
+      $('#label-coords').text('');
+    }
 
     switch (modebit) {
       case 1:

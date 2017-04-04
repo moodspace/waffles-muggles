@@ -25,6 +25,10 @@ main {
   top: 0;
 }
 
+.dropdown-content.wide {
+  min-width: 120px;
+}
+
 .dropdown-content .divider,
 ul.side-nav.fixed .divider {
   background-color: rgba(255, 255, 255, 0.1);
