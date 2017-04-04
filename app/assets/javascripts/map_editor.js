@@ -346,13 +346,19 @@ function selectPolygon(id) {
   Materialize.updateTextFields();
 }
 
+function findShapeData(id) {
+  const objList = _.filter(objects, { id });
+  const stackList = _.flatten(objects.map(obj => _.filter(obj.data, { id })));
+  return _.concat(objList, stackList);
+}
+
 function showMarkTool(id) {
   canvas.selectAll('.selected').classed('selected', false);
   $(`#${id}`).addClass('selected');
-  const objIdx = _.findIndex(objects, o => o.id === id && o.type !== 'stacks');
-  $('#cmark-rows').val(objects[objIdx].meta.rows);
+  const objData = findShapeData(id)[0];
+  $('#cmark-rows').val(objData.meta.rows);
   $('#cmark-rotation').material_select('destroy');
-  $('#cmark-rotation').val(objects[objIdx].meta.rotation);
+  $('#cmark-rotation').val(objData.meta.rotation);
   $('#cmark-rotation').material_select();
   $(`.tool-options > .row:nth-child(${modebit})`).show();
   Materialize.updateTextFields();
@@ -361,25 +367,21 @@ function showMarkTool(id) {
 function showStackTool(id) {
   canvas.selectAll('.selected').classed('selected', false);
   $(`#${id}`).addClass('selected');
-  objects.forEach((obj) => {
-    const stackIdx = _.findIndex(obj.data, {
-      id,
-    });
-    if (obj.type === 'stacks' && stackIdx >= 0) {
-      $('#cstack-oversize').material_select('destroy');
-      $('#cstack-oversize').val(obj.data[stackIdx].meta.oversize);
-      $('#cstack-oversize').material_select();
-      $('#cstack-rotation').val(obj.data[stackIdx].meta.rotation);
-      $('#cstack-startClass').val(obj.data[stackIdx].meta.startClass);
-      $('#cstack-startSubclass').val(obj.data[stackIdx].meta.startSubclass);
-      $('#cstack-startSubclass2').val(obj.data[stackIdx].meta.startSubclass2);
-      $('#cstack-endClass').val(obj.data[stackIdx].meta.endClass);
-      $('#cstack-endSubclass').val(obj.data[stackIdx].meta.endSubclass);
-      $('#cstack-endSubclass2').val(obj.data[stackIdx].meta.endSubclass2);
-      $(`.tool-options > .row:nth-child(${modebit})`).show();
-      Materialize.updateTextFields();
-    }
-  });
+  const stackData = findShapeData(id)[0];
+  if (stackData) {
+    $('#cstack-oversize').material_select('destroy');
+    $('#cstack-oversize').val(stackData.meta.oversize);
+    $('#cstack-oversize').material_select();
+    $('#cstack-rotation').val(stackData.meta.rotation);
+    $('#cstack-startClass').val(stackData.meta.startClass);
+    $('#cstack-startSubclass').val(stackData.meta.startSubclass);
+    $('#cstack-startSubclass2').val(stackData.meta.startSubclass2);
+    $('#cstack-endClass').val(stackData.meta.endClass);
+    $('#cstack-endSubclass').val(stackData.meta.endSubclass);
+    $('#cstack-endSubclass2').val(stackData.meta.endSubclass2);
+    $(`.tool-options > .row:nth-child(${modebit})`).show();
+    Materialize.updateTextFields();
+  }
 }
 
 function addClickHandlerToShape(e) {
@@ -450,6 +452,93 @@ function confirmNewShape(shape, id, settings) {
     default:
 
   }
+}
+
+
+function generateRectData(shape) {
+  const id = shape.attr('id');
+  objects = objects.map((obj) => {
+    if (obj.id === id && obj.type !== 'stacks') {
+      const newObj = _.clone(obj);
+      newObj.data = {
+        x: parseInt(shape.attr('x'), 10),
+        y: parseInt(shape.attr('y'), 10),
+        width: parseInt(shape.attr('width'), 10),
+        height: parseInt(shape.attr('height'), 10),
+      };
+      return newObj;
+    }
+    return obj;
+  });
+}
+
+function generatePolygonData(shape) {
+  const id = shape.attr('id');
+  objects = objects.map((obj) => {
+    if (obj.id === id && obj.type !== 'stacks') {
+      const newObj = _.clone(obj);
+      newObj.data = {
+        points: pointsToArray(shape.attr('points')),
+      };
+      return newObj;
+    }
+    return obj;
+  });
+}
+
+function generateStackData(shape) {
+  const id = shape.attr('id');
+  objects = objects.map((obj) => {
+    const stackIdx = _.findIndex(obj.data, { id });
+    if (obj.type === 'stacks' && stackIdx >= 0) {
+      const newObj = _.clone(obj);
+      newObj.data[stackIdx].data.x = parseInt(shape.attr('x'), 10);
+      newObj.data[stackIdx].data.y = parseInt(shape.attr('y'), 10);
+      newObj.data[stackIdx].data.width = parseInt(shape.attr(
+        'width'), 10);
+      newObj.data[stackIdx].data.height = parseInt(shape.attr(
+        'height'), 10);
+      // update meta
+      newObj.data[stackIdx].meta.cx = newObj.data[stackIdx].data.x +
+        (newObj.data[stackIdx].data.width / 2);
+      newObj.data[stackIdx].meta.cy = newObj.data[stackIdx].data.y +
+        (newObj.data[stackIdx].data.height / 2);
+      newObj.data[stackIdx].meta.lx = newObj.data[stackIdx].data.width;
+      newObj.data[stackIdx].meta.ly = newObj.data[stackIdx].data.height;
+      return newObj;
+    }
+    return obj;
+  });
+}
+
+function generateStackMeta(shape) {
+  objects = objects.map((obj) => {
+    const stackIdx = _.findIndex(obj.data, {
+      id: shape.attr('id'),
+    });
+    if (obj.type === 'stacks' && stackIdx >= 0) {
+      const newObj = _.clone(obj);
+      newObj.data[stackIdx].meta.oversize = parseInt($(
+        '#cstack-oversize').val(), 10);
+      shape.classed('size0', false).classed('size1', false).classed(
+        'size2', false).classed(
+        `size${$('#cstack-oversize').val()}`, true);
+      newObj.data[stackIdx].meta.startClass = $(
+        '#cstack-startClass').val().trim().toUpperCase();
+      newObj.data[stackIdx].meta.startSubclass = Math.floor(
+        parseFloat($('#cstack-startSubclass').val(), 10));
+      newObj.data[stackIdx].meta.startSubclass2 = $(
+        '#cstack-startSubclass2').val().trim().toUpperCase();
+      newObj.data[stackIdx].meta.endClass = $('#cstack-endClass')
+        .val().trim().toUpperCase();
+      newObj.data[stackIdx].meta.endSubclass = Math.ceil(
+        parseFloat($('#cstack-endSubclass').val(), 10));
+      newObj.data[stackIdx].meta.endSubclass2 = $(
+        '#cstack-endSubclass2').val().trim().toUpperCase();
+      return newObj;
+    }
+    return obj;
+  });
 }
 
 function initCanvas(w, h, bgimageUrl) {
@@ -644,6 +733,7 @@ function initCanvas(w, h, bgimageUrl) {
             rect.attr('y', orig[1] + cTopOffset);
             mousemovePoint = point;
             if (_.isEmpty(rect.attr('transform'))) {
+              generateRectData(rect);
               break;
             }
             // rotated rect only
@@ -658,12 +748,14 @@ function initCanvas(w, h, bgimageUrl) {
               rotationVals[2] + cTopOffset,
             ].join(' ');
             rect.attr('transform', `rotate(${newRotationString})`);
+            generateStackData(rect);
           } else if (!polygon.empty()) {
             const pointsArray = pointsToArray(polygon.attr('points'));
             polygon.attr('points',
               arrayToPoints(
                 offsetPoints(pointsArray, cLeftOffset, cTopOffset)));
             mousemovePoint = point;
+            generatePolygonData(polygon);
           }
           break;
         }
@@ -1197,45 +1289,10 @@ $(document).ready(() => {
     shape.attr('height', $('#crect-height').val());
 
     // for area rect edit
-    objects = objects.map((obj) => {
-      if (obj.id === shape.attr('id') && obj.type !== 'stacks') {
-        const newObj = _.clone(obj);
-        newObj.data = {
-          x: parseInt(shape.attr('x'), 10),
-          y: parseInt(shape.attr('y'), 10),
-          width: parseInt(shape.attr('width'), 10),
-          height: parseInt(shape.attr('height'), 10),
-        };
-        return newObj;
-      }
-      return obj;
-    });
+    generateRectData(shape);
 
     // for stack rect edit
-    objects = objects.map((obj) => {
-      const stackIdx = _.findIndex(obj.data, {
-        id: shape.attr('id'),
-      });
-      if (obj.type === 'stacks' && stackIdx >= 0) {
-        const newObj = _.clone(obj);
-        newObj.data[stackIdx].data.x = parseInt(shape.attr('x'), 10);
-        newObj.data[stackIdx].data.y = parseInt(shape.attr('y'), 10);
-        newObj.data[stackIdx].data.width = parseInt(shape.attr(
-          'width'), 10);
-        newObj.data[stackIdx].data.height = parseInt(shape.attr(
-          'height'), 10);
-        // update meta
-        newObj.data[stackIdx].meta.cx = newObj.data[stackIdx].data.x +
-          (newObj.data[stackIdx].data.width / 2);
-        newObj.data[stackIdx].meta.cy = newObj.data[stackIdx].data.y +
-          (newObj.data[stackIdx].data.height / 2);
-        newObj.data[stackIdx].meta.lx = newObj.data[stackIdx].data.width;
-        newObj.data[stackIdx].meta.ly = newObj.data[stackIdx].data.height;
-
-        return newObj;
-      }
-      return obj;
-    });
+    generateStackData(shape);
   });
 
   $('.row.cpolygon input').change(() => {
@@ -1245,34 +1302,7 @@ $(document).ready(() => {
 
   $('.row.cstack input, .row.cstack select').change(() => {
     const shape = canvas.selectAll('.selected');
-
-    objects = objects.map((obj) => {
-      const stackIdx = _.findIndex(obj.data, {
-        id: shape.attr('id'),
-      });
-      if (obj.type === 'stacks' && stackIdx >= 0) {
-        const newObj = _.clone(obj);
-        newObj.data[stackIdx].meta.oversize = parseInt($(
-          '#cstack-oversize').val(), 10);
-        shape.classed('size0', false).classed('size1', false).classed(
-          'size2', false).classed(
-          `size${$('#cstack-oversize').val()}`, true);
-        newObj.data[stackIdx].meta.startClass = $(
-          '#cstack-startClass').val().trim().toUpperCase();
-        newObj.data[stackIdx].meta.startSubclass = Math.floor(
-          parseFloat($('#cstack-startSubclass').val(), 10));
-        newObj.data[stackIdx].meta.startSubclass2 = $(
-          '#cstack-startSubclass2').val().trim().toUpperCase();
-        newObj.data[stackIdx].meta.endClass = $('#cstack-endClass')
-          .val().trim().toUpperCase();
-        newObj.data[stackIdx].meta.endSubclass = Math.ceil(
-          parseFloat($('#cstack-endSubclass').val(), 10));
-        newObj.data[stackIdx].meta.endSubclass2 = $(
-          '#cstack-endSubclass2').val().trim().toUpperCase();
-        return newObj;
-      }
-      return obj;
-    });
+    generateStackMeta(shape);
   });
 
   $('#cfloor-btn-set').click(() => {
