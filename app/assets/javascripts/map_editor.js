@@ -13,6 +13,7 @@ let saveCounter = 0;
 let zoomLevel = 1;
 let rawFloorSize = [0, 0];
 let mousedownPoint;
+let mousemovePoint;
 
 const helpText = [
   'Click to select an element on canvas.',
@@ -396,6 +397,7 @@ function addClickHandlerToShape(e) {
         } else if (e.classed('cobject') && e.attr('x')) {
           selectRect(e.attr('id'));
         }
+        mousedownPoint = d3.mouse(event.currentTarget);
         break;
       case 3:
         if (!e.classed('cstack')) {
@@ -407,42 +409,13 @@ function addClickHandlerToShape(e) {
           showStackTool(e.attr('id'));
         }
         break;
+      case 6:
+        mousedownPoint = d3.mouse(event.currentTarget);
+        break;
       default:
 
     }
-  });
-}
-
-function addPanHandlerToShape(e) {
-  e.on('mousemove', () => {
-    const point = d3.mouse(event.currentTarget);
-    if (!e.classed('cobject')) {
-      return;
-    }
-    switch (modebit) {
-      case 0:
-        {
-          if (e.classed('selected') && mousedownPoint) {
-            const cLeftOffset = point[0] - mousedownPoint[0];
-            const cTopOffset = point[1] - mousedownPoint[1];
-            const orig = [
-              parseInt(e.attr('x'), 10),
-              parseInt(e.attr('y'), 10),
-            ];
-            if (point[0] < 0 || point[0] >= canvas.attr('width') || point[1] <
-              0 || point[1] >= canvas.attr('height')) {
-              mousedownPoint = undefined;
-              break;
-            }
-            e.attr('x', orig[0] + cLeftOffset);
-            e.attr('y', orig[1] + cTopOffset);
-            mousedownPoint = point;
-          }
-          break;
-        }
-      default:
-
-    }
+    mousemovePoint = mousedownPoint;
   });
 }
 
@@ -466,7 +439,6 @@ function confirmNewShape(shape, id, settings) {
 
   if (!settings || !settings.readonly) {
     addClickHandlerToShape(shape);
-    addPanHandlerToShape(shape);
   }
   switch (modebit) {
     case 1:
@@ -627,10 +599,12 @@ function initCanvas(w, h, bgimageUrl) {
       default:
         mousedownPoint = undefined;
     }
+    mousemovePoint = mousedownPoint;
   });
 
   canvas.on('mouseup', () => {
     mousedownPoint = undefined;
+    mousemovePoint = undefined;
   });
 
   canvas.on('mousemove', () => {
@@ -646,6 +620,53 @@ function initCanvas(w, h, bgimageUrl) {
     }
 
     switch (modebit) {
+      case 0:
+        {
+          const rect = canvas.select('rect.selected');
+          const polygon = canvas.select('polygon.selected');
+          if (!mousedownPoint) {
+            break;
+          }
+          const cLeftOffset = point[0] - mousemovePoint[0];
+          const cTopOffset = point[1] - mousemovePoint[1];
+          if (point[0] < 0 || point[0] >= canvas.attr('width') || point[1] <
+            0 || point[1] >= canvas.attr('height')) {
+            mousedownPoint = undefined;
+            mousemovePoint = undefined;
+            break;
+          }
+          if (!rect.empty()) {
+            const orig = [
+              parseInt(rect.attr('x'), 10),
+              parseInt(rect.attr('y'), 10),
+            ];
+            rect.attr('x', orig[0] + cLeftOffset);
+            rect.attr('y', orig[1] + cTopOffset);
+            mousemovePoint = point;
+            if (_.isEmpty(rect.attr('transform'))) {
+              break;
+            }
+            // rotated rect only
+            const rotationVals = rect.attr('transform').replace(
+                /\w+/, '')
+              .replace('(', '').replace(')', '')
+              .split(' ')
+              .map(v => parseInt(v, 10));
+            const newRotationString = [
+              rotationVals[0],
+              rotationVals[1] + cLeftOffset,
+              rotationVals[2] + cTopOffset,
+            ].join(' ');
+            rect.attr('transform', `rotate(${newRotationString})`);
+          } else if (!polygon.empty()) {
+            const pointsArray = pointsToArray(polygon.attr('points'));
+            polygon.attr('points',
+              arrayToPoints(
+                offsetPoints(pointsArray, cLeftOffset, cTopOffset)));
+            mousemovePoint = point;
+          }
+          break;
+        }
       case 1:
         {
           const activeRect = canvas.select('rect.active');
@@ -708,6 +729,7 @@ function initCanvas(w, h, bgimageUrl) {
             $('#workspace > svg').height() + orig[1] + cTopOffset < $(
               '#workspace').height() / 2) {
             mousedownPoint = undefined;
+            mousemovePoint = undefined;
             break;
           }
           canvas.style('left', orig[0] + cLeftOffset);
