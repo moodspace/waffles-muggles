@@ -43,6 +43,7 @@ class MapsController < ApplicationController
         size_x: floor.size_x,
         size_y: floor.size_y,
         geojson: floor.geojson,
+        stackmap: floor.stackmap,
         ref: floor.ref,
         library: {
           id: library.id,

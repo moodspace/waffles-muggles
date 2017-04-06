@@ -8,70 +8,71 @@
 #
 
 class InitTables < ActiveRecord::Migration[5.0]
-    def change
-        create_table 'error'.pluralize.to_sym, id: false do |t|
-            t.integer :code
-            t.string :message
-            t.string :fields
+  def change
+    create_table 'error'.pluralize.to_sym, id: false do |t|
+      t.integer :code
+      t.string :message
+      t.string :fields
 
-            t.timestamps
-        end
+      t.timestamps
+    end
 
-        create_table 'floor'.pluralize.to_sym, id: false do |t|
-            t.bigint :id
-            t.string :name
-            t.integer :size_x
-            t.integer :size_y
-            t.text :geojson
-            t.string :ref
-            t.bigint :library
+    create_table 'floor'.pluralize.to_sym, id: false do |t|
+      t.bigint :id
+      t.string :name
+      t.integer :size_x
+      t.integer :size_y
+      t.text :geojson
+      t.text :stackmap
+      t.string :ref
+      t.bigint :library
 
-            t.timestamps
+      t.timestamps
 
-            t.primary_key :id
-        end
+      t.primary_key :id
+    end
 
-        create_table 'library'.pluralize.to_sym, id: false do |t|
-            t.bigint :id
-            t.string :name
-            t.string :latitude
-            t.string :longitude
+    create_table 'library'.pluralize.to_sym, id: false do |t|
+      t.bigint :id
+      t.string :name
+      t.string :latitude
+      t.string :longitude
 
-            t.timestamps
+      t.timestamps
 
-            t.primary_key :id
-        end
+      t.primary_key :id
+    end
 
-        create_table 'rule'.pluralize.to_sym, id: false do |t|
-            t.string :rule_type
-            t.bigint :rule_id
-            t.string :call_number
-            t.string :rule
+    create_table 'rule'.pluralize.to_sym, id: false do |t|
+      t.string :rule_type
+      t.bigint :rule_id
+      t.string :call_number
+      t.string :rule
 
-            t.timestamps
+      t.timestamps
 
-            t.primary_key :rule_id
-        end
+      t.primary_key :rule_id
+    end
 
-        create_table 'stack'.pluralize.to_sym, id: false do |t|
-            t.bigint :id
-            t.integer :cx
-            t.integer :cy
-            t.integer :lx
-            t.integer :ly
-            t.integer :rotation
-            t.string :start_class
-            t.integer :start_subclass
-            t.string :start_subclass2
-            t.string :end_class
-            t.integer :end_subclass
-            t.string :end_subclass2
-            t.integer :oversize
-            t.bigint :floor
+    create_table 'stack'.pluralize.to_sym, id: false do |t|
+      t.bigint :id
+      t.integer :cx
+      t.integer :cy
+      t.integer :lx
+      t.integer :ly
+      t.integer :rotation
+      t.string :start_class
+      t.integer :start_subclass
+      t.string :start_subclass2
+      t.string :end_class
+      t.integer :end_subclass
+      t.string :end_subclass2
+      t.integer :oversize
+      t.bigint :floor
 
-            t.timestamps
+      t.timestamps
 
-            t.primary_key :id
-        end
-      end
+      t.primary_key :id
+    end
+    end
 end

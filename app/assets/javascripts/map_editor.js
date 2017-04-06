@@ -118,7 +118,8 @@ function addGrids() {
 }
 
 function toggleUndoRedo() {
-  if (objects.length === 0) {
+  if (objects.length === 0 ||
+    _.findIndex(objects, { type: 'action.ancestor' }) === objects.length - 1) {
     $('#nav-undo').addClass('disabled');
   } else {
     $('#nav-undo').removeClass('disabled');
@@ -649,6 +650,11 @@ function undo() {
         redraw(obj.data);
         break;
       }
+    case 'action.ancestor':
+      {
+        objects.push(obj);
+        break;
+      }
     default:
       $(`#${obj.id}`).remove();
   }
@@ -677,7 +683,7 @@ function redo() {
   toggleUndoRedo();
 }
 
-function initCanvas(w, h, bgimageUrl) {
+function initCanvas(w, h, ref, stackmap) {
   $('#workspace').html('');
   canvas = d3.select('#workspace').append('svg').attrs({
     id: 'canvas',
@@ -692,7 +698,7 @@ function initCanvas(w, h, bgimageUrl) {
 
   canvas.append('image').attrs({
     id: 'canvas-e-bgimg',
-    'xlink:href': bgimageUrl,
+    'xlink:href': ref || '',
     width: '100%',
     height: '100%',
   });
@@ -703,6 +709,14 @@ function initCanvas(w, h, bgimageUrl) {
   objectsRedo = [];
   metaObjects = {};
   saveCounter = 0;
+
+  if (stackmap) {
+    stackmap.forEach((obj) => {
+      redraw(obj);
+    });
+    objects = stackmap;
+    objects.push({ type: 'action.ancestor' });
+  }
 
   canvas.style('cursor', 'default');
   $('#btn-zoom').text('100%');
@@ -1088,9 +1102,10 @@ function loadFloors(libraryId) {
 
         activeFloor = floors[floorIdx].id;
         setTools(1);
-        if (floors[floorIdx].ref) {
+        if (floors[floorIdx].stackmap) {
           initCanvas(floors[floorIdx].size_x, floors[floorIdx].size_y,
-            floors[floorIdx].ref);
+            floors[floorIdx].ref,
+            JSON.parse(floors[floorIdx].stackmap));
         }
 
         $('#cfloor-name').val(floors[floorIdx].name);
@@ -1423,7 +1438,8 @@ $(document).ready(() => {
           '#modal-new-canvas>div>div>div:nth-child(1)>input').val();
         const h = $(
           '#modal-new-canvas>div>div>div:nth-child(2)>input').val();
-        initCanvas(parseInt(w, 10), parseInt(h, 10), floor.ref);
+        initCanvas(parseInt(w, 10), parseInt(h, 10), floor.ref,
+          JSON.parse(floor.stackmap));
         loadFloors(activeLibrary);
       },
       error: (e) => {
@@ -1464,6 +1480,9 @@ $(document).ready(() => {
         size_y: data.floor.size_y,
         geojson: data.floor.geojson,
         library: activeLibrary,
+        stackmap: JSON.stringify(_.filter(objects, obj =>
+          obj.type !== 'action.delete' && obj.type !==
+          'action.ancestor')),
       },
       success: () => {
         saveCounter -= 1;

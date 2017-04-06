@@ -18,6 +18,7 @@ class FloorsController < ApplicationController
           size_x: floor.size_x,
           size_y: floor.size_y,
           geojson: floor.geojson,
+          stackmap: floor.stackmap,
           ref: floor.ref,
           library: {
             id: library.id,
@@ -46,6 +47,7 @@ class FloorsController < ApplicationController
       size_x: floor.size_x,
       size_y: floor.size_y,
       geojson: floor.geojson,
+      stackmap: floor.stackmap,
       ref: floor.ref,
       library: {
         id: library.id,
@@ -62,6 +64,7 @@ class FloorsController < ApplicationController
     floor.size_x = params[:size_x]
     floor.size_y = params[:size_y]
     floor.geojson = params[:geojson]
+    floor.stackmap = params[:stackmap]
     floor.ref = params[:ref]
     floor.library = params[:library]
     if floor.save
@@ -77,6 +80,7 @@ class FloorsController < ApplicationController
     floor.size_x = params[:size_x] || floor.size_x
     floor.size_y = params[:size_y] || floor.size_y
     floor.geojson = params[:geojson] || floor.geojson
+    floor.stackmap = params[:stackmap] || floor.stackmap
     floor.ref = params[:ref] || floor.ref
     floor.library = params[:library] || floor.library
     if floor.save

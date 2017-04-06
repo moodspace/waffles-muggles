@@ -490,6 +490,9 @@ definitions:
       geojson:
         type: "string"
         description: "Fine shape"
+      stack:
+        type: "string"
+        description: "Stack map"
       ref:
         type: "string"
         description: "Reference image url"
