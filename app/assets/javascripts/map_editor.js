@@ -1096,7 +1096,7 @@ function loadFloors(libraryId) {
             JSON.parse(floors[floorIdx].stackmap));
 
           const points = JSON.parse(floors[floorIdx].geojson).coordinates;
-          const activeFbPolygon = canvas.append('polygon')
+          const activeFbPolygon = canvas.insert('polygon', ':nth-child(2)')
             .attr('points', arrayToPoints(points))
             .classed('fb active_fb', true);
           // polygon created and stored
