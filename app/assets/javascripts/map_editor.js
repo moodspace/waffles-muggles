@@ -117,11 +117,24 @@ function addGrids() {
   }
 }
 
+function toggleUndoRedo() {
+  if (objects.length === 0) {
+    $('#nav-undo').addClass('disabled');
+  } else {
+    $('#nav-undo').removeClass('disabled');
+  }
+  if (objectsRedo.length === 0) {
+    $('#nav-redo').addClass('disabled');
+  } else {
+    $('#nav-redo').removeClass('disabled');
+  }
+}
+
 function setTools(level) {
   // level 0 or nil: disable all
   // level 1: only 'new' buttons
-  // level 2: toolbox, nav except save / json
-  // level 3: all
+  // level 2: toolbox, nav except save / json / undo / redo
+  // level 3: all, except undo / redo
   $('.nav-wrapper > ul > li > a').addClass('disabled');
   $('.nav-wrapper input').prop('disabled', true);
   $('#btn-output-save').addClass('disabled');
@@ -142,11 +155,11 @@ function setTools(level) {
   if (level > 2) {
     $('.nav-wrapper > ul.right > li > a').removeClass('disabled');
   }
+  toggleUndoRedo();
 }
 
-
 /**
- * Called upon changing zoom level
+ * Called upon changing zoom level, only changing attributes of shapes
  * @return {[type]}              [description]
  */
 function rerender() {
@@ -168,17 +181,15 @@ function rerender() {
     } else if (obj.type === 'polygon') {
       const points = obj.data.points.map(c => scale(c).join(',')).join(' ');
       canvas.select(`#${obj.id}`).attr('points', points);
-    } else if (obj.type === 'stacks') {
-      obj.data.forEach((stack) => {
-        const center = scale([stack.meta.cx, stack.meta.cy]);
-        const rotation = stack.meta.rotation;
-        canvas.select(`#${stack.id}`).attrs({
-          x: scale(stack.data.x),
-          y: scale(stack.data.y),
-          width: scale(stack.data.width),
-          height: scale(stack.data.height),
-          transform: `rotate(${rotation} ${center[0]} ${center[1]})`,
-        });
+    } else if (obj.type === 'stack') {
+      const center = scale([obj.meta.cx, obj.meta.cy]);
+      const rotation = obj.meta.rotation;
+      canvas.select(`#${obj.id}`).attrs({
+        x: scale(obj.data.x),
+        y: scale(obj.data.y),
+        width: scale(obj.data.width),
+        height: scale(obj.data.height),
+        transform: `rotate(${rotation} ${center[0]} ${center[1]})`,
       });
     }
   });
@@ -304,10 +315,8 @@ function exportFloorData() {
 
   const stacksJson = [];
   objects.forEach((obj) => {
-    if (obj.type === 'stacks') {
-      obj.data.forEach((stack) => {
-        stacksJson.push(offsetStack(stack.meta, -deltaX, -deltaY));
-      });
+    if (obj.type === 'stack') {
+      stacksJson.push(offsetStack(obj.meta, -deltaX, -deltaY));
     }
   });
 
@@ -325,6 +334,13 @@ function randomId() {
   ].join('-');
 }
 
+function clearSelection() {
+  canvas.selectAll('.selected').classed('selected', false);
+  $('.tool-options > .row').hide();
+  $('.tool-options > .row:nth-child(1)').show();
+  Materialize.updateTextFields();
+}
+
 function selectRect(id) {
   canvas.selectAll('.selected').classed('selected', false);
   $(`#${id}`).addClass('selected');
@@ -333,7 +349,7 @@ function selectRect(id) {
   $('#crect-width').val($(`#${id}`).attr('width'));
   $('#crect-height').val($(`#${id}`).attr('height'));
   $('.tool-options > .row').hide();
-  $('.tool-options > .row:nth-child(1)').show();
+  $('.tool-options > .row:nth-child(2)').show();
   Materialize.updateTextFields();
 }
 
@@ -342,32 +358,45 @@ function selectPolygon(id) {
   $(`#${id}`).addClass('selected');
   $('#cpolygon-points').val($(`#${id}`).attr('points'));
   $('.tool-options > .row').hide();
-  $('.tool-options > .row:nth-child(2)').show();
+  $('.tool-options > .row:nth-child(3)').show();
   Materialize.updateTextFields();
 }
 
+function removeShapeData(id) {
+  _.pullAllBy(objects, [{ id }], 'id');
+}
+
+/**
+ * Find shape data and its index
+ * @param  {[type]} id [description]
+ * @return {{index, value}}    [description]
+ */
 function findShapeData(id) {
-  const objList = _.filter(objects, { id });
-  const stackList = _.flatten(objects.map(obj => _.filter(obj.data, { id })));
-  return _.concat(objList, stackList);
+  const ret = [];
+  _.each(objects, (v, idx) => {
+    if (v.id === id) {
+      ret.push({ index: idx, value: v });
+    }
+  });
+  return ret;
 }
 
 function showMarkTool(id) {
   canvas.selectAll('.selected').classed('selected', false);
   $(`#${id}`).addClass('selected');
-  const objData = findShapeData(id)[0];
+  const objData = findShapeData(id)[0].value;
   $('#cmark-rows').val(objData.meta.rows);
   $('#cmark-rotation').material_select('destroy');
   $('#cmark-rotation').val(objData.meta.rotation);
   $('#cmark-rotation').material_select();
-  $(`.tool-options > .row:nth-child(${modebit})`).show();
+  $(`.tool-options > .row:nth-child(${modebit + 1})`).show();
   Materialize.updateTextFields();
 }
 
 function showStackTool(id) {
   canvas.selectAll('.selected').classed('selected', false);
   $(`#${id}`).addClass('selected');
-  const stackData = findShapeData(id)[0];
+  const stackData = findShapeData(id)[0].value;
   if (stackData) {
     $('#cstack-oversize').material_select('destroy');
     $('#cstack-oversize').val(stackData.meta.oversize);
@@ -379,7 +408,7 @@ function showStackTool(id) {
     $('#cstack-endClass').val(stackData.meta.endClass);
     $('#cstack-endSubclass').val(stackData.meta.endSubclass);
     $('#cstack-endSubclass2').val(stackData.meta.endSubclass2);
-    $(`.tool-options > .row:nth-child(${modebit})`).show();
+    $(`.tool-options > .row:nth-child(${modebit + 1})`).show();
     Materialize.updateTextFields();
   }
 }
@@ -454,11 +483,83 @@ function confirmNewShape(shape, id, settings) {
   }
 }
 
+function deleteObj(index) {
+  const obj = objects.splice(index, 1)[0];
+  $(`#${obj.id}`).remove();
+  objects.push({ type: 'action.delete', data: obj, meta: { index } });
+  toggleUndoRedo();
+}
+
+/**
+ * Draw a shape on canvas based on data. Does not change history.
+ * @param  {[type]} obj [description]
+ * @return {[type]}     [description]
+ */
+function redraw(obj) {
+  switch (obj.type) {
+    case 'rect':
+      {
+        const rect = canvas.append('rect');
+        rect.attrs({
+          x: scale(obj.data.x),
+          y: scale(obj.data.y),
+          width: scale(obj.data.width),
+          height: scale(obj.data.height),
+        });
+        // rect redrawn and restored
+        confirmNewShape(rect, obj.id, {
+          redo: true,
+        });
+        break;
+      }
+    case 'polygon':
+      {
+        const polygon = canvas.append('polygon');
+        polygon.attr('points', arrayToPoints(scale(obj.data.points)));
+        // rect redrawn and restored
+        confirmNewShape(polygon, obj.id, {
+          redo: true,
+        });
+        break;
+      }
+    case 'stack':
+      {
+        const groupId = obj.meta.for;
+        if (canvas.select(`g[for='${groupId}']`).empty()) {
+          canvas.append('g').attr('for', groupId);
+        }
+        const group = canvas.select(`g[for='${groupId}']`);
+        const rect = group.append('rect').attrs({
+          x: scale(obj.data.x),
+          y: scale(obj.data.y),
+          width: scale(obj.data.width),
+          height: scale(obj.data.height),
+        }).classed('cstack', true);
+        const rectCenter = [];
+        rectCenter[0] = obj.data.x + (obj.data.width * 0.5);
+        rectCenter[1] = obj.data.y + (obj.data.height * 0.5);
+        const transVals = [
+          obj.meta.rotation,
+          scale(rectCenter[0]),
+          scale(rectCenter[1]),
+        ].join(' ');
+        rect.attr('transform', `rotate(${transVals})`);
+        confirmNewShape(rect, obj.id, {
+          stroke: '#0AC',
+          redo: true,
+        });
+        // stack redrawn and restored
+        break;
+      }
+    default:
+
+  }
+}
 
 function generateRectData(shape) {
   const id = shape.attr('id');
   objects = objects.map((obj) => {
-    if (obj.id === id && obj.type !== 'stacks') {
+    if (obj.id === id && obj.type !== 'stack') {
       const newObj = _.clone(obj);
       newObj.data = {
         x: parseInt(shape.attr('x'), 10),
@@ -475,7 +576,7 @@ function generateRectData(shape) {
 function generatePolygonData(shape) {
   const id = shape.attr('id');
   objects = objects.map((obj) => {
-    if (obj.id === id && obj.type !== 'stacks') {
+    if (obj.id === id && obj.type !== 'stack') {
       const newObj = _.clone(obj);
       newObj.data = {
         points: pointsToArray(shape.attr('points')),
@@ -489,22 +590,17 @@ function generatePolygonData(shape) {
 function generateStackData(shape) {
   const id = shape.attr('id');
   objects = objects.map((obj) => {
-    const stackIdx = _.findIndex(obj.data, { id });
-    if (obj.type === 'stacks' && stackIdx >= 0) {
+    if (obj.id === id && obj.type === 'stack') {
       const newObj = _.clone(obj);
-      newObj.data[stackIdx].data.x = parseInt(shape.attr('x'), 10);
-      newObj.data[stackIdx].data.y = parseInt(shape.attr('y'), 10);
-      newObj.data[stackIdx].data.width = parseInt(shape.attr(
-        'width'), 10);
-      newObj.data[stackIdx].data.height = parseInt(shape.attr(
-        'height'), 10);
+      newObj.data.x = parseInt(shape.attr('x'), 10);
+      newObj.data.y = parseInt(shape.attr('y'), 10);
+      newObj.data.width = parseInt(shape.attr('width'), 10);
+      newObj.data.height = parseInt(shape.attr('height'), 10);
       // update meta
-      newObj.data[stackIdx].meta.cx = newObj.data[stackIdx].data.x +
-        (newObj.data[stackIdx].data.width / 2);
-      newObj.data[stackIdx].meta.cy = newObj.data[stackIdx].data.y +
-        (newObj.data[stackIdx].data.height / 2);
-      newObj.data[stackIdx].meta.lx = newObj.data[stackIdx].data.width;
-      newObj.data[stackIdx].meta.ly = newObj.data[stackIdx].data.height;
+      newObj.meta.cx = newObj.data.x + (newObj.data.width / 2);
+      newObj.meta.cy = newObj.data.y + (newObj.data.height / 2);
+      newObj.meta.lx = newObj.data.width;
+      newObj.meta.ly = newObj.data.height;
       return newObj;
     }
     return obj;
@@ -512,33 +608,73 @@ function generateStackData(shape) {
 }
 
 function generateStackMeta(shape) {
+  const id = shape.attr('id');
   objects = objects.map((obj) => {
-    const stackIdx = _.findIndex(obj.data, {
-      id: shape.attr('id'),
-    });
-    if (obj.type === 'stacks' && stackIdx >= 0) {
+    if (obj.id === id && obj.type === 'stack') {
       const newObj = _.clone(obj);
-      newObj.data[stackIdx].meta.oversize = parseInt($(
+      newObj.meta.oversize = parseInt($(
         '#cstack-oversize').val(), 10);
       shape.classed('size0', false).classed('size1', false).classed(
         'size2', false).classed(
         `size${$('#cstack-oversize').val()}`, true);
-      newObj.data[stackIdx].meta.startClass = $(
+      newObj.meta.startClass = $(
         '#cstack-startClass').val().trim().toUpperCase();
-      newObj.data[stackIdx].meta.startSubclass = Math.floor(
+      newObj.meta.startSubclass = Math.floor(
         parseFloat($('#cstack-startSubclass').val(), 10));
-      newObj.data[stackIdx].meta.startSubclass2 = $(
+      newObj.meta.startSubclass2 = $(
         '#cstack-startSubclass2').val().trim().toUpperCase();
-      newObj.data[stackIdx].meta.endClass = $('#cstack-endClass')
+      newObj.meta.endClass = $('#cstack-endClass')
         .val().trim().toUpperCase();
-      newObj.data[stackIdx].meta.endSubclass = Math.ceil(
+      newObj.meta.endSubclass = Math.ceil(
         parseFloat($('#cstack-endSubclass').val(), 10));
-      newObj.data[stackIdx].meta.endSubclass2 = $(
+      newObj.meta.endSubclass2 = $(
         '#cstack-endSubclass2').val().trim().toUpperCase();
       return newObj;
     }
     return obj;
   });
+}
+
+/**
+ * Undo last step.
+ * @return {[type]} [description]
+ */
+function undo() {
+  const obj = objects.pop();
+  switch (obj.type) {
+    case 'action.delete':
+      {
+        // restore obj to canvas
+        objects.splice(obj.meta.index, 0, obj.data);
+        redraw(obj.data);
+        break;
+      }
+    default:
+      $(`#${obj.id}`).remove();
+  }
+  objectsRedo.push(obj);
+  toggleUndoRedo();
+}
+
+/**
+ * Redo last step.
+ * @return {[type]} [description]
+ */
+function redo() {
+  const obj = objectsRedo.pop();
+  switch (obj.type) {
+    case 'action.delete':
+      {
+        // (redo) remove obj from canvas
+        const objToDel = objects.splice(obj.meta.index, 1)[0];
+        $(`#${objToDel.id}`).remove();
+        break;
+      }
+    default:
+      redraw(obj);
+  }
+  objects.push(obj);
+  toggleUndoRedo();
 }
 
 function initCanvas(w, h, bgimageUrl) {
@@ -573,6 +709,7 @@ function initCanvas(w, h, bgimageUrl) {
   $('.toolbox a.btn-flat').removeClass('light-blue lighten-2');
   $('.toolbox a.btn-flat:first-child').addClass('light-blue lighten-2');
   $('.tool-options > .row').hide();
+  $('.tool-options > .row:nth-child(1)').show();
   $('.tool-options input').val(0);
   $('.tool-options input').val('');
   $('#cfloor-btn-set').removeClass('disabled');
@@ -621,6 +758,7 @@ function initCanvas(w, h, bgimageUrl) {
               meta: {
                 rows: 0,
                 rotation: 0,
+                g: [],
               },
               data: {
                 x: scalePhysical(parseInt(activeRect.attr('x'), 10)),
@@ -631,6 +769,7 @@ function initCanvas(w, h, bgimageUrl) {
                   10)),
               },
             });
+            toggleUndoRedo();
             confirmNewShape(activeRect, rid);
           }
           break;
@@ -854,11 +993,13 @@ function initCanvas(w, h, bgimageUrl) {
               meta: {
                 rows: 0,
                 rotation: 0,
+                g: [],
               },
               data: {
                 points: scalePhysical(newPointsArr),
               },
             });
+            toggleUndoRedo();
             confirmNewShape(activePolygon, rid);
           }
           break;
@@ -896,6 +1037,14 @@ function initCanvas(w, h, bgimageUrl) {
 
     }
   });
+
+  $(document).on('keypress', () => {
+    if (event.which === 127 && !canvas.select('.selected').empty()) {
+      deleteObj(findShapeData(canvas.select('.selected').attr('id'))[0].index);
+      clearSelection();
+    }
+  });
+  // END initCanvas
 }
 
 function loadFloors(libraryId) {
@@ -1009,8 +1158,8 @@ function loadLibraries() {
 const rowThickness = 10;
 
 function initStacksInShape(e, rows, rotation) {
-  const objIdx = _.findIndex(objects, o => o.id === e.attr('id') && o.type !==
-    'stacks');
+  const id = e.attr('id');
+  const objIdx = findShapeData(id)[0].index;
   objects[objIdx].meta.rows = rows;
   objects[objIdx].meta.rotation = rotation;
 
@@ -1018,13 +1167,9 @@ function initStacksInShape(e, rows, rotation) {
   $('#cmark-rotation').val(rotation);
 
   canvas.select(`g[for="${e.attr('id')}"]`).remove();
-  const newObjects = [];
-  objects.forEach((obj) => {
-    if (obj.type !== 'stacks' || obj.id !== e.attr('id')) {
-      newObjects.push(obj);
-    }
+  findShapeData(id)[0].value.meta.g.forEach((stackId) => {
+    removeShapeData(stackId);
   });
-  objects = newObjects;
 
   const polygon = e.attr('points') ?
     pointsToArray(e.attr('points')) :
@@ -1069,7 +1214,9 @@ function initStacksInShape(e, rows, rotation) {
   ];
 
   const group = canvas.append('g').attr('for', e.attr('id'));
-  const stacksData = [];
+  const groupIdx = findShapeData(e.attr('id'))[0].index;
+  objects[groupIdx].meta.g = [];
+
   for (let i = 0; i < rows; i += 1) {
     const r = centeroid[1] - rectCenter[1];
     const rectCenterRotated = [
@@ -1089,7 +1236,7 @@ function initStacksInShape(e, rows, rotation) {
     rect.attr('transform',
       `rotate(${rotation} ${rectCenterRotated[0]} ${rectCenterRotated[1]})`);
 
-    stacksData.push({
+    objects.push({
       type: 'stack',
       id: `canvas-e-${rid}`,
       meta: {
@@ -1105,6 +1252,7 @@ function initStacksInShape(e, rows, rotation) {
         endClass: 'Z',
         endSubclass: 0,
         endSubclass2: '',
+        for: e.attr('id'),
       },
       data: {
         x: scalePhysical(parseInt(rect.attr('x'), 10)),
@@ -1114,19 +1262,16 @@ function initStacksInShape(e, rows, rotation) {
       },
     });
 
+    toggleUndoRedo();
+
     confirmNewShape(rect, rid, {
       stroke: '#0AC',
     });
 
     rectCenter[1] += (rowThickness + rowSpacing);
-  }
 
-  // stacks created and stored
-  objects.push({
-    type: 'stacks',
-    id: e.attr('id'),
-    data: stacksData,
-  });
+    objects[groupIdx].meta.g.push(`canvas-e-${rid}`);
+  }
 
   // END initStacksInShape
 }
@@ -1169,12 +1314,12 @@ $(document).ready(() => {
       $('.tool-options > .row').hide();
       $('.toolbox a.btn-flat').removeClass('light-blue lighten-2');
       if (!canvas.selectAll('.selected').empty()) {
-        $(`.tool-options > .row:nth-child(${index})`).show();
+        $(`.tool-options > .row:nth-child(${index + 1})`).show();
       }
 
       // tool options available without selecting an element
-      if (modebit === 4) {
-        $(`.tool-options > .row:nth-child(${index})`).show();
+      if (modebit === 0 || modebit === 4) {
+        $(`.tool-options > .row:nth-child(${index + 1})`).show();
       }
       $(event.currentTarget).addClass('light-blue lighten-2');
       showHelp(helpText[index]);
@@ -1190,82 +1335,17 @@ $(document).ready(() => {
   });
 
   $('#nav-undo').click(() => {
-    if (objects.length === 0) {
+    if ($('#nav-undo').hasClass('disabled')) {
       return;
     }
-    const obj = objects.pop();
-    if (obj.type !== 'stacks') {
-      $(`#${obj.id}`).remove();
-    } else {
-      canvas.select(`g[for="${obj.id}"]`).remove();
-    }
-    objectsRedo.push(obj);
+    undo();
   });
 
   $('#nav-redo').click(() => {
-    if (objectsRedo.length === 0) {
+    if ($('#nav-redo').hasClass('disabled')) {
       return;
     }
-    const obj = objectsRedo.pop();
-    switch (obj.type) {
-      case 'rect':
-        {
-          const rect = canvas.append('rect');
-          rect.attrs({
-            x: scale(obj.data.x),
-            y: scale(obj.data.y),
-            width: scale(obj.data.width),
-            height: scale(obj.data.height),
-          });
-          // rect redrawn and restored
-          objects.push(obj);
-          confirmNewShape(rect, obj.id, {
-            redo: true,
-          });
-          break;
-        }
-      case 'polygon':
-        {
-          const polygon = canvas.append('polygon');
-          polygon.attr('points', arrayToPoints(scale(obj.data.points)));
-          // rect redrawn and restored
-          objects.push(obj);
-          confirmNewShape(polygon, obj.id, {
-            redo: true,
-          });
-          break;
-        }
-      case 'stacks':
-        {
-          const group = canvas.append('g').attr('for', obj.id);
-          obj.data.forEach((r) => {
-            const rect = group.append('rect').attrs({
-              x: scale(r.data.x),
-              y: scale(r.data.y),
-              width: scale(r.data.width),
-              height: scale(r.data.height),
-            }).classed('cstack', true);
-            const rectCenter = [];
-            rectCenter[0] = r.data.x + (r.data.width * 0.5);
-            rectCenter[1] = r.data.y + (r.data.height * 0.5);
-            const transVals = [
-              r.meta.rotation,
-              scale(rectCenter[0]),
-              scale(rectCenter[1]),
-            ].join(' ');
-            rect.attr('transform', `rotate(${transVals})`);
-            confirmNewShape(rect, r.id, {
-              stroke: '#0AC',
-              redo: true,
-            });
-          });
-          // stacks redrawn and restored
-          objects.push(obj);
-          break;
-        }
-      default:
-
-    }
+    redo();
   });
 
   $('.row.cmark input, .row.cmark select').change(() => {
