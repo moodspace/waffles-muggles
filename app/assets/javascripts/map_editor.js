@@ -59,8 +59,8 @@ function scalePhysical(p) {
       return [p[0] / zoomLevel, p[1] / zoomLevel];
     }
     return p.map(pt => [pt[0] / zoomLevel, pt[1] / zoomLevel]);
-  } else if (_.isNumber(p)) {
-    return p / zoomLevel;
+  } else if (_.isNumber(parseFloat(p))) {
+    return parseFloat(p) / zoomLevel;
   }
   return false;
 }
@@ -76,8 +76,8 @@ function scale(p) {
       return [p[0] * zoomLevel, p[1] * zoomLevel];
     }
     return p.map(pt => [pt[0] * zoomLevel, pt[1] * zoomLevel]);
-  } else if (_.isNumber(p)) {
-    return p * zoomLevel;
+  } else if (_.isNumber(parseFloat(p))) {
+    return parseFloat(p) * zoomLevel;
   }
   return false;
 }
@@ -227,12 +227,12 @@ function offsetPoints(points, dx, dy) {
   ]);
 }
 
-function offsetStack(stackMeta, dx, dy) {
-  const newMeta = _.clone(stackMeta);
-  newMeta.cx += dx;
-  newMeta.cy += dy;
-  return newMeta;
-}
+// function offsetStack(stackMeta, dx, dy) {
+//   const newMeta = _.clone(stackMeta);
+//   newMeta.cx += dx;
+//   newMeta.cy += dy;
+//   return newMeta;
+// }
 
 function pointsToArray(strPoints) {
   return strPoints.split(' ').map(p => [
@@ -300,24 +300,20 @@ function exportFloorData() {
   }
   let floorJson = {};
   const floorPoints = metaObjects.floor_border.data.points;
-
-  const deltaX = d3.min(floorPoints, e => e[0]);
-  const deltaY = d3.min(floorPoints, e => e[1]);
-
   floorJson = {
     name: $('#cfloor-name').val(),
-    size_x: parseInt(canvas.attr('width'), 10),
-    size_y: parseInt(canvas.attr('height'), 10),
+    size_x: parseInt(scalePhysical(canvas.attr('width')), 10),
+    size_y: parseInt(scalePhysical(canvas.attr('height')), 10),
     geojson: JSON.stringify({
       type: 'polygon',
-      coordinates: offsetPoints(floorPoints, -deltaX, -deltaY),
+      coordinates: floorPoints,
     }),
   };
 
   const stacksJson = [];
   objects.forEach((obj) => {
     if (obj.type === 'stack') {
-      stacksJson.push(offsetStack(obj.meta, -deltaX, -deltaY));
+      stacksJson.push(obj.meta);
     }
   });
 
@@ -333,13 +329,6 @@ function randomId() {
     Math.ceil(Math.random() * 100),
     Math.ceil(Math.random() * 100),
   ].join('-');
-}
-
-function clearSelection() {
-  canvas.selectAll('.selected').classed('selected', false);
-  $('.tool-options > .row').hide();
-  $('.tool-options > .row:nth-child(1)').show();
-  Materialize.updateTextFields();
 }
 
 function selectRect(id) {
@@ -563,10 +552,10 @@ function generateRectData(shape) {
     if (obj.id === id && obj.type !== 'stack') {
       const newObj = _.clone(obj);
       newObj.data = {
-        x: parseInt(shape.attr('x'), 10),
-        y: parseInt(shape.attr('y'), 10),
-        width: parseInt(shape.attr('width'), 10),
-        height: parseInt(shape.attr('height'), 10),
+        x: scalePhysical(shape.attr('x')),
+        y: scalePhysical(shape.attr('y')),
+        width: scalePhysical(shape.attr('width')),
+        height: scalePhysical(shape.attr('height')),
       };
       return newObj;
     }
@@ -580,7 +569,7 @@ function generatePolygonData(shape) {
     if (obj.id === id && obj.type !== 'stack') {
       const newObj = _.clone(obj);
       newObj.data = {
-        points: pointsToArray(shape.attr('points')),
+        points: scalePhysical(pointsToArray(shape.attr('points'))),
       };
       return newObj;
     }
@@ -593,10 +582,10 @@ function generateStackData(shape) {
   objects = objects.map((obj) => {
     if (obj.id === id && obj.type === 'stack') {
       const newObj = _.clone(obj);
-      newObj.data.x = parseInt(shape.attr('x'), 10);
-      newObj.data.y = parseInt(shape.attr('y'), 10);
-      newObj.data.width = parseInt(shape.attr('width'), 10);
-      newObj.data.height = parseInt(shape.attr('height'), 10);
+      newObj.data.x = scalePhysical(shape.attr('x'));
+      newObj.data.y = scalePhysical(shape.attr('y'));
+      newObj.data.width = scalePhysical(shape.attr('width'));
+      newObj.data.height = scalePhysical(shape.attr('height'));
       // update meta
       newObj.meta.cx = newObj.data.x + (newObj.data.width / 2);
       newObj.meta.cy = newObj.data.y + (newObj.data.height / 2);
@@ -775,12 +764,10 @@ function initCanvas(w, h, ref, stackmap) {
                 g: [],
               },
               data: {
-                x: scalePhysical(parseInt(activeRect.attr('x'), 10)),
-                y: scalePhysical(parseInt(activeRect.attr('y'), 10)),
-                width: scalePhysical(parseInt(activeRect.attr('width'),
-                  10)),
-                height: scalePhysical(parseInt(activeRect.attr('height'),
-                  10)),
+                x: scalePhysical(activeRect.attr('x')),
+                y: scalePhysical(activeRect.attr('y'), 10),
+                width: scalePhysical(activeRect.attr('width'), 10),
+                height: scalePhysical(activeRect.attr('height'), 10),
               },
             });
             toggleUndoRedo();
@@ -879,8 +866,8 @@ function initCanvas(w, h, ref, stackmap) {
           }
           if (!rect.empty()) {
             const orig = [
-              parseInt(rect.attr('x'), 10),
-              parseInt(rect.attr('y'), 10),
+              parseFloat(rect.attr('x')),
+              parseFloat(rect.attr('y')),
             ];
             rect.attr('x', orig[0] + cLeftOffset);
             rect.attr('y', orig[1] + cTopOffset);
@@ -964,8 +951,8 @@ function initCanvas(w, h, ref, stackmap) {
           const cLeftOffset = point[0] - mousedownPoint[0];
           const cTopOffset = point[1] - mousedownPoint[1];
           const orig = [
-            parseInt(canvas.style('left'), 10),
-            parseInt(canvas.style('top'), 10),
+            parseFloat(canvas.style('left')),
+            parseFloat(canvas.style('top')),
           ];
           if (orig[0] + cLeftOffset > $('#workspace').width() / 2 ||
             $('#workspace > svg').width() + orig[0] + cLeftOffset < $(
@@ -1055,7 +1042,7 @@ function initCanvas(w, h, ref, stackmap) {
   $(document).on('keypress', () => {
     if (event.which === 127 && !canvas.select('.selected').empty()) {
       deleteObj(findShapeData(canvas.select('.selected').attr('id'))[0].index);
-      clearSelection();
+      $('.toolbox a.btn-flat:first-child').click();
     }
   });
   // END initCanvas
@@ -1102,10 +1089,30 @@ function loadFloors(libraryId) {
 
         activeFloor = floors[floorIdx].id;
         setTools(1);
+
         if (floors[floorIdx].stackmap) {
           initCanvas(floors[floorIdx].size_x, floors[floorIdx].size_y,
             floors[floorIdx].ref,
             JSON.parse(floors[floorIdx].stackmap));
+
+          const points = JSON.parse(floors[floorIdx].geojson).coordinates;
+          const activeFbPolygon = canvas.append('polygon')
+            .attr('points', arrayToPoints(points))
+            .classed('fb active_fb', true);
+          // polygon created and stored
+          const rid = randomId();
+          metaObjects.floor_border = {
+            type: 'f_border',
+            id: `canvas-e-${rid}`,
+            data: {
+              points: scalePhysical(points),
+            },
+          };
+          confirmNewShape(activeFbPolygon, rid, {
+            readonly: true,
+          });
+          // re-enable output buttons that are always disabled in setTools
+          setTools(3);
         }
 
         $('#cfloor-name').val(floors[floorIdx].name);
@@ -1270,10 +1277,10 @@ function initStacksInShape(e, rows, rotation) {
         for: e.attr('id'),
       },
       data: {
-        x: scalePhysical(parseInt(rect.attr('x'), 10)),
-        y: scalePhysical(parseInt(rect.attr('y'), 10)),
-        width: scalePhysical(parseInt(rect.attr('width'), 10)),
-        height: scalePhysical(parseInt(rect.attr('height'), 10)),
+        x: scalePhysical(rect.attr('x')),
+        y: scalePhysical(rect.attr('y')),
+        width: scalePhysical(rect.attr('width')),
+        height: scalePhysical(rect.attr('height')),
       },
     });
 
@@ -1304,7 +1311,6 @@ $(document).ready(() => {
         canvas.selectAll('.selected').classed('selected', false);
       }
       modebit = index;
-
       canvas.style('cursor', 'default').selectAll('*').style(
         'cursor', 'default');
 
@@ -1336,7 +1342,8 @@ $(document).ready(() => {
       if (modebit === 0 || modebit === 4) {
         $(`.tool-options > .row:nth-child(${index + 1})`).show();
       }
-      $(event.currentTarget).addClass('light-blue lighten-2');
+      $(`.toolbox a.btn-flat:nth-child(${index + 1})`).addClass(
+        'light-blue lighten-2');
       showHelp(helpText[index]);
     });
   });
@@ -1438,8 +1445,7 @@ $(document).ready(() => {
           '#modal-new-canvas>div>div>div:nth-child(1)>input').val();
         const h = $(
           '#modal-new-canvas>div>div>div:nth-child(2)>input').val();
-        initCanvas(parseInt(w, 10), parseInt(h, 10), floor.ref,
-          JSON.parse(floor.stackmap));
+        initCanvas(parseInt(w, 10), parseInt(h, 10), floor.ref);
         loadFloors(activeLibrary);
       },
       error: (e) => {
