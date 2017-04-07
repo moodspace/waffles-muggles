@@ -17,9 +17,13 @@ class MapsController < ApplicationController
   end
 
   def upload_ref
-    uploaded_io = params[:ref_img]
-    image = MiniMagick::Image.open(uploaded_io.tempfile.path)
-    image.path
+    if params[:ref_img]
+      uploaded_io = params[:ref_img]
+      image = MiniMagick::Image.open(uploaded_io.tempfile.path)
+    else
+      image = MiniMagick::Image.open('app/assets/images/blank.png')
+      image.resize "#{params[:width]}x#{params[:height]}!"
+    end
     image.format 'png'
 
     md5 = Digest::MD5.new
@@ -29,32 +33,10 @@ class MapsController < ApplicationController
     fn = Rails.root.join('public', 'uploads/ref', md5digest)
     image.write "#{fn}.png"
 
-    floor = Floor.find(params[:floor_id])
-    if floor.ref && floor.ref.end_with?('.png') && File.exists?(Rails.root.join('public', floor.ref))
-      File.delete(Rails.root.join('public', floor.ref))
-    end
-    floor.ref = "uploads/ref/#{md5digest}.png"
-
-    if floor.save
-      library = Library.find(floor.library)
-      render json: {
-        id: floor.id,
-        name: floor.name,
-        size_x: floor.size_x,
-        size_y: floor.size_y,
-        geojson: floor.geojson,
-        stackmap: floor.stackmap,
-        ref: floor.ref,
-        library: {
-          id: library.id,
-          name: library.name,
-          latitude: library.latitude,
-          longitude: library.longitude
-        }
-      }
-    else
-      File.delete("#{fn}.png")
-      render json: {error: 'bad request', code: 400, message: 'unable to update record'}, status: 400
-    end
+    render json: {
+      ref: "uploads/ref/#{md5digest}.png",
+      w: image.width,
+      h: image.height
+    }
   end
 end

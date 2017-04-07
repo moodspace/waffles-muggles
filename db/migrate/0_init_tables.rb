@@ -23,7 +23,7 @@ class InitTables < ActiveRecord::Migration[5.0]
       t.integer :size_x
       t.integer :size_y
       t.text :geojson
-      t.text :stackmap
+      t.text :map
       t.string :ref
       t.bigint :library
 

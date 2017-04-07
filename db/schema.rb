@@ -25,7 +25,7 @@ ActiveRecord::Schema.define(version: 1) do
     t.integer "size_x"
     t.integer "size_y"
     t.text "geojson"
-    t.text "stackmap"
+    t.text "map"
     t.string "ref"
     t.bigint "library"
     t.datetime "created_at", null: false

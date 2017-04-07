@@ -16,7 +16,7 @@ MIT
 
 ### Remote API access
 
-The API is currently live [here](https://boiling-woodland-25300.herokuapp.com/v1/).
+The API is currently live [here](https://boiling-woodland-25300.herokuapp.com/v2/).
 
 - Install Postman (Chrome extension)
 - Read the [docs](https://boiling-woodland-25300.herokuapp.com/docs/) for supported methods

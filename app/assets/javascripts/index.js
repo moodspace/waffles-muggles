@@ -55,7 +55,7 @@ function drawStack(size, stack, highlighted) {
 
 function loadMap(stackId) {
   $.ajax({
-    url: `/v1/stacks/${stackId}`, // Route to the Script Controller method
+    url: `/v2/stacks/${stackId}`, // Route to the Script Controller method
     type: 'GET',
     success: (s) => {
       const canvasW = $('#map-canvas').parent().innerWidth();
@@ -77,7 +77,7 @@ function loadMap(stackId) {
         .geojson);
       updateStack(s);
       $.ajax({
-        url: `/v1/stacks?floor_id=${s.floor.id}`, // Route to the Script Controller method
+        url: `/v2/stacks?floor_id=${s.floor.id}`, // Route to the Script Controller method
         type: 'GET',
         success: (allStacks) => {
           allStacks.forEach((stack) => {
@@ -91,7 +91,7 @@ function loadMap(stackId) {
 
 function searchItem(callback) {
   $.ajax({
-    url: '/v1/search', // Route to the Script Controller method
+    url: '/v2/search', // Route to the Script Controller method
     type: 'GET',
     dataType: 'json',
     data: {
