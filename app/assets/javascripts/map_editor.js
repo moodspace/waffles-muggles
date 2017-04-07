@@ -736,7 +736,7 @@ function loadFloors(libraryId) {
   $('#btn-add-floor').show();
 
   $.ajax({
-    url: '/v1/floors/',
+    url: '/v2/floors/',
     type: 'GET',
     data: {
       library_id: libraryId,
@@ -795,7 +795,7 @@ function loadFloors(libraryId) {
 function loadLibraries() {
   $('#btn-add-floor').hide();
   $.ajax({
-    url: '/v1/libraries/',
+    url: '/v2/libraries/',
     type: 'GET',
     success: (data) => {
       libraries = data;
@@ -1270,7 +1270,7 @@ $(document).ready(() => {
     const data = exportFloorData();
     saveCounter = data.stacks.length + 1;
     $.ajax({
-      url: '/v1/floors',
+      url: '/v2/floors',
       type: 'PUT',
       dataType: 'json',
       data: {
@@ -1294,7 +1294,7 @@ $(document).ready(() => {
 
     data.stacks.forEach((s) => {
       $.ajax({
-        url: '/v1/stacks',
+        url: '/v2/stacks',
         type: 'POST',
         dataType: 'json',
         data: {
@@ -1348,7 +1348,7 @@ $(document).ready(() => {
     longt = _.isEmpty(longt) ? undefined : longt;
 
     $.ajax({
-      url: '/v1/libraries',
+      url: '/v2/libraries',
       type: 'POST',
       dataType: 'json',
       data: {
@@ -1367,7 +1367,7 @@ $(document).ready(() => {
 
   $('#modal-add-floor .modal-action').click(() => {
     $.ajax({
-      url: '/v1/floors',
+      url: '/v2/floors',
       type: 'POST',
       dataType: 'json',
       data: {
