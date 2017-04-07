@@ -48,6 +48,21 @@ function showError(error) {
   }, 5000);
 }
 
+function checkError(element) {
+  let hasErr = false;
+  element.each((_, e) => {
+    const pattern = new RegExp($(e).attr('pattern'));
+    const value = $(e).val();
+    if (pattern.test(value)) {
+      $(e).removeClass('invalid');
+    } else {
+      $(e).addClass('invalid');
+      hasErr = true;
+    }
+  });
+  return hasErr;
+}
+
 /**
  * Scale a physical point on svg canvas to coordinates stored in data.
  * @param  {[x,y]} p [a physical point on svg canvas]
@@ -348,6 +363,7 @@ function selectRect(id) {
   $('#crect-y').val($(`#${id}`).attr('y'));
   $('#crect-width').val($(`#${id}`).attr('width'));
   $('#crect-height').val($(`#${id}`).attr('height'));
+  checkError($('.row.crect input'));
   $('.tool-options > .row').hide();
   $('.tool-options > .row:nth-child(2)').show();
   Materialize.updateTextFields();
@@ -357,6 +373,7 @@ function selectPolygon(id) {
   canvas.selectAll('.selected').classed('selected', false);
   $(`#${id}`).addClass('selected');
   $('#cpolygon-points').val($(`#${id}`).attr('points'));
+  checkError($('.row.cpolygon input'));
   $('.tool-options > .row').hide();
   $('.tool-options > .row:nth-child(3)').show();
   Materialize.updateTextFields();
@@ -389,6 +406,7 @@ function showMarkTool(id) {
   $('#cmark-rotation').material_select('destroy');
   $('#cmark-rotation').val(objData.meta.rotation);
   $('#cmark-rotation').material_select();
+  checkError($('.row.cmark input, .row.cmark select'));
   $(`.tool-options > .row:nth-child(${modebit + 1})`).show();
   Materialize.updateTextFields();
 }
@@ -408,6 +426,7 @@ function showStackTool(id) {
     $('#cstack-endClass').val(stackData.meta.endClass);
     $('#cstack-endSubclass').val(stackData.meta.endSubclass);
     $('#cstack-endSubclass2').val(stackData.meta.endSubclass2);
+    checkError($('.row.cstack input, .row.cstack select'));
     $(`.tool-options > .row:nth-child(${modebit + 1})`).show();
     Materialize.updateTextFields();
   }
@@ -1083,6 +1102,7 @@ function loadFloors(libraryId) {
         if (floor.id === activeFloor) {
           floorItem.addClass('active');
           $('#cfloor-name').val(floor.name);
+          checkError($('.row.cfloor input'));
           Materialize.updateTextFields();
         }
       });
@@ -1130,6 +1150,7 @@ function loadFloors(libraryId) {
         }
 
         $('#cfloor-name').val(floors[floorIdx].name);
+        checkError($('.row.cfloor input'));
         Materialize.updateTextFields();
         $(event.currentTarget).addClass('active');
       });
@@ -1384,20 +1405,36 @@ $(document).ready(() => {
     redo();
   });
 
-  $('.row.cmark input, .row.cmark select').change(() => {
-    const shape = canvas.selectAll('.selected');
-    const irows = parseInt($('#cmark-rows').val(), 10);
-    if (_.isNaN(irows) || irows <= 0) {
+  $('.row.cmark select').change(() => {
+    if (checkError($('.row.cmark input'))) {
       return;
     }
+    const shape = canvas.selectAll('.selected');
+    const irows = parseInt($('#cmark-rows').val(), 10);
     const irotation = parseInt($('#cmark-rotation').val(), 10);
-    if (_.isNaN(irotation) || irotation < 0 || irotation > 360) {
+    if (irotation < 0 || irotation > 360) {
       return;
     }
     initStacksInShape(shape, irows, irotation);
   });
 
-  $('.row.crect input').change(() => {
+  $('.row.cmark input').on('input', () => {
+    if (checkError($('.row.cmark input'))) {
+      return;
+    }
+    const shape = canvas.selectAll('.selected');
+    const irows = parseInt($('#cmark-rows').val(), 10);
+    const irotation = parseInt($('#cmark-rotation').val(), 10);
+    if (irotation < 0 || irotation > 360) {
+      return;
+    }
+    initStacksInShape(shape, irows, irotation);
+  });
+
+  $('.row.crect input').on('input', () => {
+    if (checkError($('.row.crect input'))) {
+      return;
+    }
     const shape = canvas.selectAll('.selected');
     shape.attr('x', $('#crect-x').val());
     shape.attr('y', $('#crect-y').val());
@@ -1411,12 +1448,33 @@ $(document).ready(() => {
     generateStackData(shape);
   });
 
-  $('.row.cpolygon input').change(() => {
+  $('.row.cpolygon input').on('input', () => {
+    if (checkError($('.row.cpolygon input'))) {
+      return;
+    }
     const shape = canvas.selectAll('.selected');
     shape.attr('points', $('#cpolygon-points').val());
   });
 
-  $('.row.cstack input, .row.cstack select').change(() => {
+  $('.row.cfloor input').on('input', () => {
+    if (checkError($('.row.cfloor input'))) {
+      return false;
+    }
+    return true;
+  });
+
+  $('.row.cstack select').change(() => {
+    if (checkError($('.row.cstack input'))) {
+      return;
+    }
+    const shape = canvas.selectAll('.selected');
+    generateStackMeta(shape);
+  });
+
+  $('.row.cstack input').on('input', () => {
+    if (checkError($('.row.cstack input'))) {
+      return;
+    }
     const shape = canvas.selectAll('.selected');
     generateStackMeta(shape);
   });
@@ -1461,8 +1519,12 @@ $(document).ready(() => {
       '#modal-new-canvas>div>div>div:nth-child(1)>input').val();
     let h = $(
       '#modal-new-canvas>div>div>div:nth-child(2)>input').val();
-    form.append(`<input type="hidden" name="width" value="${parseInt(w, 10)}">`);
-    form.append(`<input type="hidden" name="height" value="${parseInt(h, 10)}">`);
+    form.append(
+      `<input type="hidden" name="width" value="${parseInt(w, 10)}">`,
+    );
+    form.append(
+      `<input type="hidden" name="height" value="${parseInt(h, 10)}">`,
+    );
     $.ajax({
       url: '/maps/uploadRefImg',
       type: 'POST',
@@ -1644,6 +1706,10 @@ $(document).ready(() => {
   $('select').material_select();
 
   setTools(0);
+
+  $('.help-text').mouseover(() => {
+    $('.help-text').fadeOut();
+  });
 
   // END $(document).ready
 });

@@ -84,7 +84,7 @@ class FloorsController < ApplicationController
     oldRef = floor.ref
     floor.ref = params[:ref] || floor.ref
     floor.library = params[:library] || floor.library
-    if params[:ref]
+    if params[:ref] && oldRef != params[:ref]
       if oldRef && oldRef.end_with?('.png') && File.exist?(Rails.root.join('public', oldRef))
         File.delete(Rails.root.join('public', oldRef))
       end
