@@ -1,5 +1,5 @@
 <header>
-    <ul id="slide-out" class="side-nav fixed blue-grey darken-4 blue-grey-text text-lighten-5">
+    <ul id="slide-out" class="side-nav fixed blue-grey darken-4 blue-grey-text text-lighten-5 row">
         <li>
             <ul class="collapsible" data-collapsible="accordion">
                 <li>
@@ -34,8 +34,6 @@
         </li>
         <li>
             <a class="subheader">Toolbox</a>
-        </li>
-        <li>
             <div class="toolbox">
                 <div class="row">
                     <a class="btn-flat col s4 light-blue lighten-2 tooltipped" data-position="right" data-delay="50" data-tooltip="Select tool">
@@ -64,9 +62,10 @@
         </li>
         <li>
             <a class="subheader">Tool options</a>
-        </li>
-        <li>
             <div class="tool-options">
+                <div class="row cselect">
+                    <label>Hint: Click to select an element. Drag to change placement. Press 'Delete' to remove.</label>
+                </div>
                 <div class="row crect">
                     <div class="input-field col s3">
                         <input id="crect-x" type="text" maxlength="10">
@@ -193,7 +192,7 @@
         <div class="card-panel blue-grey darken-4 help-text"></div>
         <div class="card-panel red darken-1 error-text"></div>
     </div>
-    <ul id="dropdown-zoom" class="dropdown-content blue-grey darken-4">
+    <ul id="dropdown-zoom" class="dropdown-content blue-grey darken-4 wide">
         <li>
             <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">50%</a>
         </li>
@@ -210,6 +209,9 @@
         <li class="divider"></li>
         <li>
             <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">Fit width</a>
+        </li>
+        <li>
+            <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">Fit window</a>
         </li>
     </ul>
     <nav>
@@ -244,6 +246,9 @@
                             <i class="material-icons tooltipped" data-position="bottom" data-delay="50" data-tooltip="Show all" style="display: inline-block;">theaters</i>
                         </label>
                     </a>
+                </li>
+                <li>
+                    <a id="label-coords" href="javascript:void(0)"></a>
                 </li>
             </ul>
             <ul class="right">
