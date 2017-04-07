@@ -98,6 +98,7 @@ CS 5150 Navigation in Library Stacks.
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
 | library_id | query | Library to list floors | Yes | integer |
+| more | query | Set this flag to get floor map (or empty string returned) | No | boolean |
 
 **Responses**
 
@@ -148,6 +149,7 @@ CS 5150 Navigation in Library Stacks.
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
 | id | path | ID of floor | Yes | integer |
+| more | query | Set this flag to get floor map (or empty string returned) | No | boolean |
 
 **Responses**
 
@@ -327,7 +329,7 @@ CS 5150 Navigation in Library Stacks.
 | endSubclass | integer | End class number e.g. 67 | No |
 | endSubclass2 | string | Additional end subclass | No |
 | oversize | integer | Size property | No |
-| floor | integer | Floor located on | No |
+| floor | object |  | No |
 <a name="floor"></a>**Floor**  
 
 | Name | Type | Description | Required |
@@ -336,9 +338,10 @@ CS 5150 Navigation in Library Stacks.
 | name | string | Name of floor | No |
 | size_x | integer | Bounding box size x | No |
 | size_y | integer | Bounding box size y | No |
-| geojson | string | Fine shape | No |
+| geojson | string | Floor border | No |
+| map | string | Floor map (for editor) | No |
 | ref | string | Reference image url | No |
-| library | integer | Library located in | No |
+| library | object |  | No |
 <a name="library"></a>**Library**  
 
 | Name | Type | Description | Required |
