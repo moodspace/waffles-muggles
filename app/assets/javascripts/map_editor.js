@@ -304,10 +304,20 @@ function exportFloorData() {
     name: $('#cfloor-name').val(),
     size_x: parseInt(scalePhysical(canvas.attr('width')), 10),
     size_y: parseInt(scalePhysical(canvas.attr('height')), 10),
+    ref: $('#canvas-e-bgimg').attr('href'),
     geojson: JSON.stringify({
       type: 'polygon',
       coordinates: floorPoints,
     }),
+    map: {
+      refImage: $('#canvas-e-bgimg').attr('href'),
+      floorBorder: JSON.stringify({
+        type: 'polygon',
+        coordinates: floorPoints,
+      }),
+      objects: JSON.stringify(_.filter(objects, obj =>
+        !_.startsWith(obj.type, 'action.'))),
+    },
   };
 
   const stacksJson = [];
@@ -672,7 +682,7 @@ function redo() {
   toggleUndoRedo();
 }
 
-function initCanvas(w, h, ref, stackmap) {
+function initCanvas(w, h, ref, map) {
   $('#workspace').html('');
   canvas = d3.select('#workspace').append('svg').attrs({
     id: 'canvas',
@@ -687,7 +697,7 @@ function initCanvas(w, h, ref, stackmap) {
 
   canvas.append('image').attrs({
     id: 'canvas-e-bgimg',
-    'xlink:href': ref || '',
+    href: ref || '',
     width: '100%',
     height: '100%',
   });
@@ -699,11 +709,11 @@ function initCanvas(w, h, ref, stackmap) {
   metaObjects = {};
   saveCounter = 0;
 
-  if (stackmap) {
-    stackmap.forEach((obj) => {
+  if (map) {
+    map.objects.forEach((obj) => {
       redraw(obj);
     });
-    objects = stackmap;
+    objects = map.objects;
     objects.push({ type: 'action.ancestor' });
   }
 
@@ -1056,6 +1066,7 @@ function loadFloors(libraryId) {
     type: 'GET',
     data: {
       library_id: libraryId,
+      more: true,
     },
     success: (data) => {
       floors = data;
@@ -1090,13 +1101,16 @@ function loadFloors(libraryId) {
         activeFloor = floors[floorIdx].id;
         setTools(1);
 
-        if (floors[floorIdx].stackmap) {
+        if (floors[floorIdx].map) {
+          const map = JSON.parse(floors[floorIdx].map);
+          map.floorBorder = JSON.parse(map.floorBorder);
+          map.objects = JSON.parse(map.objects);
           initCanvas(floors[floorIdx].size_x, floors[floorIdx].size_y,
-            floors[floorIdx].ref,
-            JSON.parse(floors[floorIdx].stackmap));
+            floors[floorIdx].ref, map);
 
           const points = JSON.parse(floors[floorIdx].geojson).coordinates;
-          const activeFbPolygon = canvas.insert('polygon', ':nth-child(2)')
+          const activeFbPolygon = canvas.insert('polygon',
+              ':nth-child(2)')
             .attr('points', arrayToPoints(points))
             .classed('fb active_fb', true);
           // polygon created and stored
@@ -1431,21 +1445,36 @@ $(document).ready(() => {
     }
     $('#modal-new-canvas > div > form > input[name="floor_id"]').val(
       activeFloor);
+    $('#ref_img').val('');
+    $('#modal-new-canvas>div>div>div>input').prop('disabled', false);
     $('.modal').modal();
     $('#modal-new-canvas').modal('open');
   });
 
+  $('#ref_img').change(() => {
+    $('#modal-new-canvas>div>div>div>input').prop('disabled', true);
+  });
+
   $('#btn-canvas-commit-new').click(() => {
+    const form = $('#modal-new-canvas > div > form');
+    let w = $(
+      '#modal-new-canvas>div>div>div:nth-child(1)>input').val();
+    let h = $(
+      '#modal-new-canvas>div>div>div:nth-child(2)>input').val();
+    form.append(`<input type="hidden" name="width" value="${parseInt(w, 10)}">`);
+    form.append(`<input type="hidden" name="height" value="${parseInt(h, 10)}">`);
     $.ajax({
       url: '/maps/uploadRefImg',
       type: 'POST',
-      data: new FormData($('#modal-new-canvas > div > form')[0]),
-      success: (floor) => {
-        const w = $(
-          '#modal-new-canvas>div>div>div:nth-child(1)>input').val();
-        const h = $(
-          '#modal-new-canvas>div>div>div:nth-child(2)>input').val();
-        initCanvas(parseInt(w, 10), parseInt(h, 10), floor.ref);
+      data: new FormData(form[0]),
+      success: (data) => {
+        if ($('#modal-new-canvas>div>div>div>input').prop(
+            'disabled')) {
+          // if any is disabled
+          w = data.w;
+          h = data.h;
+        }
+        initCanvas(parseInt(w, 10), parseInt(h, 10), data.ref);
         loadFloors(activeLibrary);
       },
       error: (e) => {
@@ -1484,11 +1513,10 @@ $(document).ready(() => {
         name: data.floor.name,
         size_x: data.floor.size_x,
         size_y: data.floor.size_y,
+        ref: data.floor.ref,
         geojson: data.floor.geojson,
         library: activeLibrary,
-        stackmap: JSON.stringify(_.filter(objects, obj =>
-          obj.type !== 'action.delete' && obj.type !==
-          'action.ancestor')),
+        map: JSON.stringify(data.floor.map),
       },
       success: () => {
         saveCounter -= 1;
@@ -1498,6 +1526,23 @@ $(document).ready(() => {
       },
       error: (e) => {
         showError(e.responseJSON.message);
+      },
+    });
+
+    // remove old stack records
+    $.ajax({
+      url: '/v1/stacks/',
+      type: 'GET',
+      data: {
+        floor_id: activeFloor,
+      },
+      success: (stacks) => {
+        stacks.forEach((s) => {
+          $.ajax({
+            url: `/v1/stacks/${s.id}`,
+            type: 'DELETE',
+          });
+        });
       },
     });
 
