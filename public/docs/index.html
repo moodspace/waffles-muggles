@@ -366,6 +366,13 @@
 <td>Yes</td>
 <td>integer</td>
 </tr>
+<tr>
+<td>more</td>
+<td>query</td>
+<td>Set this flag to get floor map (or empty string returned)</td>
+<td>No</td>
+<td>boolean</td>
+</tr>
 </tbody>
 </table>
 <p><strong>Responses</strong></p>
@@ -502,6 +509,13 @@
 <td>ID of floor</td>
 <td>Yes</td>
 <td>integer</td>
+</tr>
+<tr>
+<td>more</td>
+<td>query</td>
+<td>Set this flag to get floor map (or empty string returned)</td>
+<td>No</td>
+<td>boolean</td>
 </tr>
 </tbody>
 </table>
@@ -1019,8 +1033,8 @@
 </tr>
 <tr>
 <td>floor</td>
-<td>integer</td>
-<td>Floor located on</td>
+<td>object</td>
+<td></td>
 <td>No</td>
 </tr>
 <tr>
@@ -1068,7 +1082,13 @@
 <tr>
 <td>geojson</td>
 <td>string</td>
-<td>Fine shape</td>
+<td>Floor border</td>
+<td>No</td>
+</tr>
+<tr>
+<td>map</td>
+<td>string</td>
+<td>Floor map (for editor)</td>
 <td>No</td>
 </tr>
 <tr>
@@ -1079,8 +1099,8 @@
 </tr>
 <tr>
 <td>library</td>
-<td>integer</td>
-<td>Library located in</td>
+<td>object</td>
+<td></td>
 <td>No</td>
 </tr>
 <tr>

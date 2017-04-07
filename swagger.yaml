@@ -27,7 +27,7 @@ info:
   version: "1.0.0"
   title: "waffles-muggles"
 host: "127.0.0.1:8000"
-basePath: "/v1"
+basePath: "/v2"
 schemes:
 - "http"
 produces:
@@ -154,6 +154,11 @@ paths:
         required: true
         type: "integer"
         format: "int32"
+      - name: "more"
+        in: "query"
+        description: "Set this flag to get floor map (or empty string returned)"
+        required: false
+        type: "boolean"
       responses:
         200:
           description: "An array of floors"
@@ -219,6 +224,11 @@ paths:
         required: true
         type: "integer"
         format: "int32"
+      - name: "more"
+        in: "query"
+        description: "Set this flag to get floor map (or empty string returned)"
+        required: false
+        type: "boolean"
       responses:
         200:
           description: "A floor"
@@ -466,9 +476,12 @@ definitions:
         format: "int32"
         description: "Size property"
       floor:
-        type: "integer"
-        format: "int32"
-        description: "Floor located on"
+        type: "object"
+        properties:
+          id:
+            type: "integer"
+            format: "int32"
+            description: "Unique ID representing the floor located on"
   Floor:
     type: "object"
     properties:
@@ -489,17 +502,20 @@ definitions:
         description: "Bounding box size y"
       geojson:
         type: "string"
-        description: "Fine shape"
-      stack:
+        description: "Floor border"
+      map:
         type: "string"
-        description: "Stack map"
+        description: "Floor map (for editor)"
       ref:
         type: "string"
         description: "Reference image url"
       library:
-        type: "integer"
-        format: "int32"
-        description: "Library located in"
+        type: "object"
+        properties:
+          id:
+            type: "integer"
+            format: "int32"
+            description: "Unique ID representing the library located in"
   Library:
     type: "object"
     properties:
