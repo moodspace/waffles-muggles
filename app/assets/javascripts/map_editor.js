@@ -1069,7 +1069,7 @@ function initCanvas(w, h, ref, map) {
   });
 
   $(document).on('keypress', () => {
-    if (event.which === 127 && !canvas.select('.selected').empty()) {
+    if ((event.which === 127 || event.which === 46) && !canvas.select('.selected').empty()) {
       deleteObj(findShapeData(canvas.select('.selected').attr('id'))[0].index);
       $('.toolbox a.btn-flat:first-child').click();
     }
@@ -1120,8 +1120,10 @@ function loadFloors(libraryId) {
 
         activeFloor = floors[floorIdx].id;
         setTools(1);
+        $('#workspace').html('');
 
         if (floors[floorIdx].map) {
+          // load map if has map
           const map = JSON.parse(floors[floorIdx].map);
           map.floorBorder = JSON.parse(map.floorBorder);
           map.objects = JSON.parse(map.objects);
