@@ -1069,7 +1069,7 @@ function initCanvas(w, h, ref, map) {
   });
 
   $(document).on('keypress', () => {
-    if (event.which === 127 && !canvas.select('.selected').empty()) {
+    if ((event.which === 127 || event.which === 8) && !canvas.select('.selected').empty()) {
       deleteObj(findShapeData(canvas.select('.selected').attr('id'))[0].index);
       $('.toolbox a.btn-flat:first-child').click();
     }
