@@ -2,10 +2,11 @@ let callNo;
 let libId;
 const mapPath = '#map-popup > div > div > div.modal-body';
 let mapCtx;
+let libraries = [];
 
-function updateStack(s) {
+function updateStack(s, f, l) {
   $(`${mapPath} #text-floor-id`).html(
-    `<h1>${s.library.name} <small>${s.floor.name}</small></h1>`);
+    `<h1>${_.find(libraries, { id: l }).name} <small>${f.name}</small></h1>`);
   $(`${mapPath} #text-stack-id`).text(`Stack ${s.id}`);
   $(`${mapPath} #text-stack-range`).text(
     `${s.startClass}${s.startSubclass || ''} ${s.startSubclass2 || ''}
@@ -58,34 +59,61 @@ function loadMap(stackId) {
     url: `/v2/stacks/${stackId}`, // Route to the Script Controller method
     type: 'GET',
     success: (s) => {
-      const canvasW = $('#map-canvas').parent().innerWidth();
-      const canvasH = $(window).height() * 0.6;
-
-      $('#map-canvas').attr('width', canvasW);
-      $('#map-canvas').attr('height', canvasH);
-      const scale = Math.min(canvasW / s.floor.size_x, canvasH / s.floor.size_y);
-      const mapScales = {
-        width: canvasW,
-        height: canvasH,
-        scale: v => scale * v,
-        scaleX: v => ((canvasW * 0.5) - (scale * s.floor.size_x * 0.5)) +
-          (scale * v),
-        scaleY: v => ((canvasH * 0.5) - (scale * s.floor.size_y * 0.5)) +
-          (scale * v),
-      };
-      drawFloor(mapScales, s.floor.size_x, s.floor.size_y, s.floor
-        .geojson);
-      updateStack(s);
       $.ajax({
-        url: `/v2/stacks?floor_id=${s.floor.id}`, // Route to the Script Controller method
+        url: `/v2/floors/${s.floor.id}`, // Route to the Script Controller method
         type: 'GET',
-        success: (allStacks) => {
-          allStacks.forEach((stack) => {
-            drawStack(mapScales, stack, stack.id === s.id);
+        success: (f) => {
+          const canvasW = $('#map-canvas').parent().innerWidth();
+          const canvasH = $(window).height() * 0.6;
+
+          $('#map-canvas').attr('width', canvasW);
+          $('#map-canvas').attr('height', canvasH);
+          const scale = Math.min(canvasW / f.size_x, canvasH /
+            f.size_y);
+          const mapScales = {
+            width: canvasW,
+            height: canvasH,
+            scale: v => scale * v,
+            scaleX: v => ((canvasW * 0.5) - (scale * f.size_x *
+                0.5)) +
+              (scale * v),
+            scaleY: v => ((canvasH * 0.5) - (scale * f.size_y *
+                0.5)) +
+              (scale * v),
+          };
+          drawFloor(mapScales, f.size_x, f.size_y, f
+            .geojson);
+          updateStack(s, f, s.library.id);
+          $.ajax({
+            url: `/v2/stacks?floor_id=${f.id}`, // Route to the Script Controller method
+            type: 'GET',
+            success: (allStacks) => {
+              allStacks.forEach((stack) => {
+                drawStack(mapScales, stack, stack.id ===
+                  s.id);
+              });
+            },
           });
         },
       });
     },
+  });
+}
+
+
+function loadLibraries() {
+  $.ajax({
+    url: '/v2/libraries/',
+    type: 'GET',
+    success: (data) => {
+      libraries = data;
+      $('#library-id').html('');
+      libraries.forEach((l) => {
+        $('#library-id').append(
+          `<option value="${l.id}">${l.name}</option>`);
+      });
+    },
+    error: () => {},
   });
 }
 
@@ -126,6 +154,7 @@ function showModal(e) {
 }
 
 $(document).ready(() => {
+  loadLibraries();
   mapCtx = $(`${mapPath} canvas`)[0].getContext('2d');
   $('#btn-book-find').click(() => {
     callNo = $('#call-number').val();
