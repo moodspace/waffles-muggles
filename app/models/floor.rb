@@ -13,5 +13,6 @@ class Floor < ApplicationRecord
   validates :size_x, allow_nil: true, numericality: { only_integer: true, greater_than: 0 }
   validates :size_y, allow_nil: true, numericality: { only_integer: true, greater_than: 0 }
   validates :geojson, allow_nil: true, length: { minimum: 1 }
+  validates :map, allow_nil: true, length: { minimum: 1 }
   validates :ref, allow_nil: true, length: { in: 1..255 }
 end

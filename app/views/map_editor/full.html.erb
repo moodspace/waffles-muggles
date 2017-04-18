@@ -1,5 +1,5 @@
 <header>
-    <ul id="slide-out" class="side-nav fixed blue-grey darken-4 blue-grey-text text-lighten-5">
+    <ul id="slide-out" class="side-nav fixed blue-grey darken-4 blue-grey-text text-lighten-5 row">
         <li>
             <ul class="collapsible" data-collapsible="accordion">
                 <li>
@@ -34,8 +34,6 @@
         </li>
         <li>
             <a class="subheader">Toolbox</a>
-        </li>
-        <li>
             <div class="toolbox">
                 <div class="row">
                     <a class="btn-flat col s4 light-blue lighten-2 tooltipped" data-position="right" data-delay="50" data-tooltip="Select tool">
@@ -64,37 +62,38 @@
         </li>
         <li>
             <a class="subheader">Tool options</a>
-        </li>
-        <li>
             <div class="tool-options">
+                <div class="row cselect">
+                    <label>Hint: Click to select an element. Drag to change placement. Press 'Delete' to remove.</label>
+                </div>
                 <div class="row crect">
                     <div class="input-field col s3">
-                        <input id="crect-x" type="text" maxlength="10">
+                        <input id="crect-x" pattern="^[-+]?[0-9]*\.?[0-9]+$" type="text" maxlength="10">
                         <label for="crect-x" class="tooltipped" data-position="right" data-delay="50" data-tooltip="Not depending on rotation">Left</label>
                     </div>
                     <div class="input-field col s3">
-                        <input id="crect-y" type="text" maxlength="10">
+                        <input id="crect-y" pattern="^[-+]?[0-9]*\.?[0-9]+$" type="text" maxlength="10">
                         <label for="crect-y" class="tooltipped" data-position="right" data-delay="50" data-tooltip="Not depending on rotation">Top</label>
                     </div>
                     <div class="input-field col s3" maxlength="10">
-                        <input id="crect-width" type="text">
+                        <input id="crect-width" pattern="^[0-9]*\.?[0-9]+$" type="text">
                         <label for="crect-width">Width</label>
                     </div>
                     <div class="input-field col s3" maxlength="10">
-                        <input id="crect-height" type="text">
+                        <input id="crect-height" pattern="^[0-9]*\.?[0-9]+$" type="text">
                         <label for="crect-height">Height</label>
                     </div>
                 </div>
                 <!-- cpolygon | polygon plotter -->
                 <div class="row cpolygon">
                     <div class="input-field col s12">
-                        <input id="cpolygon-points" type="text">
+                        <input id="cpolygon-points" pattern="^([-+]?[0-9]*\.?[0-9]+),[ ]*([-+]?[0-9]*\.?[0-9]+)([ ]+([-+]?[0-9]*\.?[0-9]+),[ ]*([-+]?[0-9]*\.?[0-9]+))*$" type="text">
                         <label for="cpolygon-points" class="tooltipped" data-position="right" data-delay="50" data-tooltip="x1,y1 x2,y2, ...">Points</label>
                     </div>
                 </div>
                 <div class="row cmark">
                     <div class="input-field col s6">
-                        <input id="cmark-rows" type="text" maxlength="2">
+                        <input id="cmark-rows" pattern="^[0-9]+$" type="text" maxlength="2">
                         <label for="cmark-rows" class="tooltipped" data-position="right" data-delay="50" data-tooltip="Quickly generate rows of stacks">Rows</label>
                     </div>
                     <div class="input-field col s6">
@@ -126,7 +125,7 @@
                     </h6>
                     <label>Hint: each library must have distinct floor names.</label>
                     <div class="input-field col s12">
-                        <input id="cfloor-name" type="text" maxlength="255">
+                        <input id="cfloor-name" pattern="^[A-z0-9]([A-z0-9 ]*[A-z0-9])*$" type="text" maxlength="255">
                         <label for="cfloor-name">Name this floor</label>
                     </div>
                 </div>
@@ -151,15 +150,15 @@
                         <label>Hint: empty or = 0 subclass means 0 on this endpoint.</label>
                     </div>
                     <div class="input-field col s4">
-                        <input id="cstack-startClass" type="text" maxlength="3">
+                        <input id="cstack-startClass" pattern="^[A-z]+$" type="text" maxlength="3">
                         <label for="cstack-startClass" class="tooltipped" data-position="right" data-delay="50" data-tooltip="e.g. 'DS' in DS778.C5245 C475x 2003">Class</label>
                     </div>
                     <div class="input-field col s4">
-                        <input id="cstack-startSubclass" type="text" maxlength="6">
+                        <input id="cstack-startSubclass" pattern="^[0-9]*\.?[0-9]+$" type="text" maxlength="6">
                         <label for="cstack-startSubclass" class="tooltipped" data-position="right" data-delay="50" data-tooltip="e.g. '778' in DS778.C5245 C475x 2003">Subclass</label>
                     </div>
                     <div class="input-field col s4">
-                        <input id="cstack-startSubclass2" type="text" maxlength="3">
+                        <input id="cstack-startSubclass2" pattern="^[A-z]*$" type="text" maxlength="3">
                         <label for="cstack-startSubclass2" class="tooltipped" data-position="right" data-delay="50" data-tooltip="e.g. 'C' in DS778.C5245 C475x 2003">Subclass2</label>
                     </div>
                     <h6>
@@ -172,15 +171,15 @@
                         <label>Hint: empty or = 0 subclass means infinity on this endpoint.</label>
                     </div>
                     <div class="input-field col s4">
-                        <input id="cstack-endClass" type="text" maxlength="3">
+                        <input id="cstack-endClass" pattern="^[A-z]+$" type="text" maxlength="3">
                         <label for="cstack-endClass" class="tooltipped" data-position="right" data-delay="50" data-tooltip="e.g. 'E' in 'E183.8.J3 S94 2005'">Class</label>
                     </div>
                     <div class="input-field col s4">
-                        <input id="cstack-endSubclass" type="text" maxlength="6">
+                        <input id="cstack-endSubclass" pattern="^[0-9]*\.?[0-9]+$" type="text" maxlength="6">
                         <label for="cstack-endSubclass" class="tooltipped right" data-position="right" data-delay="50" data-tooltip="e.g. '183.8' in 'E183.8.J3 S94 2005'">Subclass</label>
                     </div>
                     <div class="input-field col s4">
-                        <input id="cstack-endSubclass2" type="text" maxlength="3">
+                        <input id="cstack-endSubclass2" pattern="^[A-z]*$" type="text" maxlength="3">
                         <label for="cstack-endSubclass2" class="tooltipped right" data-position="right" data-delay="50" data-tooltip="e.g. 'J' in 'E183.8.J3 S94 2005'">Subclass2</label>
                     </div>
                 </div>
@@ -193,7 +192,7 @@
         <div class="card-panel blue-grey darken-4 help-text"></div>
         <div class="card-panel red darken-1 error-text"></div>
     </div>
-    <ul id="dropdown-zoom" class="dropdown-content blue-grey darken-4">
+    <ul id="dropdown-zoom" class="dropdown-content blue-grey darken-4 wide">
         <li>
             <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">50%</a>
         </li>
@@ -210,6 +209,9 @@
         <li class="divider"></li>
         <li>
             <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">Fit width</a>
+        </li>
+        <li>
+            <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">Fit window</a>
         </li>
     </ul>
     <nav>
@@ -244,6 +246,9 @@
                             <i class="material-icons tooltipped" data-position="bottom" data-delay="50" data-tooltip="Show all" style="display: inline-block;">theaters</i>
                         </label>
                     </a>
+                </li>
+                <li>
+                    <a id="label-coords" href="javascript:void(0)"></a>
                 </li>
             </ul>
             <ul class="right">

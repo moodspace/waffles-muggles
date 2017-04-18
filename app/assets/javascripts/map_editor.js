@@ -13,6 +13,7 @@ let saveCounter = 0;
 let zoomLevel = 1;
 let rawFloorSize = [0, 0];
 let mousedownPoint;
+let mousemovePoint;
 
 const helpText = [
   'Click to select an element on canvas.',
@@ -47,6 +48,21 @@ function showError(error) {
   }, 5000);
 }
 
+function checkError(element) {
+  let hasErr = false;
+  element.each((_, e) => {
+    const pattern = new RegExp($(e).attr('pattern'));
+    const value = $(e).val();
+    if (pattern.test(value)) {
+      $(e).removeClass('invalid');
+    } else {
+      $(e).addClass('invalid');
+      hasErr = true;
+    }
+  });
+  return hasErr;
+}
+
 /**
  * Scale a physical point on svg canvas to coordinates stored in data.
  * @param  {[x,y]} p [a physical point on svg canvas]
@@ -58,8 +74,8 @@ function scalePhysical(p) {
       return [p[0] / zoomLevel, p[1] / zoomLevel];
     }
     return p.map(pt => [pt[0] / zoomLevel, pt[1] / zoomLevel]);
-  } else if (_.isNumber(p)) {
-    return p / zoomLevel;
+  } else if (_.isNumber(parseFloat(p))) {
+    return parseFloat(p) / zoomLevel;
   }
   return false;
 }
@@ -75,8 +91,8 @@ function scale(p) {
       return [p[0] * zoomLevel, p[1] * zoomLevel];
     }
     return p.map(pt => [pt[0] * zoomLevel, pt[1] * zoomLevel]);
-  } else if (_.isNumber(p)) {
-    return p * zoomLevel;
+  } else if (_.isNumber(parseFloat(p))) {
+    return parseFloat(p) * zoomLevel;
   }
   return false;
 }
@@ -116,11 +132,25 @@ function addGrids() {
   }
 }
 
+function toggleUndoRedo() {
+  if (objects.length === 0 ||
+    _.findIndex(objects, { type: 'action.ancestor' }) === objects.length - 1) {
+    $('#nav-undo').addClass('disabled');
+  } else {
+    $('#nav-undo').removeClass('disabled');
+  }
+  if (objectsRedo.length === 0) {
+    $('#nav-redo').addClass('disabled');
+  } else {
+    $('#nav-redo').removeClass('disabled');
+  }
+}
+
 function setTools(level) {
   // level 0 or nil: disable all
   // level 1: only 'new' buttons
-  // level 2: toolbox, nav except save / json
-  // level 3: all
+  // level 2: toolbox, nav except save / json / undo / redo
+  // level 3: all, except undo / redo
   $('.nav-wrapper > ul > li > a').addClass('disabled');
   $('.nav-wrapper input').prop('disabled', true);
   $('#btn-output-save').addClass('disabled');
@@ -141,11 +171,11 @@ function setTools(level) {
   if (level > 2) {
     $('.nav-wrapper > ul.right > li > a').removeClass('disabled');
   }
+  toggleUndoRedo();
 }
 
-
 /**
- * Called upon changing zoom level
+ * Called upon changing zoom level, only changing attributes of shapes
  * @return {[type]}              [description]
  */
 function rerender() {
@@ -167,17 +197,15 @@ function rerender() {
     } else if (obj.type === 'polygon') {
       const points = obj.data.points.map(c => scale(c).join(',')).join(' ');
       canvas.select(`#${obj.id}`).attr('points', points);
-    } else if (obj.type === 'stacks') {
-      obj.data.forEach((stack) => {
-        const center = scale([stack.meta.cx, stack.meta.cy]);
-        const rotation = stack.meta.rotation;
-        canvas.select(`#${stack.id}`).attrs({
-          x: scale(stack.data.x),
-          y: scale(stack.data.y),
-          width: scale(stack.data.width),
-          height: scale(stack.data.height),
-          transform: `rotate(${rotation} ${center[0]} ${center[1]})`,
-        });
+    } else if (obj.type === 'stack') {
+      const center = scale([obj.meta.cx, obj.meta.cy]);
+      const rotation = obj.meta.rotation;
+      canvas.select(`#${obj.id}`).attrs({
+        x: scale(obj.data.x),
+        y: scale(obj.data.y),
+        width: scale(obj.data.width),
+        height: scale(obj.data.height),
+        transform: `rotate(${rotation} ${center[0]} ${center[1]})`,
       });
     }
   });
@@ -189,7 +217,10 @@ function setZoomLevel(level) {
   if (level.includes('%')) {
     zoomLevel = parseFloat(level.replace('%', '')) / 100;
   } else if (level === 'Fit width') {
-    zoomLevel = $('#workspace').width() / rawFloorSize[0];
+    zoomLevel = ($('#workspace').width() - 20) / rawFloorSize[0];
+  } else if (level === 'Fit window') {
+    zoomLevel = Math.min(($('#workspace').width() - 20) / rawFloorSize[0],
+      ($('#workspace').height() - 20) / rawFloorSize[1]);
   }
   const w = zoomLevel * rawFloorSize[0];
   const h = zoomLevel * rawFloorSize[1];
@@ -211,12 +242,12 @@ function offsetPoints(points, dx, dy) {
   ]);
 }
 
-function offsetStack(stackMeta, dx, dy) {
-  const newMeta = _.clone(stackMeta);
-  newMeta.cx += dx;
-  newMeta.cy += dy;
-  return newMeta;
-}
+// function offsetStack(stackMeta, dx, dy) {
+//   const newMeta = _.clone(stackMeta);
+//   newMeta.cx += dx;
+//   newMeta.cy += dy;
+//   return newMeta;
+// }
 
 function pointsToArray(strPoints) {
   return strPoints.split(' ').map(p => [
@@ -284,26 +315,30 @@ function exportFloorData() {
   }
   let floorJson = {};
   const floorPoints = metaObjects.floor_border.data.points;
-
-  const deltaX = d3.min(floorPoints, e => e[0]);
-  const deltaY = d3.min(floorPoints, e => e[1]);
-
   floorJson = {
     name: $('#cfloor-name').val(),
-    size_x: parseInt(canvas.attr('width'), 10),
-    size_y: parseInt(canvas.attr('height'), 10),
+    size_x: parseInt(scalePhysical(canvas.attr('width')), 10),
+    size_y: parseInt(scalePhysical(canvas.attr('height')), 10),
+    ref: $('#canvas-e-bgimg').attr('href'),
     geojson: JSON.stringify({
       type: 'polygon',
-      coordinates: offsetPoints(floorPoints, -deltaX, -deltaY),
+      coordinates: floorPoints,
     }),
+    map: {
+      refImage: $('#canvas-e-bgimg').attr('href'),
+      floorBorder: JSON.stringify({
+        type: 'polygon',
+        coordinates: floorPoints,
+      }),
+      objects: JSON.stringify(_.filter(objects, obj =>
+        !_.startsWith(obj.type, 'action.'))),
+    },
   };
 
   const stacksJson = [];
   objects.forEach((obj) => {
-    if (obj.type === 'stacks') {
-      obj.data.forEach((stack) => {
-        stacksJson.push(offsetStack(stack.meta, -deltaX, -deltaY));
-      });
+    if (obj.type === 'stack') {
+      stacksJson.push(obj.meta);
     }
   });
 
@@ -328,8 +363,9 @@ function selectRect(id) {
   $('#crect-y').val($(`#${id}`).attr('y'));
   $('#crect-width').val($(`#${id}`).attr('width'));
   $('#crect-height').val($(`#${id}`).attr('height'));
+  checkError($('.row.crect input'));
   $('.tool-options > .row').hide();
-  $('.tool-options > .row:nth-child(1)').show();
+  $('.tool-options > .row:nth-child(2)').show();
   Materialize.updateTextFields();
 }
 
@@ -337,52 +373,73 @@ function selectPolygon(id) {
   canvas.selectAll('.selected').classed('selected', false);
   $(`#${id}`).addClass('selected');
   $('#cpolygon-points').val($(`#${id}`).attr('points'));
+  checkError($('.row.cpolygon input'));
   $('.tool-options > .row').hide();
-  $('.tool-options > .row:nth-child(2)').show();
+  $('.tool-options > .row:nth-child(3)').show();
   Materialize.updateTextFields();
+}
+
+function removeShapeData(id) {
+  _.pullAllBy(objects, [{ id }], 'id');
+}
+
+/**
+ * Find shape data and its index
+ * @param  {[type]} id [description]
+ * @return {{index, value}}    [description]
+ */
+function findShapeData(id) {
+  const ret = [];
+  _.each(objects, (v, idx) => {
+    if (v.id === id) {
+      ret.push({ index: idx, value: v });
+    }
+  });
+  return ret;
 }
 
 function showMarkTool(id) {
   canvas.selectAll('.selected').classed('selected', false);
   $(`#${id}`).addClass('selected');
-  const objIdx = _.findIndex(objects, o => o.id === id && o.type !== 'stacks');
-  $('#cmark-rows').val(objects[objIdx].meta.rows);
+  const objData = findShapeData(id)[0].value;
+  $('#cmark-rows').val(objData.meta.rows);
   $('#cmark-rotation').material_select('destroy');
-  $('#cmark-rotation').val(objects[objIdx].meta.rotation);
+  $('#cmark-rotation').val(objData.meta.rotation);
   $('#cmark-rotation').material_select();
-  $(`.tool-options > .row:nth-child(${modebit})`).show();
+  checkError($('.row.cmark input, .row.cmark select'));
+  $(`.tool-options > .row:nth-child(${modebit + 1})`).show();
   Materialize.updateTextFields();
 }
 
 function showStackTool(id) {
   canvas.selectAll('.selected').classed('selected', false);
   $(`#${id}`).addClass('selected');
-  objects.forEach((obj) => {
-    const stackIdx = _.findIndex(obj.data, {
-      id,
-    });
-    if (obj.type === 'stacks' && stackIdx >= 0) {
-      $('#cstack-oversize').material_select('destroy');
-      $('#cstack-oversize').val(obj.data[stackIdx].meta.oversize);
-      $('#cstack-oversize').material_select();
-      $('#cstack-rotation').val(obj.data[stackIdx].meta.rotation);
-      $('#cstack-startClass').val(obj.data[stackIdx].meta.startClass);
-      $('#cstack-startSubclass').val(obj.data[stackIdx].meta.startSubclass);
-      $('#cstack-startSubclass2').val(obj.data[stackIdx].meta.startSubclass2);
-      $('#cstack-endClass').val(obj.data[stackIdx].meta.endClass);
-      $('#cstack-endSubclass').val(obj.data[stackIdx].meta.endSubclass);
-      $('#cstack-endSubclass2').val(obj.data[stackIdx].meta.endSubclass2);
-      $(`.tool-options > .row:nth-child(${modebit})`).show();
-      Materialize.updateTextFields();
-    }
-  });
+  const stackData = findShapeData(id)[0].value;
+  if (stackData) {
+    $('#cstack-oversize').material_select('destroy');
+    $('#cstack-oversize').val(stackData.meta.oversize);
+    $('#cstack-oversize').material_select();
+    $('#cstack-rotation').val(stackData.meta.rotation);
+    $('#cstack-startClass').val(stackData.meta.startClass);
+    $('#cstack-startSubclass').val(stackData.meta.startSubclass);
+    $('#cstack-startSubclass2').val(stackData.meta.startSubclass2);
+    $('#cstack-endClass').val(stackData.meta.endClass);
+    $('#cstack-endSubclass').val(stackData.meta.endSubclass);
+    $('#cstack-endSubclass2').val(stackData.meta.endSubclass2);
+    checkError($('.row.cstack input, .row.cstack select'));
+    $(`.tool-options > .row:nth-child(${modebit + 1})`).show();
+    Materialize.updateTextFields();
+  }
 }
 
 function addClickHandlerToShape(e) {
-  e.on('click', () => {
+  e.on('mousedown', () => {
     if (!e.classed('cobject')) {
       return;
     }
+    e.each(() => {
+      d3.event.target.parentNode.appendChild(d3.event.target);
+    });
     switch (modebit) {
       case 0:
         if (e.attr('points')) {
@@ -390,6 +447,7 @@ function addClickHandlerToShape(e) {
         } else if (e.classed('cobject') && e.attr('x')) {
           selectRect(e.attr('id'));
         }
+        mousedownPoint = d3.mouse(event.currentTarget);
         break;
       case 3:
         if (!e.classed('cstack')) {
@@ -401,9 +459,13 @@ function addClickHandlerToShape(e) {
           showStackTool(e.attr('id'));
         }
         break;
+      case 6:
+        mousedownPoint = d3.mouse(event.currentTarget);
+        break;
       default:
 
     }
+    mousemovePoint = mousedownPoint;
   });
 }
 
@@ -440,7 +502,206 @@ function confirmNewShape(shape, id, settings) {
   }
 }
 
-function initCanvas(w, h, bgimageUrl) {
+function deleteObj(index) {
+  const obj = objects.splice(index, 1)[0];
+  $(`#${obj.id}`).remove();
+  objects.push({ type: 'action.delete', data: obj, meta: { index } });
+  toggleUndoRedo();
+}
+
+/**
+ * Draw a shape on canvas based on data. Does not change history.
+ * @param  {[type]} obj [description]
+ * @return {[type]}     [description]
+ */
+function redraw(obj) {
+  switch (obj.type) {
+    case 'rect':
+      {
+        const rect = canvas.append('rect');
+        rect.attrs({
+          x: scale(obj.data.x),
+          y: scale(obj.data.y),
+          width: scale(obj.data.width),
+          height: scale(obj.data.height),
+        });
+        // rect redrawn and restored
+        confirmNewShape(rect, obj.id, {
+          redo: true,
+        });
+        break;
+      }
+    case 'polygon':
+      {
+        const polygon = canvas.append('polygon');
+        polygon.attr('points', arrayToPoints(scale(obj.data.points)));
+        // rect redrawn and restored
+        confirmNewShape(polygon, obj.id, {
+          redo: true,
+        });
+        break;
+      }
+    case 'stack':
+      {
+        const groupId = obj.meta.for;
+        if (canvas.select(`g[for='${groupId}']`).empty()) {
+          canvas.append('g').attr('for', groupId);
+        }
+        const group = canvas.select(`g[for='${groupId}']`);
+        const rect = group.append('rect').attrs({
+          x: scale(obj.data.x),
+          y: scale(obj.data.y),
+          width: scale(obj.data.width),
+          height: scale(obj.data.height),
+        }).classed('cstack', true);
+        const rectCenter = [];
+        rectCenter[0] = obj.data.x + (obj.data.width * 0.5);
+        rectCenter[1] = obj.data.y + (obj.data.height * 0.5);
+        const transVals = [
+          obj.meta.rotation,
+          scale(rectCenter[0]),
+          scale(rectCenter[1]),
+        ].join(' ');
+        rect.attr('transform', `rotate(${transVals})`);
+        confirmNewShape(rect, obj.id, {
+          stroke: '#0AC',
+          redo: true,
+        });
+        // stack redrawn and restored
+        break;
+      }
+    default:
+
+  }
+}
+
+function generateRectData(shape) {
+  const id = shape.attr('id');
+  objects = objects.map((obj) => {
+    if (obj.id === id && obj.type !== 'stack') {
+      const newObj = _.clone(obj);
+      newObj.data = {
+        x: scalePhysical(shape.attr('x')),
+        y: scalePhysical(shape.attr('y')),
+        width: scalePhysical(shape.attr('width')),
+        height: scalePhysical(shape.attr('height')),
+      };
+      return newObj;
+    }
+    return obj;
+  });
+}
+
+function generatePolygonData(shape) {
+  const id = shape.attr('id');
+  objects = objects.map((obj) => {
+    if (obj.id === id && obj.type !== 'stack') {
+      const newObj = _.clone(obj);
+      newObj.data = {
+        points: scalePhysical(pointsToArray(shape.attr('points'))),
+      };
+      return newObj;
+    }
+    return obj;
+  });
+}
+
+function generateStackData(shape) {
+  const id = shape.attr('id');
+  objects = objects.map((obj) => {
+    if (obj.id === id && obj.type === 'stack') {
+      const newObj = _.clone(obj);
+      newObj.data.x = scalePhysical(shape.attr('x'));
+      newObj.data.y = scalePhysical(shape.attr('y'));
+      newObj.data.width = scalePhysical(shape.attr('width'));
+      newObj.data.height = scalePhysical(shape.attr('height'));
+      // update meta
+      newObj.meta.cx = newObj.data.x + (newObj.data.width / 2);
+      newObj.meta.cy = newObj.data.y + (newObj.data.height / 2);
+      newObj.meta.lx = newObj.data.width;
+      newObj.meta.ly = newObj.data.height;
+      return newObj;
+    }
+    return obj;
+  });
+}
+
+function generateStackMeta(shape) {
+  const id = shape.attr('id');
+  objects = objects.map((obj) => {
+    if (obj.id === id && obj.type === 'stack') {
+      const newObj = _.clone(obj);
+      newObj.meta.oversize = parseInt($(
+        '#cstack-oversize').val(), 10);
+      shape.classed('size0', false).classed('size1', false).classed(
+        'size2', false).classed(
+        `size${$('#cstack-oversize').val()}`, true);
+      newObj.meta.startClass = $(
+        '#cstack-startClass').val().trim().toUpperCase();
+      newObj.meta.startSubclass = Math.floor(
+        parseFloat($('#cstack-startSubclass').val(), 10));
+      newObj.meta.startSubclass2 = $(
+        '#cstack-startSubclass2').val().trim().toUpperCase();
+      newObj.meta.endClass = $('#cstack-endClass')
+        .val().trim().toUpperCase();
+      newObj.meta.endSubclass = Math.ceil(
+        parseFloat($('#cstack-endSubclass').val(), 10));
+      newObj.meta.endSubclass2 = $(
+        '#cstack-endSubclass2').val().trim().toUpperCase();
+      return newObj;
+    }
+    return obj;
+  });
+}
+
+/**
+ * Undo last step.
+ * @return {[type]} [description]
+ */
+function undo() {
+  const obj = objects.pop();
+  switch (obj.type) {
+    case 'action.delete':
+      {
+        // restore obj to canvas
+        objects.splice(obj.meta.index, 0, obj.data);
+        redraw(obj.data);
+        break;
+      }
+    case 'action.ancestor':
+      {
+        objects.push(obj);
+        break;
+      }
+    default:
+      $(`#${obj.id}`).remove();
+  }
+  objectsRedo.push(obj);
+  toggleUndoRedo();
+}
+
+/**
+ * Redo last step.
+ * @return {[type]} [description]
+ */
+function redo() {
+  const obj = objectsRedo.pop();
+  switch (obj.type) {
+    case 'action.delete':
+      {
+        // (redo) remove obj from canvas
+        const objToDel = objects.splice(obj.meta.index, 1)[0];
+        $(`#${objToDel.id}`).remove();
+        break;
+      }
+    default:
+      redraw(obj);
+  }
+  objects.push(obj);
+  toggleUndoRedo();
+}
+
+function initCanvas(w, h, ref, map) {
   $('#workspace').html('');
   canvas = d3.select('#workspace').append('svg').attrs({
     id: 'canvas',
@@ -455,7 +716,7 @@ function initCanvas(w, h, bgimageUrl) {
 
   canvas.append('image').attrs({
     id: 'canvas-e-bgimg',
-    'xlink:href': bgimageUrl,
+    href: ref || '',
     width: '100%',
     height: '100%',
   });
@@ -467,11 +728,20 @@ function initCanvas(w, h, bgimageUrl) {
   metaObjects = {};
   saveCounter = 0;
 
+  if (map) {
+    map.objects.forEach((obj) => {
+      redraw(obj);
+    });
+    objects = map.objects;
+    objects.push({ type: 'action.ancestor' });
+  }
+
   canvas.style('cursor', 'default');
   $('#btn-zoom').text('100%');
   $('.toolbox a.btn-flat').removeClass('light-blue lighten-2');
   $('.toolbox a.btn-flat:first-child').addClass('light-blue lighten-2');
   $('.tool-options > .row').hide();
+  $('.tool-options > .row:nth-child(1)').show();
   $('.tool-options input').val(0);
   $('.tool-options input').val('');
   $('#cfloor-btn-set').removeClass('disabled');
@@ -520,16 +790,16 @@ function initCanvas(w, h, bgimageUrl) {
               meta: {
                 rows: 0,
                 rotation: 0,
+                g: [],
               },
               data: {
-                x: scalePhysical(parseInt(activeRect.attr('x'), 10)),
-                y: scalePhysical(parseInt(activeRect.attr('y'), 10)),
-                width: scalePhysical(parseInt(activeRect.attr('width'),
-                  10)),
-                height: scalePhysical(parseInt(activeRect.attr('height'),
-                  10)),
+                x: scalePhysical(activeRect.attr('x')),
+                y: scalePhysical(activeRect.attr('y'), 10),
+                width: scalePhysical(activeRect.attr('width'), 10),
+                height: scalePhysical(activeRect.attr('height'), 10),
               },
             });
+            toggleUndoRedo();
             confirmNewShape(activeRect, rid);
           }
           break;
@@ -578,22 +848,86 @@ function initCanvas(w, h, bgimageUrl) {
 
   canvas.on('mousedown', () => {
     switch (modebit) {
+      case 0:
+        mousedownPoint = d3.mouse(event.currentTarget);
+        break;
       case 6:
         mousedownPoint = d3.mouse(event.currentTarget);
         break;
       default:
         mousedownPoint = undefined;
     }
+    mousemovePoint = mousedownPoint;
   });
 
   canvas.on('mouseup', () => {
     mousedownPoint = undefined;
+    mousemovePoint = undefined;
   });
 
   canvas.on('mousemove', () => {
     const point = d3.mouse(event.currentTarget);
+    const scaledPt = scalePhysical(point);
+    scaledPt[0] = parseInt(scaledPt[0], 10);
+    scaledPt[1] = parseInt(scaledPt[1], 10);
+
+    if (scaledPt[0] > -1 && scaledPt[1] > -1) {
+      $('#label-coords').text(scaledPt.join(', '));
+    } else {
+      $('#label-coords').text('');
+    }
 
     switch (modebit) {
+      case 0:
+        {
+          const rect = canvas.select('rect.selected');
+          const polygon = canvas.select('polygon.selected');
+          if (!mousedownPoint) {
+            break;
+          }
+          const cLeftOffset = point[0] - mousemovePoint[0];
+          const cTopOffset = point[1] - mousemovePoint[1];
+          if (point[0] < 0 || point[0] >= canvas.attr('width') || point[1] <
+            0 || point[1] >= canvas.attr('height')) {
+            mousedownPoint = undefined;
+            mousemovePoint = undefined;
+            break;
+          }
+          if (!rect.empty()) {
+            const orig = [
+              parseFloat(rect.attr('x')),
+              parseFloat(rect.attr('y')),
+            ];
+            rect.attr('x', orig[0] + cLeftOffset);
+            rect.attr('y', orig[1] + cTopOffset);
+            mousemovePoint = point;
+            if (_.isEmpty(rect.attr('transform'))) {
+              generateRectData(rect);
+              break;
+            }
+            // rotated rect only
+            const rotationVals = rect.attr('transform').replace(
+                /\w+/, '')
+              .replace('(', '').replace(')', '')
+              .split(' ')
+              .map(v => parseInt(v, 10));
+            const newRotationString = [
+              rotationVals[0],
+              rotationVals[1] + cLeftOffset,
+              rotationVals[2] + cTopOffset,
+            ].join(' ');
+            rect.attr('transform', `rotate(${newRotationString})`);
+            generateStackData(rect);
+          } else if (!polygon.empty()) {
+            const pointsArray = pointsToArray(polygon.attr('points'));
+            polygon.attr('points',
+              arrayToPoints(
+                offsetPoints(pointsArray, cLeftOffset, cTopOffset)));
+            mousemovePoint = point;
+            generatePolygonData(polygon);
+          }
+          break;
+        }
       case 1:
         {
           const activeRect = canvas.select('rect.active');
@@ -646,8 +980,8 @@ function initCanvas(w, h, bgimageUrl) {
           const cLeftOffset = point[0] - mousedownPoint[0];
           const cTopOffset = point[1] - mousedownPoint[1];
           const orig = [
-            parseInt(canvas.style('left'), 10),
-            parseInt(canvas.style('top'), 10),
+            parseFloat(canvas.style('left')),
+            parseFloat(canvas.style('top')),
           ];
           if (orig[0] + cLeftOffset > $('#workspace').width() / 2 ||
             $('#workspace > svg').width() + orig[0] + cLeftOffset < $(
@@ -656,6 +990,7 @@ function initCanvas(w, h, bgimageUrl) {
             $('#workspace > svg').height() + orig[1] + cTopOffset < $(
               '#workspace').height() / 2) {
             mousedownPoint = undefined;
+            mousemovePoint = undefined;
             break;
           }
           canvas.style('left', orig[0] + cLeftOffset);
@@ -688,11 +1023,13 @@ function initCanvas(w, h, bgimageUrl) {
               meta: {
                 rows: 0,
                 rotation: 0,
+                g: [],
               },
               data: {
                 points: scalePhysical(newPointsArr),
               },
             });
+            toggleUndoRedo();
             confirmNewShape(activePolygon, rid);
           }
           break;
@@ -730,16 +1067,25 @@ function initCanvas(w, h, bgimageUrl) {
 
     }
   });
+
+  $(document).on('keypress', () => {
+    if ((event.which === 127 || event.which === 46) && !canvas.select('.selected').empty()) {
+      deleteObj(findShapeData(canvas.select('.selected').attr('id'))[0].index);
+      $('.toolbox a.btn-flat:first-child').click();
+    }
+  });
+  // END initCanvas
 }
 
 function loadFloors(libraryId) {
   $('#btn-add-floor').show();
 
   $.ajax({
-    url: '/v1/floors/',
+    url: '/v2/floors/',
     type: 'GET',
     data: {
       library_id: libraryId,
+      more: true,
     },
     success: (data) => {
       floors = data;
@@ -756,6 +1102,7 @@ function loadFloors(libraryId) {
         if (floor.id === activeFloor) {
           floorItem.addClass('active');
           $('#cfloor-name').val(floor.name);
+          checkError($('.row.cfloor input'));
           Materialize.updateTextFields();
         }
       });
@@ -773,12 +1120,39 @@ function loadFloors(libraryId) {
 
         activeFloor = floors[floorIdx].id;
         setTools(1);
-        if (floors[floorIdx].ref) {
+        $('#workspace').html('');
+
+        if (floors[floorIdx].map) {
+          // load map if has map
+          const map = JSON.parse(floors[floorIdx].map);
+          map.floorBorder = JSON.parse(map.floorBorder);
+          map.objects = JSON.parse(map.objects);
           initCanvas(floors[floorIdx].size_x, floors[floorIdx].size_y,
-            floors[floorIdx].ref);
+            floors[floorIdx].ref, map);
+
+          const points = JSON.parse(floors[floorIdx].geojson).coordinates;
+          const activeFbPolygon = canvas.insert('polygon',
+              ':nth-child(2)')
+            .attr('points', arrayToPoints(points))
+            .classed('fb active_fb', true);
+          // polygon created and stored
+          const rid = randomId();
+          metaObjects.floor_border = {
+            type: 'f_border',
+            id: `canvas-e-${rid}`,
+            data: {
+              points: scalePhysical(points),
+            },
+          };
+          confirmNewShape(activeFbPolygon, rid, {
+            readonly: true,
+          });
+          // re-enable output buttons that are always disabled in setTools
+          setTools(3);
         }
 
         $('#cfloor-name').val(floors[floorIdx].name);
+        checkError($('.row.cfloor input'));
         Materialize.updateTextFields();
         $(event.currentTarget).addClass('active');
       });
@@ -795,7 +1169,7 @@ function loadFloors(libraryId) {
 function loadLibraries() {
   $('#btn-add-floor').hide();
   $.ajax({
-    url: '/v1/libraries/',
+    url: '/v2/libraries/',
     type: 'GET',
     success: (data) => {
       libraries = data;
@@ -843,8 +1217,8 @@ function loadLibraries() {
 const rowThickness = 10;
 
 function initStacksInShape(e, rows, rotation) {
-  const objIdx = _.findIndex(objects, o => o.id === e.attr('id') && o.type !==
-    'stacks');
+  const id = e.attr('id');
+  const objIdx = findShapeData(id)[0].index;
   objects[objIdx].meta.rows = rows;
   objects[objIdx].meta.rotation = rotation;
 
@@ -852,13 +1226,9 @@ function initStacksInShape(e, rows, rotation) {
   $('#cmark-rotation').val(rotation);
 
   canvas.select(`g[for="${e.attr('id')}"]`).remove();
-  const newObjects = [];
-  objects.forEach((obj) => {
-    if (obj.type !== 'stacks' || obj.id !== e.attr('id')) {
-      newObjects.push(obj);
-    }
+  findShapeData(id)[0].value.meta.g.forEach((stackId) => {
+    removeShapeData(stackId);
   });
-  objects = newObjects;
 
   const polygon = e.attr('points') ?
     pointsToArray(e.attr('points')) :
@@ -903,7 +1273,9 @@ function initStacksInShape(e, rows, rotation) {
   ];
 
   const group = canvas.append('g').attr('for', e.attr('id'));
-  const stacksData = [];
+  const groupIdx = findShapeData(e.attr('id'))[0].index;
+  objects[groupIdx].meta.g = [];
+
   for (let i = 0; i < rows; i += 1) {
     const r = centeroid[1] - rectCenter[1];
     const rectCenterRotated = [
@@ -923,7 +1295,7 @@ function initStacksInShape(e, rows, rotation) {
     rect.attr('transform',
       `rotate(${rotation} ${rectCenterRotated[0]} ${rectCenterRotated[1]})`);
 
-    stacksData.push({
+    objects.push({
       type: 'stack',
       id: `canvas-e-${rid}`,
       meta: {
@@ -939,28 +1311,26 @@ function initStacksInShape(e, rows, rotation) {
         endClass: 'Z',
         endSubclass: 0,
         endSubclass2: '',
+        for: e.attr('id'),
       },
       data: {
-        x: scalePhysical(parseInt(rect.attr('x'), 10)),
-        y: scalePhysical(parseInt(rect.attr('y'), 10)),
-        width: scalePhysical(parseInt(rect.attr('width'), 10)),
-        height: scalePhysical(parseInt(rect.attr('height'), 10)),
+        x: scalePhysical(rect.attr('x')),
+        y: scalePhysical(rect.attr('y')),
+        width: scalePhysical(rect.attr('width')),
+        height: scalePhysical(rect.attr('height')),
       },
     });
+
+    toggleUndoRedo();
 
     confirmNewShape(rect, rid, {
       stroke: '#0AC',
     });
 
     rectCenter[1] += (rowThickness + rowSpacing);
-  }
 
-  // stacks created and stored
-  objects.push({
-    type: 'stacks',
-    id: e.attr('id'),
-    data: stacksData,
-  });
+    objects[groupIdx].meta.g.push(`canvas-e-${rid}`);
+  }
 
   // END initStacksInShape
 }
@@ -978,7 +1348,6 @@ $(document).ready(() => {
         canvas.selectAll('.selected').classed('selected', false);
       }
       modebit = index;
-
       canvas.style('cursor', 'default').selectAll('*').style(
         'cursor', 'default');
 
@@ -1003,14 +1372,15 @@ $(document).ready(() => {
       $('.tool-options > .row').hide();
       $('.toolbox a.btn-flat').removeClass('light-blue lighten-2');
       if (!canvas.selectAll('.selected').empty()) {
-        $(`.tool-options > .row:nth-child(${index})`).show();
+        $(`.tool-options > .row:nth-child(${index + 1})`).show();
       }
 
       // tool options available without selecting an element
-      if (modebit === 4) {
-        $(`.tool-options > .row:nth-child(${index})`).show();
+      if (modebit === 0 || modebit === 4) {
+        $(`.tool-options > .row:nth-child(${index + 1})`).show();
       }
-      $(event.currentTarget).addClass('light-blue lighten-2');
+      $(`.toolbox a.btn-flat:nth-child(${index + 1})`).addClass(
+        'light-blue lighten-2');
       showHelp(helpText[index]);
     });
   });
@@ -1024,98 +1394,49 @@ $(document).ready(() => {
   });
 
   $('#nav-undo').click(() => {
-    if (objects.length === 0) {
+    if ($('#nav-undo').hasClass('disabled')) {
       return;
     }
-    const obj = objects.pop();
-    if (obj.type !== 'stacks') {
-      $(`#${obj.id}`).remove();
-    } else {
-      canvas.select(`g[for="${obj.id}"]`).remove();
-    }
-    objectsRedo.push(obj);
+    undo();
   });
 
   $('#nav-redo').click(() => {
-    if (objectsRedo.length === 0) {
+    if ($('#nav-redo').hasClass('disabled')) {
       return;
     }
-    const obj = objectsRedo.pop();
-    switch (obj.type) {
-      case 'rect':
-        {
-          const rect = canvas.append('rect');
-          rect.attrs({
-            x: scale(obj.data.x),
-            y: scale(obj.data.y),
-            width: scale(obj.data.width),
-            height: scale(obj.data.height),
-          });
-          // rect redrawn and restored
-          objects.push(obj);
-          confirmNewShape(rect, obj.id, {
-            redo: true,
-          });
-          break;
-        }
-      case 'polygon':
-        {
-          const polygon = canvas.append('polygon');
-          polygon.attr('points', arrayToPoints(scale(obj.data.points)));
-          // rect redrawn and restored
-          objects.push(obj);
-          confirmNewShape(polygon, obj.id, {
-            redo: true,
-          });
-          break;
-        }
-      case 'stacks':
-        {
-          const group = canvas.append('g').attr('for', obj.id);
-          obj.data.forEach((r) => {
-            const rect = group.append('rect').attrs({
-              x: scale(r.data.x),
-              y: scale(r.data.y),
-              width: scale(r.data.width),
-              height: scale(r.data.height),
-            }).classed('cstack', true);
-            const rectCenter = [];
-            rectCenter[0] = r.data.x + (r.data.width * 0.5);
-            rectCenter[1] = r.data.y + (r.data.height * 0.5);
-            const transVals = [
-              r.meta.rotation,
-              scale(rectCenter[0]),
-              scale(rectCenter[1]),
-            ].join(' ');
-            rect.attr('transform', `rotate(${transVals})`);
-            confirmNewShape(rect, r.id, {
-              stroke: '#0AC',
-              redo: true,
-            });
-          });
-          // stacks redrawn and restored
-          objects.push(obj);
-          break;
-        }
-      default:
-
-    }
+    redo();
   });
 
-  $('.row.cmark input, .row.cmark select').change(() => {
-    const shape = canvas.selectAll('.selected');
-    const irows = parseInt($('#cmark-rows').val(), 10);
-    if (_.isNaN(irows) || irows <= 0) {
+  $('.row.cmark select').change(() => {
+    if (checkError($('.row.cmark input'))) {
       return;
     }
+    const shape = canvas.selectAll('.selected');
+    const irows = parseInt($('#cmark-rows').val(), 10);
     const irotation = parseInt($('#cmark-rotation').val(), 10);
-    if (_.isNaN(irotation) || irotation < 0 || irotation > 360) {
+    if (irotation < 0 || irotation > 360) {
       return;
     }
     initStacksInShape(shape, irows, irotation);
   });
 
-  $('.row.crect input').change(() => {
+  $('.row.cmark input').on('input', () => {
+    if (checkError($('.row.cmark input'))) {
+      return;
+    }
+    const shape = canvas.selectAll('.selected');
+    const irows = parseInt($('#cmark-rows').val(), 10);
+    const irotation = parseInt($('#cmark-rotation').val(), 10);
+    if (irotation < 0 || irotation > 360) {
+      return;
+    }
+    initStacksInShape(shape, irows, irotation);
+  });
+
+  $('.row.crect input').on('input', () => {
+    if (checkError($('.row.crect input'))) {
+      return;
+    }
     const shape = canvas.selectAll('.selected');
     shape.attr('x', $('#crect-x').val());
     shape.attr('y', $('#crect-y').val());
@@ -1123,82 +1444,41 @@ $(document).ready(() => {
     shape.attr('height', $('#crect-height').val());
 
     // for area rect edit
-    objects = objects.map((obj) => {
-      if (obj.id === shape.attr('id') && obj.type !== 'stacks') {
-        const newObj = _.clone(obj);
-        newObj.data = {
-          x: parseInt(shape.attr('x'), 10),
-          y: parseInt(shape.attr('y'), 10),
-          width: parseInt(shape.attr('width'), 10),
-          height: parseInt(shape.attr('height'), 10),
-        };
-        return newObj;
-      }
-      return obj;
-    });
+    generateRectData(shape);
 
     // for stack rect edit
-    objects = objects.map((obj) => {
-      const stackIdx = _.findIndex(obj.data, {
-        id: shape.attr('id'),
-      });
-      if (obj.type === 'stacks' && stackIdx >= 0) {
-        const newObj = _.clone(obj);
-        newObj.data[stackIdx].data.x = parseInt(shape.attr('x'), 10);
-        newObj.data[stackIdx].data.y = parseInt(shape.attr('y'), 10);
-        newObj.data[stackIdx].data.width = parseInt(shape.attr(
-          'width'), 10);
-        newObj.data[stackIdx].data.height = parseInt(shape.attr(
-          'height'), 10);
-        // update meta
-        newObj.data[stackIdx].meta.cx = newObj.data[stackIdx].data.x +
-          (newObj.data[stackIdx].data.width / 2);
-        newObj.data[stackIdx].meta.cy = newObj.data[stackIdx].data.y +
-          (newObj.data[stackIdx].data.height / 2);
-        newObj.data[stackIdx].meta.lx = newObj.data[stackIdx].data.width;
-        newObj.data[stackIdx].meta.ly = newObj.data[stackIdx].data.height;
-
-        return newObj;
-      }
-      return obj;
-    });
+    generateStackData(shape);
   });
 
-  $('.row.cpolygon input').change(() => {
+  $('.row.cpolygon input').on('input', () => {
+    if (checkError($('.row.cpolygon input'))) {
+      return;
+    }
     const shape = canvas.selectAll('.selected');
     shape.attr('points', $('#cpolygon-points').val());
   });
 
-  $('.row.cstack input, .row.cstack select').change(() => {
-    const shape = canvas.selectAll('.selected');
+  $('.row.cfloor input').on('input', () => {
+    if (checkError($('.row.cfloor input'))) {
+      return false;
+    }
+    return true;
+  });
 
-    objects = objects.map((obj) => {
-      const stackIdx = _.findIndex(obj.data, {
-        id: shape.attr('id'),
-      });
-      if (obj.type === 'stacks' && stackIdx >= 0) {
-        const newObj = _.clone(obj);
-        newObj.data[stackIdx].meta.oversize = parseInt($(
-          '#cstack-oversize').val(), 10);
-        shape.classed('size0', false).classed('size1', false).classed(
-          'size2', false).classed(
-          `size${$('#cstack-oversize').val()}`, true);
-        newObj.data[stackIdx].meta.startClass = $(
-          '#cstack-startClass').val().trim().toUpperCase();
-        newObj.data[stackIdx].meta.startSubclass = Math.floor(
-          parseFloat($('#cstack-startSubclass').val(), 10));
-        newObj.data[stackIdx].meta.startSubclass2 = $(
-          '#cstack-startSubclass2').val().trim().toUpperCase();
-        newObj.data[stackIdx].meta.endClass = $('#cstack-endClass')
-          .val().trim().toUpperCase();
-        newObj.data[stackIdx].meta.endSubclass = Math.ceil(
-          parseFloat($('#cstack-endSubclass').val(), 10));
-        newObj.data[stackIdx].meta.endSubclass2 = $(
-          '#cstack-endSubclass2').val().trim().toUpperCase();
-        return newObj;
-      }
-      return obj;
-    });
+  $('.row.cstack select').change(() => {
+    if (checkError($('.row.cstack input'))) {
+      return;
+    }
+    const shape = canvas.selectAll('.selected');
+    generateStackMeta(shape);
+  });
+
+  $('.row.cstack input').on('input', () => {
+    if (checkError($('.row.cstack input'))) {
+      return;
+    }
+    const shape = canvas.selectAll('.selected');
+    generateStackMeta(shape);
   });
 
   $('#cfloor-btn-set').click(() => {
@@ -1225,21 +1505,40 @@ $(document).ready(() => {
     }
     $('#modal-new-canvas > div > form > input[name="floor_id"]').val(
       activeFloor);
+    $('#ref_img').val('');
+    $('#modal-new-canvas>div>div>div>input').prop('disabled', false);
     $('.modal').modal();
     $('#modal-new-canvas').modal('open');
   });
 
+  $('#ref_img').change(() => {
+    $('#modal-new-canvas>div>div>div>input').prop('disabled', true);
+  });
+
   $('#btn-canvas-commit-new').click(() => {
+    const form = $('#modal-new-canvas > div > form');
+    let w = $(
+      '#modal-new-canvas>div>div>div:nth-child(1)>input').val();
+    let h = $(
+      '#modal-new-canvas>div>div>div:nth-child(2)>input').val();
+    form.append(
+      `<input type="hidden" name="width" value="${parseInt(w, 10)}">`,
+    );
+    form.append(
+      `<input type="hidden" name="height" value="${parseInt(h, 10)}">`,
+    );
     $.ajax({
       url: '/maps/uploadRefImg',
       type: 'POST',
-      data: new FormData($('#modal-new-canvas > div > form')[0]),
-      success: (floor) => {
-        const w = $(
-          '#modal-new-canvas>div>div>div:nth-child(1)>input').val();
-        const h = $(
-          '#modal-new-canvas>div>div>div:nth-child(2)>input').val();
-        initCanvas(parseInt(w, 10), parseInt(h, 10), floor.ref);
+      data: new FormData(form[0]),
+      success: (data) => {
+        if ($('#modal-new-canvas>div>div>div>input').prop(
+            'disabled')) {
+          // if any is disabled
+          w = data.w;
+          h = data.h;
+        }
+        initCanvas(parseInt(w, 10), parseInt(h, 10), data.ref);
         loadFloors(activeLibrary);
       },
       error: (e) => {
@@ -1270,7 +1569,7 @@ $(document).ready(() => {
     const data = exportFloorData();
     saveCounter = data.stacks.length + 1;
     $.ajax({
-      url: '/v1/floors',
+      url: '/v2/floors',
       type: 'PUT',
       dataType: 'json',
       data: {
@@ -1278,8 +1577,10 @@ $(document).ready(() => {
         name: data.floor.name,
         size_x: data.floor.size_x,
         size_y: data.floor.size_y,
+        ref: data.floor.ref,
         geojson: data.floor.geojson,
         library: activeLibrary,
+        map: JSON.stringify(data.floor.map),
       },
       success: () => {
         saveCounter -= 1;
@@ -1292,9 +1593,26 @@ $(document).ready(() => {
       },
     });
 
+    // remove old stack records
+    $.ajax({
+      url: '/v1/stacks/',
+      type: 'GET',
+      data: {
+        floor_id: activeFloor,
+      },
+      success: (stacks) => {
+        stacks.forEach((s) => {
+          $.ajax({
+            url: `/v1/stacks/${s.id}`,
+            type: 'DELETE',
+          });
+        });
+      },
+    });
+
     data.stacks.forEach((s) => {
       $.ajax({
-        url: '/v1/stacks',
+        url: '/v2/stacks',
         type: 'POST',
         dataType: 'json',
         data: {
@@ -1348,7 +1666,7 @@ $(document).ready(() => {
     longt = _.isEmpty(longt) ? undefined : longt;
 
     $.ajax({
-      url: '/v1/libraries',
+      url: '/v2/libraries',
       type: 'POST',
       dataType: 'json',
       data: {
@@ -1367,7 +1685,7 @@ $(document).ready(() => {
 
   $('#modal-add-floor .modal-action').click(() => {
     $.ajax({
-      url: '/v1/floors',
+      url: '/v2/floors',
       type: 'POST',
       dataType: 'json',
       data: {
@@ -1390,6 +1708,10 @@ $(document).ready(() => {
   $('select').material_select();
 
   setTools(0);
+
+  $('.help-text').mouseover(() => {
+    $('.help-text').fadeOut();
+  });
 
   // END $(document).ready
 });
