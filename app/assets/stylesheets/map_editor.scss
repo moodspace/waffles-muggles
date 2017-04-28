@@ -3,10 +3,14 @@ $client-color-bg: #263238;
 $client-color: #eceff1;
 $min-width: 320px;
 $min-height: 480px;
-$bar-height: 64px;
+$bar-height: 128px;
 $bar-offset: $bar-height + 4px;
 $nav-width: 300px;
 $nav-responsive-height: 300px;
+
+nav.no-margin {
+  margin-bottom: 0;
+}
 
 nav {
   margin-bottom: 10px;
@@ -29,8 +33,12 @@ main {
   min-width: 120px;
 }
 
+.dropdown-content.wider {
+  min-width: 180px;
+}
+
 .dropdown-content .divider,
-ul.side-nav.fixed .divider {
+ul.side-nav.nested .divider {
   background-color: rgba(255, 255, 255, 0.1);
   margin: 0;
 }
@@ -49,11 +57,11 @@ ul.side-nav.fixed .divider {
   color: $client-color !important;
 }
 
-ul.side-nav.fixed .subheader {
+ul.side-nav.nested .subheader {
   color: rgba(255, 255, 255, 0.54);
 }
 
-ul.side-nav.fixed > li > .collapsible > li > .collapsible-header {
+ul.side-nav.nested > li > .collapsible > li > .collapsible-header {
   color: rgba(255, 255, 255, 0.54);
   font-size: 14px;
   font-weight: 500;
@@ -61,7 +69,7 @@ ul.side-nav.fixed > li > .collapsible > li > .collapsible-header {
   padding-left: 32px;
 }
 
-ul.side-nav.fixed > li > .collapsible > li > .collapsible-body > div > a {
+ul.side-nav.nested > li > .collapsible > li > .collapsible-body > div > a {
   padding-left: 42px;
 }
 
@@ -106,7 +114,7 @@ ul.side-nav.fixed > li > .collapsible > li > .collapsible-body > div > a {
 }
 
 #workspace > svg polygon.fb {
-  stroke-opacity: .5;
+  stroke-opacity: 0.5;
   stroke-width: 8px;
 }
 
@@ -119,7 +127,7 @@ ul.side-nav.fixed > li > .collapsible > li > .collapsible-body > div > a {
 }
 
 main {
-  padding-left: $nav-width;
+  padding-left: 0;
 }
 
 #message-area {
@@ -152,26 +160,38 @@ nav a.disabled:hover {
 }
 
 label.tooltipped.under,
-ul.side-nav.fixed label.tooltipped.active {
+ul.side-nav.nested label.tooltipped.active {
   border-bottom: 2px dotted $accent-color;
 }
 
-ul.side-nav.fixed input[type=text]:focus:not([readonly]),
-ul.side-nav.fixed textarea.materialize-textarea:focus:not([readonly]) {
+ul.side-nav.nested {
+  z-index: 0;
+  -webkit-transform: translateX(0);
+  transform: translateX(0);
+  bottom: 0;
+  left: 0;
+  overflow: scroll;
+  position: absolute;
+  width: $nav-width;
+  top: $bar-height;
+}
+
+ul.side-nav.nested input[type=text]:focus:not([readonly]),
+ul.side-nav.nested textarea.materialize-textarea:focus:not([readonly]) {
   border-bottom: 1px solid $accent-color;
   box-shadow: 0 1px 0 0 $accent-color;
 }
 
-ul.side-nav.fixed input[type=text]:focus:not([readonly])+label,
-ul.side-nav.fixed textarea.materialize-textarea:focus:not([readonly])+label {
+ul.side-nav.nested input[type=text]:focus:not([readonly])+label,
+ul.side-nav.nested textarea.materialize-textarea:focus:not([readonly])+label {
   color: $accent-color;
 }
 
-ul.side-nav.fixed .collection {
+ul.side-nav.nested .collection {
   border-radius: 0;
 }
 
-ul.side-nav.fixed .collection a.collection-item.active {
+ul.side-nav.nested .collection a.collection-item.active {
   background-color: $accent-color !important;
   color: $client-color-bg !important;
 }
@@ -197,8 +217,8 @@ body {
     height: $nav-responsive-height !important;
   }
 
-  ul.side-nav.fixed > li,
-  ul.side-nav.fixed > li .collection > a {
+  ul.side-nav.nested > li,
+  ul.side-nav.nested > li .collection > a {
     background-color: #222c31 !important;
   }
 
@@ -207,7 +227,7 @@ body {
     top: $nav-responsive-height;
   }
 
-  ul.side-nav.fixed {
+  ul.side-nav.nested {
     -webkit-transform: none !important;
     background-color: #222c31 !important;
     padding: 0;
@@ -216,18 +236,18 @@ body {
     width: 100%;
   }
 
-  ul.side-nav.fixed > li {
+  ul.side-nav.nested > li {
     box-sizing: border-box;
     float: left;
     left: auto;
     margin-left: auto;
     min-height: 1px;
-    padding: 0 .75rem;
+    padding: 0 0.75rem;
     right: auto;
     width: 50%;
   }
 
-  ul.side-nav.fixed > li > .divider {
+  ul.side-nav.nested > li > .divider {
     display: none;
   }
 
@@ -240,7 +260,7 @@ body {
   }
 }
 @media only screen and (max-width: 768px) {
-  ul.side-nav.fixed > li {
+  ul.side-nav.nested > li {
     width: 100%;
   }
 }

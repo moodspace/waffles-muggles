@@ -14,6 +14,7 @@ let zoomLevel = 1;
 let rawFloorSize = [0, 0];
 let mousedownPoint;
 let mousemovePoint;
+const topBarHeight = 128;
 
 const helpText = [
   'Click to select an element on canvas.',
@@ -230,7 +231,7 @@ function setZoomLevel(level) {
   });
 
   canvas.style('left', Math.max(0, 0.5 * ($('#workspace').width() - w)));
-  canvas.style('top', Math.max(0, 0.5 * ($(window).height() - h - 64)));
+  canvas.style('top', Math.max(0, 0.5 * ($(window).height() - h - topBarHeight)));
 
   rerender(oldZoomLevel);
 }
@@ -709,7 +710,7 @@ function initCanvas(w, h, ref, map) {
     height: h,
   }).classed('z-depth-1', true);
   canvas.style('left', Math.max(0, 0.5 * ($('#workspace').width() - w)));
-  canvas.style('top', Math.max(0, 0.5 * ($(window).height() - h - 64)));
+  canvas.style('top', Math.max(0, 0.5 * ($(window).height() - h - topBarHeight)));
   rawFloorSize = [w, h];
 
   canvas.selectAll('*').remove();
