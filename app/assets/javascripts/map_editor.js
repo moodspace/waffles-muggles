@@ -135,7 +135,9 @@ function addGrids() {
 
 function toggleUndoRedo() {
   if (objects.length === 0 ||
-    _.findIndex(objects, { type: 'action.ancestor' }) === objects.length - 1) {
+    _.findIndex(objects, {
+      type: 'action.ancestor'
+    }) === objects.length - 1) {
     $('#nav-undo').addClass('disabled');
   } else {
     $('#nav-undo').removeClass('disabled');
@@ -149,28 +151,35 @@ function toggleUndoRedo() {
 
 function setTools(level) {
   // level 0 or nil: disable all
-  // level 1: only 'new' buttons
-  // level 2: toolbox, nav except save / json / undo / redo
-  // level 3: all, except undo / redo
-  $('.nav-wrapper > ul > li > a').addClass('disabled');
-  $('.nav-wrapper input').prop('disabled', true);
-  $('#btn-output-save').addClass('disabled');
-  $('#btn-output-JSON').addClass('disabled');
-  $('.toolbox a.btn-flat').addClass('disabled');
+  // level 1: only library & floor list
+  // level 2: toolbox, nav except undo / redo
+
+  for (let i = 0; i < level; i += 1) {
+    $(`.tool-level-${i}`).removeClass('disabled');
+  }
+
+  for (let i = level; i < 3; i += 1) {
+    $(`.tool-level-${i}`).addClass('disabled');
+  }
+
+  // $('.nav-wrapper > ul > li > a').addClass('disabled');
+  // $('.nav-dropdown.dropdown-content > li > a').addClass('disabled');
+  // $('.nav-wrapper input').prop('disabled', true);
+  // $('#btn-output-save').addClass('disabled');
+  // $('#btn-output-JSON').addClass('disabled');
+  // $('.toolbox a.btn-flat').addClass('disabled');
+
 
   if (level > 0) {
-    $('#btn-canvas-new').removeClass('disabled');
+    // $('#btn-canvas-new').removeClass('disabled');
   }
   if (level > 1) {
-    $('.nav-wrapper > ul.left > li > a').removeClass('disabled');
-    $('.nav-wrapper input').prop('disabled', false);
-    $('.toolbox a.btn-flat').removeClass('disabled');
-    $('.dropdown-button').dropdown({
-      belowOrigin: true,
-    });
+    // $('.nav-wrapper > ul.left > li > a').removeClass('disabled');
+    // $('.nav-wrapper input').prop('disabled', false);
+    // $('.toolbox a.btn-flat').removeClass('disabled');
   }
   if (level > 2) {
-    $('.nav-wrapper > ul.right > li > a').removeClass('disabled');
+    // $('.nav-wrapper > ul.right > li > a').removeClass('disabled');
   }
   toggleUndoRedo();
 }
@@ -381,7 +390,9 @@ function selectPolygon(id) {
 }
 
 function removeShapeData(id) {
-  _.pullAllBy(objects, [{ id }], 'id');
+  _.pullAllBy(objects, [{
+    id
+  }], 'id');
 }
 
 /**
@@ -393,7 +404,10 @@ function findShapeData(id) {
   const ret = [];
   _.each(objects, (v, idx) => {
     if (v.id === id) {
-      ret.push({ index: idx, value: v });
+      ret.push({
+        index: idx,
+        value: v
+      });
     }
   });
   return ret;
@@ -506,7 +520,13 @@ function confirmNewShape(shape, id, settings) {
 function deleteObj(index) {
   const obj = objects.splice(index, 1)[0];
   $(`#${obj.id}`).remove();
-  objects.push({ type: 'action.delete', data: obj, meta: { index } });
+  objects.push({
+    type: 'action.delete',
+    data: obj,
+    meta: {
+      index
+    }
+  });
   toggleUndoRedo();
 }
 
@@ -734,7 +754,9 @@ function initCanvas(w, h, ref, map) {
       redraw(obj);
     });
     objects = map.objects;
-    objects.push({ type: 'action.ancestor' });
+    objects.push({
+      type: 'action.ancestor'
+    });
   }
 
   canvas.style('cursor', 'default');
@@ -1070,7 +1092,8 @@ function initCanvas(w, h, ref, map) {
   });
 
   $(document).on('keypress', () => {
-    if ((event.which === 127 || event.which === 46) && !canvas.select('.selected').empty()) {
+    if ((event.which === 127 || event.which === 46) && !canvas.select(
+        '.selected').empty()) {
       deleteObj(findShapeData(canvas.select('.selected').attr('id'))[0].index);
       $('.toolbox a.btn-flat:first-child').click();
     }

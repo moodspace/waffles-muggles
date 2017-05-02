@@ -145,9 +145,11 @@ nav .switch:not(.disabled) label input[type=checkbox]:checked+.lever:after {
   background-color: $accent-color !important;
 }
 
+.nav-dropdown a.disabled,
+.nav-dropdown a.disabled i,
 nav a.disabled,
 nav a.disabled i {
-  color: #37474f;
+  color: #37474f !important;
   cursor: default;
 }
 

@@ -3,7 +3,7 @@
     <div class="card-panel blue-grey darken-4 help-text"></div>
     <div class="card-panel red darken-1 error-text"></div>
   </div>
-  <ul id="dropdown-zoom" class="dropdown-content blue-grey darken-4 wide">
+  <ul id="dropdown-zoom" class="nav-dropdown dropdown-content blue-grey darken-4 wide">
     <li>
       <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">50%</a>
     </li>
@@ -26,49 +26,49 @@
     </li>
   </ul>
 
-  <ul id="dropdown-file" class="dropdown-content blue-grey darken-4 wider">
+  <ul id="dropdown-file" class="nav-dropdown dropdown-content blue-grey darken-4 wider">
     <li>
-      <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">New library</a>
+      <a class="blue-grey-text text-lighten-5 tool-level-1" href="javascript:void(0)">New library</a>
     </li>
     <li>
-      <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">New floor</a>
+      <a class="blue-grey-text text-lighten-5 tool-level-1" href="javascript:void(0)">New floor</a>
     </li>
     <li>
-      <a id="btn-output-save" class="blue-grey-text text-lighten-5" href="javascript:void(0)">Save</a>
+      <a id="btn-output-save" class="blue-grey-text text-lighten-5 tool-level-3" href="javascript:void(0)">Save</a>
     </li>
     <li>
-      <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">Revert to last save</a>
+      <a class="blue-grey-text text-lighten-5 tool-level-3" href="javascript:void(0)">Revert to last save</a>
     </li>
     <li>
-      <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">Import floor</a>
+      <a class="blue-grey-text text-lighten-5 tool-level-3" href="javascript:void(0)">Import floor</a>
     </li>
     <li>
-      <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">Export floor</a>
-    </li>
-  </ul>
-
-  <ul id="dropdown-edit" class="dropdown-content blue-grey darken-4 wider">
-    <li>
-      <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">Undo</a>
-    </li>
-    <li>
-      <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">Redo</a>
-    </li>
-    <li>
-      <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">Cut</a>
-    </li>
-    <li>
-      <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">Copy</a>
-    </li>
-    <li>
-      <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">Paste</a>
-    </li>
-    <li>
-      <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">Delete</a>
+      <a class="blue-grey-text text-lighten-5 tool-level-3" href="javascript:void(0)">Export floor</a>
     </li>
   </ul>
 
-  <ul id="dropdown-help" class="dropdown-content blue-grey darken-4 wider"></ul>
+  <ul id="dropdown-edit" class="nav-dropdown dropdown-content blue-grey darken-4 wider">
+    <li>
+      <a class="blue-grey-text text-lighten-5 tool-level-3" href="javascript:void(0)">Undo</a>
+    </li>
+    <li>
+      <a class="blue-grey-text text-lighten-5 tool-level-3" href="javascript:void(0)">Redo</a>
+    </li>
+    <li>
+      <a class="blue-grey-text text-lighten-5 tool-level-3" href="javascript:void(0)">Cut</a>
+    </li>
+    <li>
+      <a class="blue-grey-text text-lighten-5 tool-level-3" href="javascript:void(0)">Copy</a>
+    </li>
+    <li>
+      <a class="blue-grey-text text-lighten-5 tool-level-3" href="javascript:void(0)">Paste</a>
+    </li>
+    <li>
+      <a class="blue-grey-text text-lighten-5 tool-level-3" href="javascript:void(0)">Delete</a>
+    </li>
+  </ul>
+
+  <ul id="dropdown-help" class="nav-dropdown dropdown-content blue-grey darken-4 wider"></ul>
 
   <nav class="no-margin">
     <div class="nav-wrapper blue-grey darken-4">
@@ -78,26 +78,26 @@
         </li>
         <!-- Dropdown Trigger -->
         <li>
-          <a class="dropdown-button" href="javascript:void(0)" data-activates="dropdown-file">
+          <a class="dropdown-button" href="javascript:void(0)" data-activates="dropdown-file" data-beloworigin="true">
             File
           </a>
         </li>
         <!-- Dropdown Trigger -->
         <li>
-          <a class="dropdown-button" href="javascript:void(0)" data-activates="dropdown-edit">
+          <a class="dropdown-button" href="javascript:void(0)" data-activates="dropdown-edit" data-beloworigin="true">
             Edit
           </a>
         </li>
         <!-- Dropdown Trigger -->
         <li>
-          <a class="dropdown-button" href="javascript:void(0)" data-activates="dropdown-help">
+          <a class="dropdown-button" href="javascript:void(0)" data-activates="dropdown-help" data-beloworigin="true">
             Help
           </a>
         </li>
       </ul>
       <ul class="right">
         <li>
-          <a href="javascript:void(0)">
+          <a href="javascript:void(0)" class="tool-level-1">
             Log in
           </a>
         </li>
@@ -109,32 +109,32 @@
     <div class="nav-wrapper blue-grey darken-4">
       <ul class="left">
         <li>
-          <a id="nav-select-tool" href="javascript:void(0)" class="tooltipped" data-position="bottom" data-delay="50" data-tooltip="Select tool">
-            <i class="material-icons blue-grey-text text-lighten-5">navigation</i>
+          <a id="nav-select-tool" href="javascript:void(0)" class="tool-level-2 tooltipped" data-position="bottom" data-delay="50" data-tooltip="Select tool">
+            <i class="material-icons">navigation</i>
           </a>
         </li>
         <li>
-          <a id="nav-stack-tool" href="javascript:void(0)" class="tooltipped" data-position="bottom" data-delay="50" data-tooltip="Stack">
-            <i class="material-icons blue-grey-text text-lighten-5">theaters</i>
+          <a id="nav-stack-tool" href="javascript:void(0)" class="tool-level-2 tooltipped" data-position="bottom" data-delay="50" data-tooltip="Stack">
+            <i class="material-icons">theaters</i>
           </a>
         </li>
         <li>
-          <a id="nav-area-tool" href="javascript:void(0)" class="tooltipped" data-position="bottom" data-delay="50" data-tooltip="Area">
-            <i class="material-icons blue-grey-text text-lighten-5">view_column</i>
+          <a id="nav-area-tool" href="javascript:void(0)" class="tool-level-2 tooltipped" data-position="bottom" data-delay="50" data-tooltip="Area">
+            <i class="material-icons">view_column</i>
           </a>
         </li>
         <li>
-          <a id="nav-floor-tool" href="javascript:void(0)" class="tooltipped" data-position="bottom" data-delay="50" data-tooltip="Wall">
-            <i class="material-icons blue-grey-text text-lighten-5">layers</i>
+          <a id="nav-floor-tool" href="javascript:void(0)" class="tool-level-2 tooltipped" data-position="bottom" data-delay="50" data-tooltip="Wall">
+            <i class="material-icons">layers</i>
           </a>
         </li>
         <li>
-          <a id="nav-undo" href="javascript:void(0)" class="tooltipped" data-position="bottom" data-delay="50" data-tooltip="Undo">
+          <a id="nav-undo" href="javascript:void(0)" class="tool-level-4 tooltipped" data-position="bottom" data-delay="50" data-tooltip="Undo">
             <i class="material-icons">undo</i>
           </a>
         </li>
         <li>
-          <a id="nav-redo" href="javascript:void(0)" class="tooltipped" data-position="bottom" data-delay="50" data-tooltip="Redo">
+          <a id="nav-redo" href="javascript:void(0)" class="tool-level-4 tooltipped" data-position="bottom" data-delay="50" data-tooltip="Redo">
             <i class="material-icons">redo</i>
           </a>
         </li>
@@ -144,13 +144,13 @@
                     </a>
                 </li> -->
         <li>
-          <a id="btn-zoom" class="dropdown-button tooltipped" data-position="bottom" data-delay="50" data-tooltip="Zoom level" href="javascript:void(0)" data-activates="dropdown-zoom">
+          <a id="btn-zoom" class="tool-level-2 dropdown-button tooltipped" data-position="bottom" data-delay="50" data-tooltip="Zoom level" href="javascript:void(0)" data-activates="dropdown-zoom" data-beloworigin="true">
             100%
           </a>
         </li>
         <li>
-          <a id="nav-pan-tool" href="javascript:void(0)" class="tooltipped" data-position="bottom" data-delay="50" data-tooltip="Pan tool">
-            <i class="material-icons blue-grey-text text-lighten-5">pan_tool</i>
+          <a id="nav-pan-tool" href="javascript:void(0)" class="tool-level-2 tooltipped" data-position="bottom" data-delay="50" data-tooltip="Pan tool">
+            <i class="material-icons">pan_tool</i>
           </a>
         </li>
         <!-- <li>
@@ -164,7 +164,7 @@
           </a>
         </li> -->
         <li>
-          <a id="label-coords" href="javascript:void(0)"></a>
+          <a id="label-coords" class="tool-level-2" href="javascript:void(0)"></a>
         </li>
       </ul>
       <ul class="right">
