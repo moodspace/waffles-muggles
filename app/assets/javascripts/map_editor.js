@@ -1,3 +1,11 @@
+/**
+ * app/assets/javascripts/map_editor.js
+ *
+ * ES6 script used by map editor
+ *
+ * Copyright (c) 2017 Ke Qian
+ */
+
 let canvas;
 let modebit = 0; // 0: pointer, 1: rect, 2: poly, 3: mark, 4: layer, 5: stack
 let objects = [];
@@ -1069,7 +1077,8 @@ function initCanvas(w, h, ref, map) {
   });
 
   $(document).on('keypress', () => {
-    if ((event.which === 127 || event.which === 46) && !canvas.select('.selected').empty()) {
+    if ((event.which === 127 || event.which === 46) && !canvas.select(
+        '.selected').empty()) {
       deleteObj(findShapeData(canvas.select('.selected').attr('id'))[0].index);
       $('.toolbox a.btn-flat:first-child').click();
     }

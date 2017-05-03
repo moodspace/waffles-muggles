@@ -1,341 +1,351 @@
+<!--
+
+app/views/map_editor/full.html.erb
+
+Template of map editor
+
+Copyright (c) 2017 Ke Qian
+
+-->
+
 <header>
-    <ul id="slide-out" class="side-nav fixed blue-grey darken-4 blue-grey-text text-lighten-5 row">
+  <ul id="slide-out" class="side-nav fixed blue-grey darken-4 blue-grey-text text-lighten-5 row">
+    <li>
+      <ul class="collapsible" data-collapsible="accordion">
         <li>
-            <ul class="collapsible" data-collapsible="accordion">
-                <li>
-                    <div class="collapsible-header waves-effect">
-                        Libraries
-                        <i class="material-icons right" id="btn-add-library">add</i>
-                    </div>
-                    <div class="collapsible-body">
-                        <div class="collection" id="library-collection"></div>
-                    </div>
-                </li>
-            </ul>
+          <div class="collapsible-header waves-effect">
+            Libraries
+            <i class="material-icons right" id="btn-add-library">add</i>
+          </div>
+          <div class="collapsible-body">
+            <div class="collection" id="library-collection"></div>
+          </div>
         </li>
+      </ul>
+    </li>
+    <li>
+      <div class="divider"></div>
+    </li>
+    <li>
+      <ul class="collapsible" data-collapsible="accordion">
         <li>
-            <div class="divider"></div>
+          <div class="collapsible-header waves-effect">
+            Floors
+            <i class="material-icons right" id="btn-add-floor">add</i>
+          </div>
+          <div class="collapsible-body">
+            <div class="collection" id="floor-collection"></div>
+          </div>
         </li>
-        <li>
-            <ul class="collapsible" data-collapsible="accordion">
-                <li>
-                    <div class="collapsible-header waves-effect">
-                        Floors
-                        <i class="material-icons right" id="btn-add-floor">add</i>
-                    </div>
-                    <div class="collapsible-body">
-                        <div class="collection" id="floor-collection"></div>
-                    </div>
-                </li>
-            </ul>
-        </li>
-        <li>
-            <div class="divider"></div>
-        </li>
-        <li>
-            <a class="subheader">Toolbox</a>
-            <div class="toolbox">
-                <div class="row">
-                    <a class="btn-flat col s4 light-blue lighten-2 tooltipped" data-position="right" data-delay="50" data-tooltip="Select tool">
-                        <i class="material-icons blue-grey-text text-lighten-5">navigation</i>
-                    </a>
-                    <a class="btn-flat col s4 tooltipped" data-position="right" data-delay="50" data-tooltip="Rectangle tool (area)">
-                        <i class="material-icons blue-grey-text text-lighten-5">crop_landscape</i>
-                    </a>
-                    <a class="btn-flat col s4 tooltipped" data-position="right" data-delay="50" data-tooltip="Polygon tool (area)">
-                        <i class="material-icons blue-grey-text text-lighten-5">label_outline</i>
-                    </a>
-                    <a class="btn-flat col s4 tooltipped" data-position="right" data-delay="50" data-tooltip="Area scaffolding tool">
-                        <i class="material-icons blue-grey-text text-lighten-5">flag</i>
-                    </a>
-                    <a class="btn-flat col s4 tooltipped" data-position="right" data-delay="50" data-tooltip="Floor properties">
-                        <i class="material-icons blue-grey-text text-lighten-5">layers</i>
-                    </a>
-                    <a class="btn-flat col s4 tooltipped" data-position="right" data-delay="50" data-tooltip="Stack properties">
-                        <i class="material-icons blue-grey-text text-lighten-5">theaters</i>
-                    </a>
-                    <a class="btn-flat col s4 tooltipped" data-position="right" data-delay="50" data-tooltip="Pan tool">
-                        <i class="material-icons blue-grey-text text-lighten-5">pan_tool</i>
-                    </a>
-                </div>
-            </div>
-        </li>
-        <li>
-            <a class="subheader">Tool options</a>
-            <div class="tool-options">
-                <div class="row cselect">
-                    <label>Hint: Click to select an element. Drag to change placement. Press 'Delete' to remove.</label>
-                </div>
-                <div class="row crect">
-                    <div class="input-field col s3">
-                        <input id="crect-x" pattern="^[-+]?[0-9]*\.?[0-9]+$" type="text" maxlength="10">
-                        <label for="crect-x" class="tooltipped" data-position="right" data-delay="50" data-tooltip="Not depending on rotation">Left</label>
-                    </div>
-                    <div class="input-field col s3">
-                        <input id="crect-y" pattern="^[-+]?[0-9]*\.?[0-9]+$" type="text" maxlength="10">
-                        <label for="crect-y" class="tooltipped" data-position="right" data-delay="50" data-tooltip="Not depending on rotation">Top</label>
-                    </div>
-                    <div class="input-field col s3" maxlength="10">
-                        <input id="crect-width" pattern="^[0-9]*\.?[0-9]+$" type="text">
-                        <label for="crect-width">Width</label>
-                    </div>
-                    <div class="input-field col s3" maxlength="10">
-                        <input id="crect-height" pattern="^[0-9]*\.?[0-9]+$" type="text">
-                        <label for="crect-height">Height</label>
-                    </div>
-                </div>
-                <!-- cpolygon | polygon plotter -->
-                <div class="row cpolygon">
-                    <div class="input-field col s12">
-                        <input id="cpolygon-points" pattern="^([-+]?[0-9]*\.?[0-9]+),[ ]*([-+]?[0-9]*\.?[0-9]+)([ ]+([-+]?[0-9]*\.?[0-9]+),[ ]*([-+]?[0-9]*\.?[0-9]+))*$" type="text">
-                        <label for="cpolygon-points" class="tooltipped" data-position="right" data-delay="50" data-tooltip="x1,y1 x2,y2, ...">Points</label>
-                    </div>
-                </div>
-                <div class="row cmark">
-                    <div class="input-field col s6">
-                        <input id="cmark-rows" pattern="^[0-9]+$" type="text" maxlength="2">
-                        <label for="cmark-rows" class="tooltipped" data-position="right" data-delay="50" data-tooltip="Quickly generate rows of stacks">Rows</label>
-                    </div>
-                    <div class="input-field col s6">
-                        <select id="cmark-rotation">
-                            <option value="0">0</option>
-                            <option value="90">90</option>
-                            <option value="180">180</option>
-                            <option value="270">270</option>
-                        </select>
-                        <label for="cmark-rotation" class="tooltipped under" data-position="right" data-delay="50" data-tooltip="0: looking down, 90: left, 180: up, 270: right">Rotation</label>
-                    </div>
-                </div>
-                <!-- cfloor | floor configurator -->
-                <div class="row cfloor">
-                    <h6>
-                        Spatial
-                    </h6>
-                    <!-- <div class="input-field col s12">
+      </ul>
+    </li>
+    <li>
+      <div class="divider"></div>
+    </li>
+    <li>
+      <a class="subheader">Toolbox</a>
+      <div class="toolbox">
+        <div class="row">
+          <a class="btn-flat col s4 light-blue lighten-2 tooltipped" data-position="right" data-delay="50" data-tooltip="Select tool">
+            <i class="material-icons blue-grey-text text-lighten-5">navigation</i>
+          </a>
+          <a class="btn-flat col s4 tooltipped" data-position="right" data-delay="50" data-tooltip="Rectangle tool (area)">
+            <i class="material-icons blue-grey-text text-lighten-5">crop_landscape</i>
+          </a>
+          <a class="btn-flat col s4 tooltipped" data-position="right" data-delay="50" data-tooltip="Polygon tool (area)">
+            <i class="material-icons blue-grey-text text-lighten-5">label_outline</i>
+          </a>
+          <a class="btn-flat col s4 tooltipped" data-position="right" data-delay="50" data-tooltip="Area scaffolding tool">
+            <i class="material-icons blue-grey-text text-lighten-5">flag</i>
+          </a>
+          <a class="btn-flat col s4 tooltipped" data-position="right" data-delay="50" data-tooltip="Floor properties">
+            <i class="material-icons blue-grey-text text-lighten-5">layers</i>
+          </a>
+          <a class="btn-flat col s4 tooltipped" data-position="right" data-delay="50" data-tooltip="Stack properties">
+            <i class="material-icons blue-grey-text text-lighten-5">theaters</i>
+          </a>
+          <a class="btn-flat col s4 tooltipped" data-position="right" data-delay="50" data-tooltip="Pan tool">
+            <i class="material-icons blue-grey-text text-lighten-5">pan_tool</i>
+          </a>
+        </div>
+      </div>
+    </li>
+    <li>
+      <a class="subheader">Tool options</a>
+      <div class="tool-options">
+        <div class="row cselect">
+          <label>Hint: Click to select an element. Drag to change placement. Press 'Delete' to remove.</label>
+        </div>
+        <div class="row crect">
+          <div class="input-field col s3">
+            <input id="crect-x" pattern="^[-+]?[0-9]*\.?[0-9]+$" type="text" maxlength="10">
+            <label for="crect-x" class="tooltipped" data-position="right" data-delay="50" data-tooltip="Not depending on rotation">Left</label>
+          </div>
+          <div class="input-field col s3">
+            <input id="crect-y" pattern="^[-+]?[0-9]*\.?[0-9]+$" type="text" maxlength="10">
+            <label for="crect-y" class="tooltipped" data-position="right" data-delay="50" data-tooltip="Not depending on rotation">Top</label>
+          </div>
+          <div class="input-field col s3" maxlength="10">
+            <input id="crect-width" pattern="^[0-9]*\.?[0-9]+$" type="text">
+            <label for="crect-width">Width</label>
+          </div>
+          <div class="input-field col s3" maxlength="10">
+            <input id="crect-height" pattern="^[0-9]*\.?[0-9]+$" type="text">
+            <label for="crect-height">Height</label>
+          </div>
+        </div>
+        <!-- cpolygon | polygon plotter -->
+        <div class="row cpolygon">
+          <div class="input-field col s12">
+            <input id="cpolygon-points" pattern="^([-+]?[0-9]*\.?[0-9]+),[ ]*([-+]?[0-9]*\.?[0-9]+)([ ]+([-+]?[0-9]*\.?[0-9]+),[ ]*([-+]?[0-9]*\.?[0-9]+))*$" type="text">
+            <label for="cpolygon-points" class="tooltipped" data-position="right" data-delay="50" data-tooltip="x1,y1 x2,y2, ...">Points</label>
+          </div>
+        </div>
+        <div class="row cmark">
+          <div class="input-field col s6">
+            <input id="cmark-rows" pattern="^[0-9]+$" type="text" maxlength="2">
+            <label for="cmark-rows" class="tooltipped" data-position="right" data-delay="50" data-tooltip="Quickly generate rows of stacks">Rows</label>
+          </div>
+          <div class="input-field col s6">
+            <select id="cmark-rotation">
+              <option value="0">0</option>
+              <option value="90">90</option>
+              <option value="180">180</option>
+              <option value="270">270</option>
+            </select>
+            <label for="cmark-rotation" class="tooltipped under" data-position="right" data-delay="50" data-tooltip="0: looking down, 90: left, 180: up, 270: right">Rotation</label>
+          </div>
+        </div>
+        <!-- cfloor | floor configurator -->
+        <div class="row cfloor">
+          <h6>
+            Spatial
+          </h6>
+          <!-- <div class="input-field col s12">
                         <label for="cfloor-range-scale">Set map scale</label>
                         <input type="range" id="cfloor-range-scale" min="1" max="1000"/>
                     </div> -->
-                    <label>Hint: importing a reference floor map speeds up the plot.</label>
-                    <div class="col s12">
-                        <a class="waves-effect waves-light btn-flat tooltipped light-blue-text text-lighten-2" data-position="right" data-delay="50" data-tooltip="Helps creating a coordinate system for map elements" id="cfloor-btn-set">Draw floor border</a>
-                        <br/><br/>
-                    </div>
-                    <h6>
-                        Misc
-                    </h6>
-                    <label>Hint: each library must have distinct floor names.</label>
-                    <div class="input-field col s12">
-                        <input id="cfloor-name" pattern="^[A-z0-9]([A-z0-9 ]*[A-z0-9])*$" type="text" maxlength="255">
-                        <label for="cfloor-name">Name this floor</label>
-                    </div>
-                </div>
-                <!-- cstack | stack meta -->
-                <div class="row cstack">
-                    <div class="input-field col s6">
-                        <select id="cstack-oversize">
-                            <option value="0">Regular</option>
-                            <option value="1">+ Size</option>
-                            <option value="2">++ Size</option>
-                        </select>
-                        <label for="cstack-oversize">oversize</label>
-                    </div>
-                    <div class="input-field col s6">
-                        <input id="cstack-rotation" disabled type="text" maxlength="3">
-                        <label for="cstack-rotation">rotation</label>
-                    </div>
-                    <h6>
-                        Start
-                    </h6>
-                    <div class="col s12">
-                        <label>Hint: empty or = 0 subclass means 0 on this endpoint.</label>
-                    </div>
-                    <div class="input-field col s4">
-                        <input id="cstack-startClass" pattern="^[A-z]+$" type="text" maxlength="3">
-                        <label for="cstack-startClass" class="tooltipped" data-position="right" data-delay="50" data-tooltip="e.g. 'DS' in DS778.C5245 C475x 2003">Class</label>
-                    </div>
-                    <div class="input-field col s4">
-                        <input id="cstack-startSubclass" pattern="^[0-9]*\.?[0-9]+$" type="text" maxlength="6">
-                        <label for="cstack-startSubclass" class="tooltipped" data-position="right" data-delay="50" data-tooltip="e.g. '778' in DS778.C5245 C475x 2003">Subclass</label>
-                    </div>
-                    <div class="input-field col s4">
-                        <input id="cstack-startSubclass2" pattern="^[A-z]*$" type="text" maxlength="3">
-                        <label for="cstack-startSubclass2" class="tooltipped" data-position="right" data-delay="50" data-tooltip="e.g. 'C' in DS778.C5245 C475x 2003">Subclass2</label>
-                    </div>
-                    <h6>
-                        End
-                        <a class="">
-                            <i class="material-icons">help_outline</i>
-                        </a>
-                    </h6>
-                    <div class="col s12">
-                        <label>Hint: empty or = 0 subclass means infinity on this endpoint.</label>
-                    </div>
-                    <div class="input-field col s4">
-                        <input id="cstack-endClass" pattern="^[A-z]+$" type="text" maxlength="3">
-                        <label for="cstack-endClass" class="tooltipped" data-position="right" data-delay="50" data-tooltip="e.g. 'E' in 'E183.8.J3 S94 2005'">Class</label>
-                    </div>
-                    <div class="input-field col s4">
-                        <input id="cstack-endSubclass" pattern="^[0-9]*\.?[0-9]+$" type="text" maxlength="6">
-                        <label for="cstack-endSubclass" class="tooltipped right" data-position="right" data-delay="50" data-tooltip="e.g. '183.8' in 'E183.8.J3 S94 2005'">Subclass</label>
-                    </div>
-                    <div class="input-field col s4">
-                        <input id="cstack-endSubclass2" pattern="^[A-z]*$" type="text" maxlength="3">
-                        <label for="cstack-endSubclass2" class="tooltipped right" data-position="right" data-delay="50" data-tooltip="e.g. 'J' in 'E183.8.J3 S94 2005'">Subclass2</label>
-                    </div>
-                </div>
-            </div>
-        </li>
-    </ul>
+          <label>Hint: importing a reference floor map speeds up the plot.</label>
+          <div class="col s12">
+            <a class="waves-effect waves-light btn-flat tooltipped light-blue-text text-lighten-2" data-position="right" data-delay="50" data-tooltip="Helps creating a coordinate system for map elements" id="cfloor-btn-set">Draw floor border</a>
+            <br/><br/>
+          </div>
+          <h6>
+            Misc
+          </h6>
+          <label>Hint: each library must have distinct floor names.</label>
+          <div class="input-field col s12">
+            <input id="cfloor-name" pattern="^[A-z0-9]([A-z0-9 ]*[A-z0-9])*$" type="text" maxlength="255">
+            <label for="cfloor-name">Name this floor</label>
+          </div>
+        </div>
+        <!-- cstack | stack meta -->
+        <div class="row cstack">
+          <div class="input-field col s6">
+            <select id="cstack-oversize">
+              <option value="0">Regular</option>
+              <option value="1">+ Size</option>
+              <option value="2">++ Size</option>
+            </select>
+            <label for="cstack-oversize">oversize</label>
+          </div>
+          <div class="input-field col s6">
+            <input id="cstack-rotation" disabled type="text" maxlength="3">
+            <label for="cstack-rotation">rotation</label>
+          </div>
+          <h6>
+            Start
+          </h6>
+          <div class="col s12">
+            <label>Hint: empty or = 0 subclass means 0 on this endpoint.</label>
+          </div>
+          <div class="input-field col s4">
+            <input id="cstack-startClass" pattern="^[A-z]+$" type="text" maxlength="3">
+            <label for="cstack-startClass" class="tooltipped" data-position="right" data-delay="50" data-tooltip="e.g. 'DS' in DS778.C5245 C475x 2003">Class</label>
+          </div>
+          <div class="input-field col s4">
+            <input id="cstack-startSubclass" pattern="^[0-9]*\.?[0-9]+$" type="text" maxlength="6">
+            <label for="cstack-startSubclass" class="tooltipped" data-position="right" data-delay="50" data-tooltip="e.g. '778' in DS778.C5245 C475x 2003">Subclass</label>
+          </div>
+          <div class="input-field col s4">
+            <input id="cstack-startSubclass2" pattern="^[A-z]*$" type="text" maxlength="3">
+            <label for="cstack-startSubclass2" class="tooltipped" data-position="right" data-delay="50" data-tooltip="e.g. 'C' in DS778.C5245 C475x 2003">Subclass2</label>
+          </div>
+          <h6>
+            End
+            <a class="">
+              <i class="material-icons">help_outline</i>
+            </a>
+          </h6>
+          <div class="col s12">
+            <label>Hint: empty or = 0 subclass means infinity on this endpoint.</label>
+          </div>
+          <div class="input-field col s4">
+            <input id="cstack-endClass" pattern="^[A-z]+$" type="text" maxlength="3">
+            <label for="cstack-endClass" class="tooltipped" data-position="right" data-delay="50" data-tooltip="e.g. 'E' in 'E183.8.J3 S94 2005'">Class</label>
+          </div>
+          <div class="input-field col s4">
+            <input id="cstack-endSubclass" pattern="^[0-9]*\.?[0-9]+$" type="text" maxlength="6">
+            <label for="cstack-endSubclass" class="tooltipped right" data-position="right" data-delay="50" data-tooltip="e.g. '183.8' in 'E183.8.J3 S94 2005'">Subclass</label>
+          </div>
+          <div class="input-field col s4">
+            <input id="cstack-endSubclass2" pattern="^[A-z]*$" type="text" maxlength="3">
+            <label for="cstack-endSubclass2" class="tooltipped right" data-position="right" data-delay="50" data-tooltip="e.g. 'J' in 'E183.8.J3 S94 2005'">Subclass2</label>
+          </div>
+        </div>
+      </div>
+    </li>
+  </ul>
 </header>
 <main>
-    <div id="message-area">
-        <div class="card-panel blue-grey darken-4 help-text"></div>
-        <div class="card-panel red darken-1 error-text"></div>
-    </div>
-    <ul id="dropdown-zoom" class="dropdown-content blue-grey darken-4 wide">
+  <div id="message-area">
+    <div class="card-panel blue-grey darken-4 help-text"></div>
+    <div class="card-panel red darken-1 error-text"></div>
+  </div>
+  <ul id="dropdown-zoom" class="dropdown-content blue-grey darken-4 wide">
+    <li>
+      <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">50%</a>
+    </li>
+    <li>
+      <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">100%</a>
+    </li>
+    <li class="divider"></li>
+    <li>
+      <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">150%</a>
+    </li>
+    <li>
+      <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">200%</a>
+    </li>
+    <li class="divider"></li>
+    <li>
+      <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">Fit width</a>
+    </li>
+    <li>
+      <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">Fit window</a>
+    </li>
+  </ul>
+  <nav>
+    <div class="nav-wrapper blue-grey darken-4">
+      <ul class="left">
         <li>
-            <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">50%</a>
+          <a id="nav-undo" href="javascript:void(0)" class="tooltipped" data-position="bottom" data-delay="50" data-tooltip="Undo">
+            <i class="material-icons">undo</i>
+          </a>
         </li>
         <li>
-            <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">100%</a>
+          <a id="nav-redo" href="javascript:void(0)" class="tooltipped" data-position="bottom" data-delay="50" data-tooltip="Redo">
+            <i class="material-icons">redo</i>
+          </a>
         </li>
-        <li class="divider"></li>
-        <li>
-            <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">150%</a>
-        </li>
-        <li>
-            <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">200%</a>
-        </li>
-        <li class="divider"></li>
-        <li>
-            <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">Fit width</a>
-        </li>
-        <li>
-            <a class="blue-grey-text text-lighten-5" href="javascript:void(0)">Fit window</a>
-        </li>
-    </ul>
-    <nav>
-        <div class="nav-wrapper blue-grey darken-4">
-            <ul class="left">
-                <li>
-                    <a id="nav-undo" href="javascript:void(0)" class="tooltipped" data-position="bottom" data-delay="50" data-tooltip="Undo">
-                        <i class="material-icons">undo</i>
-                    </a>
-                </li>
-                <li>
-                    <a id="nav-redo" href="javascript:void(0)" class="tooltipped" data-position="bottom" data-delay="50" data-tooltip="Redo">
-                        <i class="material-icons">redo</i>
-                    </a>
-                </li>
-                <!-- <li>
+        <!-- <li>
                     <a href="javascript:void(0)">
                         <i class="material-icons">history</i>
                     </a>
                 </li> -->
-                <li>
-                    <a id="btn-zoom" class="dropdown-button tooltipped" data-position="bottom" data-delay="50" data-tooltip="Zoom level" href="javascript:void(0)" data-activates="dropdown-zoom">
-                        100%
-                    </a>
-                </li>
-                <li>
-                    <a class="switch" style="height: 64px">
-                        <label style="color: #fff">
-                            <i class="material-icons tooltipped" data-position="bottom" data-delay="50" data-tooltip="Hide stacks" style="display: inline-block;">layers</i>
-                            <input id="viewmode-toggle" type="checkbox" checked>
-                            <span class="lever blue-grey lighten-2" style="top: -8px;"></span>
-                            <i class="material-icons tooltipped" data-position="bottom" data-delay="50" data-tooltip="Show all" style="display: inline-block;">theaters</i>
-                        </label>
-                    </a>
-                </li>
-                <li>
-                    <a id="label-coords" href="javascript:void(0)"></a>
-                </li>
-            </ul>
-            <ul class="right">
-                <li>
-                    <a class="disabled tooltipped" data-position="bottom" data-delay="50" data-tooltip="Choose a reference floor image" href="javascript:void(0)" id="btn-canvas-new">New</a>
-                </li>
-                <li>
-                    <a class="disabled tooltipped" data-position="bottom" data-delay="50" data-tooltip="Save map to database" href="javascript:void(0)" id="btn-output-save">Save</a>
-                </li>
-                <li>
-                    <a class="disabled tooltipped" data-position="bottom" data-delay="50" data-tooltip="Show JSON (for debugging)" href="javascript:void(0)" id="btn-output-JSON">JSON</a>
-                </li>
-            </ul>
-        </div>
-    </nav>
-    <div id="workspace">
-        <!-- Workspace -->
+        <li>
+          <a id="btn-zoom" class="dropdown-button tooltipped" data-position="bottom" data-delay="50" data-tooltip="Zoom level" href="javascript:void(0)" data-activates="dropdown-zoom">
+            100%
+          </a>
+        </li>
+        <li>
+          <a class="switch" style="height: 64px">
+            <label style="color: #fff">
+              <i class="material-icons tooltipped" data-position="bottom" data-delay="50" data-tooltip="Hide stacks" style="display: inline-block;">layers</i>
+              <input id="viewmode-toggle" type="checkbox" checked>
+              <span class="lever blue-grey lighten-2" style="top: -8px;"></span>
+              <i class="material-icons tooltipped" data-position="bottom" data-delay="50" data-tooltip="Show all" style="display: inline-block;">theaters</i>
+            </label>
+          </a>
+        </li>
+        <li>
+          <a id="label-coords" href="javascript:void(0)"></a>
+        </li>
+      </ul>
+      <ul class="right">
+        <li>
+          <a class="disabled tooltipped" data-position="bottom" data-delay="50" data-tooltip="Choose a reference floor image" href="javascript:void(0)" id="btn-canvas-new">New</a>
+        </li>
+        <li>
+          <a class="disabled tooltipped" data-position="bottom" data-delay="50" data-tooltip="Save map to database" href="javascript:void(0)" id="btn-output-save">Save</a>
+        </li>
+        <li>
+          <a class="disabled tooltipped" data-position="bottom" data-delay="50" data-tooltip="Show JSON (for debugging)" href="javascript:void(0)" id="btn-output-JSON">JSON</a>
+        </li>
+      </ul>
     </div>
+  </nav>
+  <div id="workspace">
+    <!-- Workspace -->
+  </div>
 </main>
 
 <div id="code-popup" class="modal bottom-sheet">
-    <div class="modal-content">
-        <h4>Output</h4>
-        <pre><code class="json" id="box-code-pop"></code></pre>
-    </div>
+  <div class="modal-content">
+    <h4>Output</h4>
+    <pre><code class="json" id="box-code-pop"></code></pre>
+  </div>
 </div>
 
 <div id="modal-add-library" class="modal">
-    <div class="modal-content">
-        <h5>Add a library</h5>
-        <div class="row">
-            <div class="input-field col s4">
-                <input name="name" type="text" maxlength="255">
-                <label for="name">Name</label>
-            </div>
-            <div class="input-field col s4">
-                <input name="latitude" type="text" maxlength="10">
-                <label for="latitude">Latitude</label>
-            </div>
-            <div class="input-field col s4">
-                <input name="longitude" type="text" maxlength="10">
-                <label for="longitude">Longitude</label>
-            </div>
-        </div>
+  <div class="modal-content">
+    <h5>Add a library</h5>
+    <div class="row">
+      <div class="input-field col s4">
+        <input name="name" type="text" maxlength="255">
+        <label for="name">Name</label>
+      </div>
+      <div class="input-field col s4">
+        <input name="latitude" type="text" maxlength="10">
+        <label for="latitude">Latitude</label>
+      </div>
+      <div class="input-field col s4">
+        <input name="longitude" type="text" maxlength="10">
+        <label for="longitude">Longitude</label>
+      </div>
     </div>
-    <div class="modal-footer">
-        <a href="javascript:void(0)" class="modal-action modal-close waves-effect waves-blue-grey btn-flat">OK</a>
-    </div>
+  </div>
+  <div class="modal-footer">
+    <a href="javascript:void(0)" class="modal-action modal-close waves-effect waves-blue-grey btn-flat">OK</a>
+  </div>
 </div>
 
 <div id="modal-add-floor" class="modal">
-    <div class="modal-content">
-        <h5>Add a floor</h5>
-        <div class="row">
-            <div class="col s4"></div>
-            <div class="input-field col s4">
-                <input name="name" type="text" maxlength="255">
-                <label for="name">Name</label>
-            </div>
-            <div class="col s4"></div>
-        </div>
+  <div class="modal-content">
+    <h5>Add a floor</h5>
+    <div class="row">
+      <div class="col s4"></div>
+      <div class="input-field col s4">
+        <input name="name" type="text" maxlength="255">
+        <label for="name">Name</label>
+      </div>
+      <div class="col s4"></div>
     </div>
-    <div class="modal-footer">
-        <a href="javascript:void(0)" class="modal-action modal-close waves-effect waves-blue-grey btn-flat">OK</a>
-    </div>
+  </div>
+  <div class="modal-footer">
+    <a href="javascript:void(0)" class="modal-action modal-close waves-effect waves-blue-grey btn-flat">OK</a>
+  </div>
 </div>
 
 <div id="modal-new-canvas" class="modal">
-    <div id="canvas-new" class="modal-content">
-        <h5>Upload a reference</h5>
-        <%= form_tag('javascript:void(0)', multipart: true) do %>
-        <%= file_field_tag 'ref_img' %>
-        <%= hidden_field_tag(:floor_id) %>
-        <% end %>
-        <div class="row">
-            <div class="input-field col s4">
-                <input name="width" type="text" maxlength="255">
-                <label for="width">Width</label>
-            </div>
-            <div class="input-field col s4">
-                <input name="height" type="text" maxlength="255">
-                <label for="height">Height</label>
-            </div>
-            <div class="col s4"></div>
-        </div>
+  <div id="canvas-new" class="modal-content">
+    <h5>Upload a reference</h5>
+    <%= form_tag('javascript:void(0)', multipart: true) do %>
+    <%= file_field_tag 'ref_img' %>
+    <%= hidden_field_tag(:floor_id) %>
+    <% end %>
+    <div class="row">
+      <div class="input-field col s4">
+        <input name="width" type="text" maxlength="255">
+        <label for="width">Width</label>
+      </div>
+      <div class="input-field col s4">
+        <input name="height" type="text" maxlength="255">
+        <label for="height">Height</label>
+      </div>
+      <div class="col s4"></div>
     </div>
-    <div class="modal-footer">
-        <a href="javascript:void(0)" id="btn-canvas-commit-new" class="modal-action modal-close waves-effect waves-blue-grey btn-flat">OK</a>
-    </div>
+  </div>
+  <div class="modal-footer">
+    <a href="javascript:void(0)" id="btn-canvas-commit-new" class="modal-action modal-close waves-effect waves-blue-grey btn-flat">OK</a>
+  </div>
 </div>

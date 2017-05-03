@@ -1,9 +1,11 @@
-# waffles-muggles
 #
-# CS 5150 Navigation in Library Stacks.
+# app/controllers/holdings_controller.rb
 #
 # Controller to render holdings
 #
+# Copyright (c) 2017 Ke Qian
+#
+
 class HoldingsController < ApplicationController
   include HTTParty
 

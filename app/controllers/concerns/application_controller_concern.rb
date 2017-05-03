@@ -1,3 +1,11 @@
+#
+# app/controllers/concerns/application_controller_concern.rb
+#
+# Shared functions used by controllers
+#
+# Copyright (c) 2017 Ke Qian
+#
+
 module ApplicationControllerConcern
   extend ActiveSupport::Concern
 
