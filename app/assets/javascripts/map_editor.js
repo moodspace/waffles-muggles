@@ -1,3 +1,11 @@
+/**
+ * app/assets/javascripts/map_editor.js
+ *
+ * ES6 script used by map editor
+ *
+ * Copyright (c) 2017 Ke Qian
+ */
+
 let canvas;
 let modebit = 0; // 0: pointer, 1: rect, 2: poly, 3: mark, 4: layer, 5: stack
 let objects = [];

@@ -1,72 +1,81 @@
+<!--
+
+app/views/index/full.html.erb
+
+Template of index
+
+Copyright (c) 2017 Ke Qian
+
+-->
+
 <div class="container">
-    <h1 class="text-center">I don't know how to use space efficiently.</h1>
-    <div class="row">
-        <div class="col-sm-12 col-md-6 col-lg-4">
-            <div class="thumbnail">
-                <img src="assets/2015_0795_015_select.jpg" alt="">
-                <div class="caption">
-                    <h3>Map Editor</h3>
-                    <code>Lindsay France / Cornell Marketing Group</code>
-                    <div class="text-right">
-                        <a href="/editor" class="btn btn-primary" role="button">Get Access</a>
-                    </div>
-                </div>
-            </div>
+  <h1 class="text-center">I don't know how to use space efficiently.</h1>
+  <div class="row">
+    <div class="col-sm-12 col-md-6 col-lg-4">
+      <div class="thumbnail">
+        <img src="assets/2015_0795_015_select.jpg" alt="">
+        <div class="caption">
+          <h3>Map Editor</h3>
+          <code>Lindsay France / Cornell Marketing Group</code>
+          <div class="text-right">
+            <a href="/editor" class="btn btn-primary" role="button">Get Access</a>
+          </div>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-4">
-            <div class="thumbnail">
-                <img src="assets/2016_0007_119_select.jpg" alt="">
-                <div class="caption">
-                    <h3>Stack Map</h3>
-                    <code>Jason Koski / Cornell Marketing Group</code>
-                    <div class="form-group label-floating is-empty col-sm-6">
-                        <input placeholder="Call Number" id="call-number" type="text" class="form-control">
-                        <label for="call-number">e.g. PN2924.2 .K65 2010</label>
-                    </div>
-                    <div class="form-group label-floating is-empty col-sm-6">
-                        <select id="library-id" class="form-control">
-                        </select>
-                        <label for="library-id">e.g. 1 - Kroch</label>
-                    </div>
-                    <div class="text-right">
-                        <a href="javascript:void(0)" class="btn btn-primary" id="btn-book-find" role="button">Find</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-12 col-md-6 col-lg-4">
-            <div class="thumbnail">
-                <img src="assets/2015_0602_015_select.jpg" alt="">
-                <div class="caption">
-                    <h3>API</h3>
-                    <code>Jason Koski / Cornell Marketing Group</code>
-                    <div class="text-right">
-                        <a href="/docs" class="btn btn-primary" role="button">Docs</a>
-                    </div>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
+    <div class="col-sm-12 col-md-6 col-lg-4">
+      <div class="thumbnail">
+        <img src="assets/2016_0007_119_select.jpg" alt="">
+        <div class="caption">
+          <h3>Stack Map</h3>
+          <code>Jason Koski / Cornell Marketing Group</code>
+          <div class="form-group label-floating is-empty col-sm-6">
+            <input placeholder="Call Number" id="call-number" type="text" class="form-control">
+            <label for="call-number">e.g. PN2924.2 .K65 2010</label>
+          </div>
+          <div class="form-group label-floating is-empty col-sm-6">
+            <select id="library-id" class="form-control"></select>
+            <label for="library-id">e.g. 1 - Kroch</label>
+          </div>
+          <div class="text-right">
+            <a href="javascript:void(0)" class="btn btn-primary" id="btn-book-find" role="button">Find</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-12 col-md-6 col-lg-4">
+      <div class="thumbnail">
+        <img src="assets/2015_0602_015_select.jpg" alt="">
+        <div class="caption">
+          <h3>API</h3>
+          <code>Jason Koski / Cornell Marketing Group</code>
+          <div class="text-right">
+            <a href="/docs" class="btn btn-primary" role="button">Docs</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="modal" id="map-popup">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                <h4 class="modal-title"></h4>
-            </div>
-            <div class="modal-body">
-                <div class="col-lg-4 col-md-12 stack-box-wrapper">
-                    <%= render partial: "/maps/stack_box" %>
-                </div>
-                <div class="col-lg-8 col-md-12 floor-map-wrapper">
-                    <div>
-                        <canvas id="map-canvas" width="100" height="100"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer"></div>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h4 class="modal-title"></h4>
+      </div>
+      <div class="modal-body">
+        <div class="col-lg-4 col-md-12 stack-box-wrapper">
+          <%= render partial: "/maps/stack_box" %>
         </div>
+        <div class="col-lg-8 col-md-12 floor-map-wrapper">
+          <div>
+            <canvas id="map-canvas" width="100" height="100"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer"></div>
     </div>
+  </div>
 </div>

@@ -1,9 +1,11 @@
-# waffles-muggles
 #
-# CS 5150 Navigation in Library Stacks.
+# app/controllers/maps_controller.rb
 #
 # Controller to render maps
 #
+# Copyright (c) 2017 Ke Qian
+#
+
 class MapsController < ApplicationController
   include HTTParty
 

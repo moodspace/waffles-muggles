@@ -1,9 +1,11 @@
-# waffles-muggles
 #
-# CS 5150 Navigation in Library Stacks.
+# app/controllers/map_editor_controller.rb
 #
-# Controller to render maps
+# Controller to render map editor
 #
+# Copyright (c) 2017 Ke Qian
+#
+
 class MapEditorController < ApplicationController
   layout 'materialize'
 

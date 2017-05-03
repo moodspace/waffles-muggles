@@ -1,3 +1,11 @@
+/**
+ * app/assets/stylesheets/maps.css
+ *
+ * Stylesheet used by maps
+ *
+ * Copyright (c) 2017 Ke Qian
+ */
+
 #map-wrapper {
     width: 100vw;
     height: 100vh;

@@ -1,3 +1,11 @@
+/**
+ * app/assets/javascripts/maps.js
+ *
+ * ES6 script used by maps
+ *
+ * Copyright (c) 2017 Ke Qian
+ */
+
 let bibData;
 
 function loadHoldings() {

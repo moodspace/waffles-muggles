@@ -1,3 +1,11 @@
+/**
+ * app/assets/javascripts/index.js
+ *
+ * ES6 script used by index
+ *
+ * Copyright (c) 2017 Ke Qian
+ */
+
 let callNo;
 let libId;
 const mapPath = '#map-popup > div > div > div.modal-body';
