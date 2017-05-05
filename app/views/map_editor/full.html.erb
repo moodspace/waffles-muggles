@@ -84,7 +84,7 @@ Copyright (c) 2017 Ke Qian
     <div class="nav-wrapper blue-grey darken-4">
       <ul class="left">
         <li>
-          <a href="javascript:void(0)">StackMap Edit</a>
+          <a href="javascript:void(0)"><b>StackMap Edit</b></a>
         </li>
         <!-- Dropdown Trigger -->
         <li>
@@ -119,22 +119,22 @@ Copyright (c) 2017 Ke Qian
     <div class="nav-wrapper blue-grey darken-4">
       <ul class="left">
         <li>
-          <a id="nav-select-tool" href="javascript:void(0)" class="tool-level-2 tooltipped" data-position="bottom" data-delay="50" data-tooltip="Select tool">
+          <a id="nav-select-tool" href="javascript:void(0)" class="tool-button tool-level-2 tooltipped" data-position="bottom" data-delay="50" data-tooltip="Select tool">
             <i class="material-icons">navigation</i>
           </a>
         </li>
         <li>
-          <a id="nav-stack-tool" href="javascript:void(0)" class="tool-level-2 tooltipped" data-position="bottom" data-delay="50" data-tooltip="Stack">
+          <a id="nav-rect-tool" href="javascript:void(0)" class="tool-button tool-level-2 tooltipped" data-position="bottom" data-delay="50" data-tooltip="Stack">
             <i class="material-icons">theaters</i>
           </a>
         </li>
         <li>
-          <a id="nav-area-tool" href="javascript:void(0)" class="tool-level-2 tooltipped" data-position="bottom" data-delay="50" data-tooltip="Area">
+          <a id="nav-poly-tool" href="javascript:void(0)" class="tool-button tool-level-2 tooltipped" data-position="bottom" data-delay="50" data-tooltip="Area">
             <i class="material-icons">view_column</i>
           </a>
         </li>
         <li>
-          <a id="nav-floor-tool" href="javascript:void(0)" class="tool-level-2 tooltipped" data-position="bottom" data-delay="50" data-tooltip="Wall">
+          <a id="nav-wall-tool" href="javascript:void(0)" class="tool-button tool-level-2 tooltipped" data-position="bottom" data-delay="50" data-tooltip="Wall">
             <i class="material-icons">layers</i>
           </a>
         </li>
@@ -188,7 +188,6 @@ Copyright (c) 2017 Ke Qian
     </div>
   </nav>
 
-
   <ul id="slide-out" class="side-nav nested blue-grey darken-4 blue-grey-text text-lighten-5">
     <li>
       <ul class="collapsible" data-collapsible="accordion">
@@ -227,6 +226,14 @@ Copyright (c) 2017 Ke Qian
       <div class="tool-options">
         <div class="row cselect">
           <label>Hint: Click to select an element. Drag to change placement. Press 'Delete' to remove.</label>
+          <h6>
+            Floor properties
+          </h6>
+          <label>Hint: each floor must have a unique name.</label>
+          <div class="input-field col s12">
+            <input id="cfloor-name" pattern="^[A-z0-9]([A-z0-9 ]*[A-z0-9])*$" type="text" maxlength="255">
+            <label for="cfloor-name">Name this floor</label>
+          </div>
         </div>
         <div class="row crect">
           <div class="input-field col s3">
@@ -245,27 +252,43 @@ Copyright (c) 2017 Ke Qian
             <input id="crect-height" pattern="^[0-9]*\.?[0-9]+$" type="text">
             <label for="crect-height">Height</label>
           </div>
+          <div class="input-field col s6">
+            <select id="crect-type">
+              <option value="none">None</option>
+              <option value="stack">Stack</option>
+              <option value="area">Area</option>
+            </select>
+            <label for="crect-type">Mark as</label>
+          </div>
         </div>
-        <!-- cpolygon | polygon plotter -->
-        <div class="row cpolygon">
+        <!-- cpoly | polygon plotter -->
+        <div class="row cpoly">
           <div class="input-field col s12">
-            <input id="cpolygon-points" pattern="^([-+]?[0-9]*\.?[0-9]+),[ ]*([-+]?[0-9]*\.?[0-9]+)([ ]+([-+]?[0-9]*\.?[0-9]+),[ ]*([-+]?[0-9]*\.?[0-9]+))*$" type="text">
-            <label for="cpolygon-points" class="tooltipped" data-position="right" data-delay="50" data-tooltip="x1,y1 x2,y2, ...">Points</label>
+            <input id="cpoly-points" pattern="^([-+]?[0-9]*\.?[0-9]+),[ ]*([-+]?[0-9]*\.?[0-9]+)([ ]+([-+]?[0-9]*\.?[0-9]+),[ ]*([-+]?[0-9]*\.?[0-9]+))*$" type="text">
+            <label for="cpoly-points" class="tooltipped" data-position="right" data-delay="50" data-tooltip="x1,y1 x2,y2, ...">Points</label>
+          </div>
+          <div class="input-field col s6">
+            <select id="cpoly-type">
+              <option value="none">None</option>
+              <option value="stack">Stack</option>
+              <option value="area">Area</option>
+            </select>
+            <label for="cpoly-type">Mark as</label>
           </div>
         </div>
-        <div class="row cmark">
+        <div class="row carea">
           <div class="input-field col s6">
-            <input id="cmark-rows" pattern="^[0-9]+$" type="text" maxlength="2">
-            <label for="cmark-rows" class="tooltipped" data-position="right" data-delay="50" data-tooltip="Quickly generate rows of stacks">Rows</label>
+            <input id="carea-rows" pattern="^[0-9]+$" type="text" maxlength="2">
+            <label for="carea-rows" class="tooltipped" data-position="right" data-delay="50" data-tooltip="Quickly generate rows of stacks">Rows</label>
           </div>
           <div class="input-field col s6">
-            <select id="cmark-rotation">
+            <select id="carea-rotation">
               <option value="0">0</option>
               <option value="90">90</option>
               <option value="180">180</option>
               <option value="270">270</option>
             </select>
-            <label for="cmark-rotation" class="tooltipped under" data-position="right" data-delay="50" data-tooltip="0: looking down, 90: left, 180: up, 270: right">Rotation</label>
+            <label for="carea-rotation" class="tooltipped under" data-position="right" data-delay="50" data-tooltip="0: looking down, 90: left, 180: up, 270: right">Rotation</label>
           </div>
         </div>
         <!-- cfloor | floor configurator -->
@@ -281,14 +304,6 @@ Copyright (c) 2017 Ke Qian
           <div class="col s12">
             <a class="waves-effect waves-light btn-flat tooltipped light-blue-text text-lighten-2" data-position="right" data-delay="50" data-tooltip="Helps creating a coordinate system for map elements" id="cfloor-btn-set">Draw floor border</a>
             <br/><br/>
-          </div>
-          <h6>
-            Misc
-          </h6>
-          <label>Hint: each library must have distinct floor names.</label>
-          <div class="input-field col s12">
-            <input id="cfloor-name" pattern="^[A-z0-9]([A-z0-9 ]*[A-z0-9])*$" type="text" maxlength="255">
-            <label for="cfloor-name">Name this floor</label>
           </div>
         </div>
         <!-- cstack | stack meta -->
@@ -349,7 +364,6 @@ Copyright (c) 2017 Ke Qian
     </li>
   </ul>
 
-
   <div id="workspace">
     <!-- Workspace -->
   </div>
@@ -389,25 +403,14 @@ Copyright (c) 2017 Ke Qian
   <div class="modal-content">
     <h5>Add a floor</h5>
     <div class="row">
-      <div class="col s4"></div>
-      <div class="input-field col s4">
+      <div class="input-field col s12">
         <input name="name" type="text" maxlength="255">
         <label for="name">Name</label>
       </div>
-      <div class="col s4"></div>
     </div>
-  </div>
-  <div class="modal-footer">
-    <a href="javascript:void(0)" class="modal-action modal-close waves-effect waves-blue-grey btn-flat">OK</a>
-  </div>
-</div>
-
-<div id="modal-new-canvas" class="modal">
-  <div id="canvas-new" class="modal-content">
     <h5>Upload a reference</h5>
     <%= form_tag('javascript:void(0)', multipart: true) do %>
     <%= file_field_tag 'ref_img' %>
-    <%= hidden_field_tag(:floor_id) %>
     <% end %>
     <div class="row">
       <div class="input-field col s4">

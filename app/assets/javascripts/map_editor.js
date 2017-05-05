@@ -7,7 +7,8 @@
  */
 
 let canvas;
-let modebit = 0; // 0: pointer, 1: rect, 2: poly, 3: mark, 4: layer, 5: stack
+let modebit = 0; // 0: select / floor prop, 1: rect, 2: poly, 3: wall, 7: pan
+let dirtybit = false;
 let objects = [];
 let objectsRedo = [];
 let helpTextTimeout;
@@ -71,6 +72,18 @@ function checkError(element) {
   });
   return hasErr;
 }
+
+function getFloorById(id) {
+  return floors[_.findIndex(floors, { id })];
+}
+
+// function setFloorById(id, props) {
+//   const idx = _.findIndex(floors, { id });
+//   _.each(props, (v, k) => {
+//     floors[idx][k] = v;
+//     dirtybit = true;
+//   });
+// }
 
 /**
  * Scale a physical point on svg canvas to coordinates stored in data.
@@ -144,7 +157,7 @@ function addGrids() {
 function toggleUndoRedo() {
   if (objects.length === 0 ||
     _.findIndex(objects, {
-      type: 'action.ancestor'
+      type: 'action.ancestor',
     }) === objects.length - 1) {
     $('#nav-undo').addClass('disabled');
   } else {
@@ -162,11 +175,11 @@ function setTools(level) {
   // level 1: only library & floor list
   // level 2: toolbox, nav except undo / redo
 
-  for (let i = 0; i < level; i += 1) {
+  for (let i = 1; i <= level; i += 1) {
     $(`.tool-level-${i}`).removeClass('disabled');
   }
 
-  for (let i = level; i < 3; i += 1) {
+  for (let i = level + 1; i < 3; i += 1) {
     $(`.tool-level-${i}`).addClass('disabled');
   }
 
@@ -175,7 +188,7 @@ function setTools(level) {
   // $('.nav-wrapper input').prop('disabled', true);
   // $('#btn-output-save').addClass('disabled');
   // $('#btn-output-JSON').addClass('disabled');
-  // $('.toolbox a.btn-flat').addClass('disabled');
+  // $('.tool-button').addClass('disabled');
 
 
   if (level > 0) {
@@ -184,7 +197,7 @@ function setTools(level) {
   if (level > 1) {
     // $('.nav-wrapper > ul.left > li > a').removeClass('disabled');
     // $('.nav-wrapper input').prop('disabled', false);
-    // $('.toolbox a.btn-flat').removeClass('disabled');
+    // $('.tool-button').removeClass('disabled');
   }
   if (level > 2) {
     // $('.nav-wrapper > ul.right > li > a').removeClass('disabled');
@@ -215,7 +228,7 @@ function rerender() {
     } else if (obj.type === 'polygon') {
       const points = obj.data.points.map(c => scale(c).join(',')).join(' ');
       canvas.select(`#${obj.id}`).attr('points', points);
-    } else if (obj.type === 'stack') {
+    } else if (obj.meta.type === 'stack') {
       const center = scale([obj.meta.cx, obj.meta.cy]);
       const rotation = obj.meta.rotation;
       canvas.select(`#${obj.id}`).attrs({
@@ -325,45 +338,25 @@ function prunePoints(points) {
 }
 
 function exportFloorData() {
-  if (!metaObjects.floor_border) {
-    return {
-      floor: {},
-      stacks: [],
-    };
-  }
   let floorJson = {};
   const floorPoints = metaObjects.floor_border.data.points;
+  const floorObjs = _.filter(objects, obj =>
+    !_.startsWith(obj.type, 'action.'));
   floorJson = {
-    name: $('#cfloor-name').val(),
-    size_x: parseInt(scalePhysical(canvas.attr('width')), 10),
-    size_y: parseInt(scalePhysical(canvas.attr('height')), 10),
-    ref: $('#canvas-e-bgimg').attr('href'),
-    geojson: JSON.stringify({
-      type: 'polygon',
-      coordinates: floorPoints,
-    }),
+    name: getFloorById(activeFloor).name,
     map: {
-      refImage: $('#canvas-e-bgimg').attr('href'),
-      floorBorder: JSON.stringify({
+      w: parseInt(scalePhysical(canvas.attr('width')), 10),
+      h: parseInt(scalePhysical(canvas.attr('height')), 10),
+      ref: $('#canvas-e-bgimg').attr('href'),
+      fb: {
         type: 'polygon',
         coordinates: floorPoints,
-      }),
-      objects: JSON.stringify(_.filter(objects, obj =>
-        !_.startsWith(obj.type, 'action.'))),
+      },
+      objs: floorObjs,
     },
   };
 
-  const stacksJson = [];
-  objects.forEach((obj) => {
-    if (obj.type === 'stack') {
-      stacksJson.push(obj.meta);
-    }
-  });
-
-  return {
-    floor: floorJson,
-    stacks: stacksJson,
-  };
+  return floorJson;
 }
 
 function randomId() {
@@ -374,32 +367,14 @@ function randomId() {
   ].join('-');
 }
 
-function selectRect(id) {
+function canvasSelect(id) {
   canvas.selectAll('.selected').classed('selected', false);
   $(`#${id}`).addClass('selected');
-  $('#crect-x').val($(`#${id}`).attr('x'));
-  $('#crect-y').val($(`#${id}`).attr('y'));
-  $('#crect-width').val($(`#${id}`).attr('width'));
-  $('#crect-height').val($(`#${id}`).attr('height'));
-  checkError($('.row.crect input'));
-  $('.tool-options > .row').hide();
-  $('.tool-options > .row:nth-child(2)').show();
-  Materialize.updateTextFields();
-}
-
-function selectPolygon(id) {
-  canvas.selectAll('.selected').classed('selected', false);
-  $(`#${id}`).addClass('selected');
-  $('#cpolygon-points').val($(`#${id}`).attr('points'));
-  checkError($('.row.cpolygon input'));
-  $('.tool-options > .row').hide();
-  $('.tool-options > .row:nth-child(3)').show();
-  Materialize.updateTextFields();
 }
 
 function removeShapeData(id) {
   _.pullAllBy(objects, [{
-    id
+    id,
   }], 'id');
 }
 
@@ -414,34 +389,34 @@ function findShapeData(id) {
     if (v.id === id) {
       ret.push({
         index: idx,
-        value: v
+        value: v,
       });
     }
   });
   return ret;
 }
 
-function showMarkTool(id) {
-  canvas.selectAll('.selected').classed('selected', false);
-  $(`#${id}`).addClass('selected');
+function updateSelect($select, newVal) {
+  $select.material_select('destroy');
+  $select.val(newVal);
+  $select.material_select();
+}
+
+function showAreaTool(id) {
+  canvasSelect(id);
   const objData = findShapeData(id)[0].value;
-  $('#cmark-rows').val(objData.meta.rows);
-  $('#cmark-rotation').material_select('destroy');
-  $('#cmark-rotation').val(objData.meta.rotation);
-  $('#cmark-rotation').material_select();
-  checkError($('.row.cmark input, .row.cmark select'));
-  $(`.tool-options > .row:nth-child(${modebit + 1})`).show();
+  $('#carea-rows').val(objData.meta.rows);
+  updateSelect($('#carea-rotation'), objData.meta.rotation);
+  checkError($('.row.carea input, .row.carea select'));
+  $('.tool-options > .row.carea').show();
   Materialize.updateTextFields();
 }
 
 function showStackTool(id) {
-  canvas.selectAll('.selected').classed('selected', false);
-  $(`#${id}`).addClass('selected');
+  canvasSelect(id);
   const stackData = findShapeData(id)[0].value;
   if (stackData) {
-    $('#cstack-oversize').material_select('destroy');
-    $('#cstack-oversize').val(stackData.meta.oversize);
-    $('#cstack-oversize').material_select();
+    updateSelect($('#cstack-oversize'), stackData.meta.oversize);
     $('#cstack-rotation').val(stackData.meta.rotation);
     $('#cstack-startClass').val(stackData.meta.startClass);
     $('#cstack-startSubclass').val(stackData.meta.startSubclass);
@@ -450,9 +425,57 @@ function showStackTool(id) {
     $('#cstack-endSubclass').val(stackData.meta.endSubclass);
     $('#cstack-endSubclass2').val(stackData.meta.endSubclass2);
     checkError($('.row.cstack input, .row.cstack select'));
-    $(`.tool-options > .row:nth-child(${modebit + 1})`).show();
     Materialize.updateTextFields();
   }
+}
+
+function showMetaTool(id, shapeName, type) {
+  $('.tool-options > .row').hide();
+  $(`.tool-options > .row.c${shapeName}`).show();
+
+  // set meta inputs
+  if (type === 'stack') {
+    $('.tool-options > .row.cstack').show();
+    showStackTool(id);
+  } else if (type === 'area') {
+    $('.tool-options > .row.carea').show();
+    showAreaTool(id);
+  }
+}
+
+function showRectTool(id) {
+  canvasSelect(id);
+  const objData = findShapeData(id)[0].value;
+
+  // set geometry inputs
+  $('#crect-x').val(objData.data.x);
+  $('#crect-y').val(objData.data.y);
+  $('#crect-width').val(objData.data.width);
+  $('#crect-height').val(objData.data.height);
+
+  updateSelect($('#crect-type'), objData.meta ? objData.meta.type : 'none');
+
+  checkError($('.row.crect input'));
+
+  showMetaTool(id, 'rect', objData.meta.type);
+
+  Materialize.updateTextFields();
+}
+
+function showPolyTool(id) {
+  canvasSelect(id);
+  const objData = findShapeData(id)[0].value;
+
+  // set geometry inputs
+  $('#cpoly-points').val(objData.data.points);
+
+  updateSelect($('#cpoly-type'), objData.meta ? objData.meta.type : 'none');
+
+  checkError($('.row.cpoly input'));
+
+  showMetaTool(id, 'poly', objData.meta.type);
+
+  Materialize.updateTextFields();
 }
 
 function addClickHandlerToShape(e) {
@@ -466,21 +489,11 @@ function addClickHandlerToShape(e) {
     switch (modebit) {
       case 0:
         if (e.attr('points')) {
-          selectPolygon(e.attr('id'));
+          showPolyTool(e.attr('id'));
         } else if (e.classed('cobject') && e.attr('x')) {
-          selectRect(e.attr('id'));
+          showRectTool(e.attr('id'));
         }
         mousedownPoint = d3.mouse(event.currentTarget);
-        break;
-      case 3:
-        if (!e.classed('cstack')) {
-          showMarkTool(e.attr('id'));
-        }
-        break;
-      case 5:
-        if (e.classed('cstack')) {
-          showStackTool(e.attr('id'));
-        }
         break;
       case 6:
         mousedownPoint = d3.mouse(event.currentTarget);
@@ -502,7 +515,7 @@ function confirmNewShape(shape, id, settings) {
   shape.attrs({
     id: `canvas-e-${idShort}`,
     stroke: settings && settings.stroke ?
-      settings.stroke : '#F66',
+      settings.stroke : '#000',
     fill: settings && settings.readonly ?
       'transparent' : 'rgba(38, 50, 56, 0.5)',
   });
@@ -515,10 +528,14 @@ function confirmNewShape(shape, id, settings) {
   }
   switch (modebit) {
     case 1:
-      selectRect(shape.attr('id'));
+      // switch to select tool to edit props
+      $($('.tool-button')[0]).click();
+      showRectTool(shape.attr('id'));
       break;
     case 2:
-      selectPolygon(shape.attr('id'));
+      // switch to select tool to edit props
+      $($('.tool-button')[0]).click();
+      showPolyTool(shape.attr('id'));
       break;
     default:
 
@@ -532,8 +549,8 @@ function deleteObj(index) {
     type: 'action.delete',
     data: obj,
     meta: {
-      index
-    }
+      index,
+    },
   });
   toggleUndoRedo();
 }
@@ -544,63 +561,64 @@ function deleteObj(index) {
  * @return {[type]}     [description]
  */
 function redraw(obj) {
-  switch (obj.type) {
-    case 'rect':
-      {
-        const rect = canvas.append('rect');
-        rect.attrs({
-          x: scale(obj.data.x),
-          y: scale(obj.data.y),
-          width: scale(obj.data.width),
-          height: scale(obj.data.height),
-        });
-        // rect redrawn and restored
-        confirmNewShape(rect, obj.id, {
-          redo: true,
-        });
-        break;
+  if (obj.meta.type === 'stack') {
+    const groupId = obj.meta.for;
+    let rect;
+    if (_.isNull(groupId)) {
+      rect = canvas.append('rect').attrs({
+        x: scale(obj.data.x),
+        y: scale(obj.data.y),
+        width: scale(obj.data.width),
+        height: scale(obj.data.height),
+      }).classed('cstack', true);
+    } else {
+      if (canvas.select(`g[for='${groupId}']`).empty()) {
+        canvas.append('g').attr('for', groupId);
       }
-    case 'polygon':
-      {
-        const polygon = canvas.append('polygon');
-        polygon.attr('points', arrayToPoints(scale(obj.data.points)));
-        // rect redrawn and restored
-        confirmNewShape(polygon, obj.id, {
-          redo: true,
-        });
-        break;
-      }
-    case 'stack':
-      {
-        const groupId = obj.meta.for;
-        if (canvas.select(`g[for='${groupId}']`).empty()) {
-          canvas.append('g').attr('for', groupId);
-        }
-        const group = canvas.select(`g[for='${groupId}']`);
-        const rect = group.append('rect').attrs({
-          x: scale(obj.data.x),
-          y: scale(obj.data.y),
-          width: scale(obj.data.width),
-          height: scale(obj.data.height),
-        }).classed('cstack', true);
-        const rectCenter = [];
-        rectCenter[0] = obj.data.x + (obj.data.width * 0.5);
-        rectCenter[1] = obj.data.y + (obj.data.height * 0.5);
-        const transVals = [
-          obj.meta.rotation,
-          scale(rectCenter[0]),
-          scale(rectCenter[1]),
-        ].join(' ');
-        rect.attr('transform', `rotate(${transVals})`);
-        confirmNewShape(rect, obj.id, {
-          stroke: '#0AC',
-          redo: true,
-        });
-        // stack redrawn and restored
-        break;
-      }
-    default:
+      const group = canvas.select(`g[for='${groupId}']`);
+      rect = group.append('rect').attrs({
+        x: scale(obj.data.x),
+        y: scale(obj.data.y),
+        width: scale(obj.data.width),
+        height: scale(obj.data.height),
+      }).classed('cstack', true);
+    }
 
+    const rectCenter = [];
+    rectCenter[0] = obj.data.x + (obj.data.width * 0.5);
+    rectCenter[1] = obj.data.y + (obj.data.height * 0.5);
+    const transVals = [
+      obj.meta.rotation,
+      scale(rectCenter[0]),
+      scale(rectCenter[1]),
+    ].join(' ');
+
+    rect.attr('transform', `rotate(${transVals})`);
+    confirmNewShape(rect, obj.id, {
+      stroke: '#0AC',
+      redo: true,
+    });
+    // stack redrawn and restored
+  } else if (obj.type === 'rect') {
+    const rect = canvas.append('rect');
+    rect.attrs({
+      x: scale(obj.data.x),
+      y: scale(obj.data.y),
+      width: scale(obj.data.width),
+      height: scale(obj.data.height),
+    });
+    // rect redrawn and restored
+    confirmNewShape(rect, obj.id, {
+      redo: true,
+    });
+  } else if (obj.type === 'polygon') {
+    const polygon = canvas.append('polygon');
+    polygon.attr('points', arrayToPoints(
+      scale(pointsToArray(obj.data.points))));
+    // rect redrawn and restored
+    confirmNewShape(polygon, obj.id, {
+      redo: true,
+    });
   }
 }
 
@@ -627,7 +645,8 @@ function generatePolygonData(shape) {
     if (obj.id === id && obj.type !== 'stack') {
       const newObj = _.clone(obj);
       newObj.data = {
-        points: scalePhysical(pointsToArray(shape.attr('points'))),
+        points: arrayToPoints(
+          scalePhysical(pointsToArray(shape.attr('points')))),
       };
       return newObj;
     }
@@ -730,22 +749,24 @@ function redo() {
   toggleUndoRedo();
 }
 
-function initCanvas(w, h, ref, map) {
+function initCanvas(map) {
+  console.log(map)
   $('#workspace').html('');
   canvas = d3.select('#workspace').append('svg').attrs({
     id: 'canvas',
-    width: w,
-    height: h,
+    width: map.w,
+    height: map.h,
   }).classed('z-depth-1', true);
-  canvas.style('left', Math.max(0, 0.5 * ($('#workspace').width() - w)));
-  canvas.style('top', Math.max(0, 0.5 * ($(window).height() - h - topBarHeight)));
-  rawFloorSize = [w, h];
+  canvas.style('left', Math.max(0, 0.5 * ($('#workspace').width() - map.w)));
+  canvas.style('top', Math.max(0, 0.5 * ($(window).height() - map.h -
+    topBarHeight)));
+  rawFloorSize = [map.w, map.h];
 
   canvas.selectAll('*').remove();
 
   canvas.append('image').attrs({
     id: 'canvas-e-bgimg',
-    href: ref || '',
+    href: map.ref || '',
     width: '100%',
     height: '100%',
   });
@@ -758,19 +779,21 @@ function initCanvas(w, h, ref, map) {
   saveCounter = 0;
 
   if (map) {
-    map.objects.forEach((obj) => {
+    addFloorBorder(map.fb);
+
+    map.objs.forEach((obj) => {
       redraw(obj);
     });
-    objects = map.objects;
+    objects = map.objs;
     objects.push({
-      type: 'action.ancestor'
+      type: 'action.ancestor',
     });
   }
 
   canvas.style('cursor', 'default');
   $('#btn-zoom').text('100%');
-  $('.toolbox a.btn-flat').removeClass('light-blue lighten-2');
-  $('.toolbox a.btn-flat:first-child').addClass('light-blue lighten-2');
+  $('.tool-button').removeClass('light-blue lighten-2');
+  $($('.tool-button')[0]).addClass('light-blue lighten-2');
   $('.tool-options > .row').hide();
   $('.tool-options > .row:nth-child(1)').show();
   $('.tool-options input').val(0);
@@ -819,9 +842,10 @@ function initCanvas(w, h, ref, map) {
               id: `canvas-e-${rid}`,
               type: 'rect',
               meta: {
-                rows: 0,
-                rotation: 0,
-                g: [],
+                type: 'none',
+                // rows: 0,
+                // rotation: 0,
+                // g: [],
               },
               data: {
                 x: scalePhysical(activeRect.attr('x')),
@@ -1052,12 +1076,13 @@ function initCanvas(w, h, ref, map) {
               id: `canvas-e-${rid}`,
               type: 'polygon',
               meta: {
-                rows: 0,
-                rotation: 0,
-                g: [],
+                type: 'none',
+                // rows: 0,
+                // rotation: 0,
+                // g: [],
               },
               data: {
-                points: scalePhysical(newPointsArr),
+                points: arrayToPoints(scalePhysical(newPointsArr)),
               },
             });
             toggleUndoRedo();
@@ -1067,31 +1092,31 @@ function initCanvas(w, h, ref, map) {
         }
       case 4:
         {
-          const activeFbPolygon = canvas.select('polygon.active_fb');
-          if (!activeFbPolygon.empty()) {
-            let newPoints =
-              `${activeFbPolygon.attr('points')} ${point.join(',')}`;
-            const newPointsArr = prunePoints(pointsToArray(newPoints));
-            newPoints = arrayToPoints(newPointsArr);
-            activeFbPolygon.attr('points', newPoints).classed('fb', true);
-            // polygon created and stored
-            const rid = randomId();
-            metaObjects.floor_border = {
-              type: 'f_border',
-              id: `canvas-e-${rid}`,
-              data: {
-                points: scalePhysical(newPointsArr),
-              },
-            };
-            confirmNewShape(activeFbPolygon, rid, {
-              readonly: true,
-            });
-          }
-          $('#cfloor-btn-set').removeClass('disabled');
-          // re-enable output buttons that are always disabled in setTools
-          setTools(3);
-          canvas.style('cursor', 'default').selectAll('*').style('cursor',
-            'default');
+          // const activeFbPolygon = canvas.select('polygon.active_fb');
+          // if (!activeFbPolygon.empty()) {
+          //   let newPoints =
+          //     `${activeFbPolygon.attr('points')} ${point.join(',')}`;
+          //   const newPointsArr = prunePoints(pointsToArray(newPoints));
+          //   newPoints = arrayToPoints(newPointsArr);
+          //   activeFbPolygon.attr('points', newPoints).classed('fb', true);
+          //   // polygon created and stored
+          //   const rid = randomId();
+          //   metaObjects.floor_border = {
+          //     type: 'f_border',
+          //     id: `canvas-e-${rid}`,
+          //     data: {
+          //       points: arrayToPoints(scalePhysical(newPointsArr)),
+          //     },
+          //   };
+          //   confirmNewShape(activeFbPolygon, rid, {
+          //     readonly: true,
+          //   });
+          // }
+          // $('#cfloor-btn-set').removeClass('disabled');
+          // // re-enable output buttons that are always disabled in setTools
+          // setTools(3);
+          // canvas.style('cursor', 'default').selectAll('*').style('cursor',
+          //   'default');
           break;
         }
       default:
@@ -1103,15 +1128,48 @@ function initCanvas(w, h, ref, map) {
     if ((event.which === 127 || event.which === 46) && !canvas.select(
         '.selected').empty()) {
       deleteObj(findShapeData(canvas.select('.selected').attr('id'))[0].index);
-      $('.toolbox a.btn-flat:first-child').click();
+      $($('.tool-button')[0]).click();
     }
   });
   // END initCanvas
 }
 
+/**
+ * [Responds to floor list item clicking]
+ * @param  {[type]} floor [a floor object]
+ */
+function loadFloor(floor) {
+  if (dirtybit) {
+    if (!confirm('Discard unsaved changes?')) {
+      // cancel, do not discard
+      return;
+    }
+  }
+
+  dirtybit = false;
+
+  $('#floor-collection>a').removeClass('active');
+
+  activeFloor = floor.id;
+  setTools(1);
+  $('#workspace').html('');
+
+  if (floor.map) {
+    // load map if has map
+    const map = JSON.parse(floor.map);
+    initCanvas(map);
+    // re-enable output buttons that are always disabled in setTools
+    setTools(3);
+  }
+
+  $('#cfloor-name').val(floor.name);
+  checkError($('.row.cfloor input'));
+  Materialize.updateTextFields();
+  $(event.currentTarget).addClass('active');
+}
+
 function loadFloors(libraryId) {
   $('#btn-add-floor').show();
-
   $.ajax({
     url: '/v2/floors/',
     type: 'GET',
@@ -1140,53 +1198,14 @@ function loadFloors(libraryId) {
       });
 
       $('#floor-collection>a').click(() => {
-        const floorIdx = _.findIndex(floors, {
-          id: $(event.currentTarget).data('floor_id'),
-        });
-        if (activeFloor === floors[floorIdx].id) {
+        const floor = getFloorById($(event.currentTarget).data(
+          'floor_id'));
+        if (activeFloor === floor.id) {
           // same floor
           return;
         }
 
-        $('#floor-collection>a').removeClass('active');
-
-        activeFloor = floors[floorIdx].id;
-        setTools(1);
-        $('#workspace').html('');
-
-        if (floors[floorIdx].map) {
-          // load map if has map
-          const map = JSON.parse(floors[floorIdx].map);
-          map.floorBorder = JSON.parse(map.floorBorder);
-          map.objects = JSON.parse(map.objects);
-          initCanvas(floors[floorIdx].size_x, floors[floorIdx].size_y,
-            floors[floorIdx].ref, map);
-
-          const points = JSON.parse(floors[floorIdx].geojson).coordinates;
-          const activeFbPolygon = canvas.insert('polygon',
-              ':nth-child(2)')
-            .attr('points', arrayToPoints(points))
-            .classed('fb active_fb', true);
-          // polygon created and stored
-          const rid = randomId();
-          metaObjects.floor_border = {
-            type: 'f_border',
-            id: `canvas-e-${rid}`,
-            data: {
-              points: scalePhysical(points),
-            },
-          };
-          confirmNewShape(activeFbPolygon, rid, {
-            readonly: true,
-          });
-          // re-enable output buttons that are always disabled in setTools
-          setTools(3);
-        }
-
-        $('#cfloor-name').val(floors[floorIdx].name);
-        checkError($('.row.cfloor input'));
-        Materialize.updateTextFields();
-        $(event.currentTarget).addClass('active');
+        loadFloor(floor);
       });
 
       $('.collapsible').collapsible('close', 0);
@@ -1248,23 +1267,79 @@ function loadLibraries() {
 
 const rowThickness = 10;
 
-function initStacksInShape(e, rows, rotation) {
-  const id = e.attr('id');
+/**
+ * Clear (reset) shape meta to 'none' and delete stacks (for area), but does not
+ * delete shape itself
+ * @param  {[type]} id [description]
+ * @return {[type]}    [description]
+ */
+function clearShapeMeta(id) {
   const objIdx = findShapeData(id)[0].index;
-  objects[objIdx].meta.rows = rows;
-  objects[objIdx].meta.rotation = rotation;
+  if (objects[objIdx].meta.type === 'area') {
+    canvas.select(`g[for="${id}"]`).remove();
+    objects[objIdx].meta.g.forEach((stackId) => {
+      removeShapeData(stackId);
+    });
+  }
 
-  $('#cmark-rows').val(rows);
-  $('#cmark-rotation').val(rotation);
+  // confirm lastly (after meta updated) to reflect new type
+  objects[objIdx].meta = { type: 'none' };
+  confirmNewShape(canvas.selectAll(`#${id}`), id, {
+    stroke: '#000',
+  });
+}
 
-  canvas.select(`g[for="${e.attr('id')}"]`).remove();
+function initStack(id, rotation) {
+  const objIdx = findShapeData(id)[0].index;
+  const shape = canvas.selectAll('.selected');
+
+  const rectCenter = [
+    shape.attr('x') + (shape.attr('width') / 2),
+    shape.attr('y') + (shape.attr('height') / 2),
+  ];
+
+  objects[objIdx].meta = {
+    type: 'stack',
+    cx: scalePhysical(rectCenter[0]),
+    cy: scalePhysical(rectCenter[1]),
+    lx: scalePhysical(shape.attr('width')),
+    ly: scalePhysical(shape.attr('height')),
+    rotation: parseInt(rotation, 10),
+    oversize: 0,
+    startClass: 'A',
+    startSubclass: 0,
+    startSubclass2: '',
+    endClass: 'Z',
+    endSubclass: 0,
+    endSubclass2: '',
+    for: null,
+  };
+
+  // confirm lastly (after meta updated) to reflect new type
+  confirmNewShape(shape, id, {
+    stroke: '#0AC',
+  });
+}
+
+function initArea(id, rows, rotation) {
+  const objIdx = findShapeData(id)[0].index;
+  const shape = canvas.selectAll('.selected');
+
+  objects[objIdx].meta = {
+    type: 'area',
+    rows,
+    rotation,
+    g: [],
+  };
+
+  canvas.select(`g[for="${id}"]`).remove();
   findShapeData(id)[0].value.meta.g.forEach((stackId) => {
     removeShapeData(stackId);
   });
 
-  const polygon = e.attr('points') ?
-    pointsToArray(e.attr('points')) :
-    rectToArray(e);
+  const polygon = shape.attr('points') ?
+    pointsToArray(shape.attr('points')) :
+    rectToArray(shape);
   const theta = (Math.PI * rotation) / 180;
   const gamma = (Math.PI / 2) - theta;
 
@@ -1304,8 +1379,8 @@ function initStacksInShape(e, rows, rotation) {
       rowSpacing),
   ];
 
-  const group = canvas.append('g').attr('for', e.attr('id'));
-  const groupIdx = findShapeData(e.attr('id'))[0].index;
+  const group = canvas.append('g').attr('for', id);
+  const groupIdx = findShapeData(id)[0].index;
   objects[groupIdx].meta.g = [];
 
   for (let i = 0; i < rows; i += 1) {
@@ -1328,9 +1403,10 @@ function initStacksInShape(e, rows, rotation) {
       `rotate(${rotation} ${rectCenterRotated[0]} ${rectCenterRotated[1]})`);
 
     objects.push({
-      type: 'stack',
+      type: 'rect',
       id: `canvas-e-${rid}`,
       meta: {
+        type: 'stack',
         cx: scalePhysical(rectCenterRotated[0]),
         cy: scalePhysical(rectCenterRotated[1]),
         lx: scalePhysical(centeroidRowLen),
@@ -1343,7 +1419,7 @@ function initStacksInShape(e, rows, rotation) {
         endClass: 'Z',
         endSubclass: 0,
         endSubclass2: '',
-        for: e.attr('id'),
+        for: id,
       },
       data: {
         x: scalePhysical(rect.attr('x')),
@@ -1364,7 +1440,107 @@ function initStacksInShape(e, rows, rotation) {
     objects[groupIdx].meta.g.push(`canvas-e-${rid}`);
   }
 
-  // END initStacksInShape
+  // confirm lastly (after meta updated) to reflect new type
+  confirmNewShape(shape, id, {
+    stroke: '#F66',
+  });
+
+  // END initArea
+}
+
+/**
+ * [addFloorBorder add floor border to canvas]
+ * @param {[type]} fb [floor as a geojson polygon, optional]
+ */
+function addFloorBorder(fb) {
+  const w = canvas.attr('width');
+  const h = canvas.attr('height');
+
+  canvas.select('polygon.fb').remove();
+  const fbPoly = canvas.append('polygon').classed('fb', true).attrs({
+    points: fb ? fb.coordinates : `0,0 ${w},0 ${w},${h} 0,${h}`,
+    'stroke-width': '1',
+    stroke: '#F66',
+    fill: 'rgba(239, 108, 0, 0.5)',
+  });
+
+  const fbPts = pointsToArray(fbPoly.attr('points'));
+
+  // polygon created and stored
+  const rid = randomId();
+  metaObjects.floor_border = {
+    type: 'f_border',
+    id: `canvas-e-${rid}`,
+    data: {
+      points: arrayToPoints(scalePhysical(fbPts)),
+    },
+  };
+
+  confirmNewShape(fbPoly, rid, {
+    readonly: true,
+    stroke: '#F66',
+  });
+
+  $('#cfloor-btn-set').removeClass('disabled');
+
+  canvas.style('cursor', 'default').selectAll('*').style('cursor',
+    'default');
+}
+
+function uploadRefImg() {
+  // prepare form for image upload / creation
+  const form = $('#modal-add-floor > div > form');
+  let w = $(
+    '#modal-add-floor>div>.row:last-child>div:nth-child(1)>input').val();
+  let h = $(
+    '#modal-add-floor>div>.row:last-child>div:nth-child(2)>input').val();
+  form.append(
+    `<input type="hidden" name="width" value="${parseInt(w, 10)}">`,
+  );
+  form.append(
+    `<input type="hidden" name="height" value="${parseInt(h, 10)}">`,
+  );
+  $.ajax({
+    url: '/maps/uploadRefImg',
+    type: 'POST',
+    data: new FormData(form[0]),
+    success: (data) => {
+      if ($('#modal-add-floor>div>.row:last-child>div>input').prop(
+          'disabled')) {
+        // if an image uploaded, use image's actual size
+        w = data.w;
+        h = data.h;
+      }
+
+      w = parseInt(w, 10);
+      h = parseInt(h, 10);
+
+      // add default border
+      initCanvas({
+        w,
+        h,
+        ref: data.ref,
+        fb: {
+          type: 'polygon',
+          coordinates: [
+            [0, 0],
+            [w, 0],
+            [w, h],
+            [0, h],
+          ],
+        },
+        objs: [],
+      });
+
+      // save new floor with image and border
+      $('#btn-output-save').click();
+    },
+    error: (e) => {
+      showError(e.responseJSON.message);
+    },
+    contentType: false,
+    processData: false,
+  });
 }
 
 $(document).ready(() => {
@@ -1372,37 +1548,31 @@ $(document).ready(() => {
 
   $('.tool-options > .row').hide();
 
-  $('.toolbox a.btn-flat').each((index) => {
-    $(`.toolbox a.btn-flat:nth-child(${index + 1})`).click(() => {
+  $('.tool-button').each((index) => {
+    $($('.tool-button')[index]).click(() => {
       $('.collapsible').collapsible('close', 0);
 
       if (modebit !== index) {
+        // new tool was picked
         canvas.selectAll('.selected').classed('selected', false);
       }
       modebit = index;
+
+      // reset cursors
       canvas.style('cursor', 'default').selectAll('*').style(
         'cursor', 'default');
 
       if (modebit === 1 || modebit === 2) {
+        // rect and poly
         canvas.style('cursor', 'crosshair').selectAll('*').style(
           'cursor', 'crosshair');
-      } else if (modebit === 6) {
+      } else if (modebit === 7) {
+        // pan
         canvas.style('cursor', 'move').selectAll('*').style(
           'cursor', 'move');
-      } else {
-        canvas.style('cursor', 'default').selectAll('*').style(
-          'cursor', 'default');
-        if (modebit === 3) {
-          canvas.selectAll('.cobject:not(.cstack)').style('cursor',
-            'pointer');
-        }
-        if (modebit === 5) {
-          canvas.selectAll('.cobject.cstack').style('cursor',
-            'pointer');
-        }
       }
       $('.tool-options > .row').hide();
-      $('.toolbox a.btn-flat').removeClass('light-blue lighten-2');
+      $('.tool-button').removeClass('light-blue lighten-2');
       if (!canvas.selectAll('.selected').empty()) {
         $(`.tool-options > .row:nth-child(${index + 1})`).show();
       }
@@ -1411,7 +1581,7 @@ $(document).ready(() => {
       if (modebit === 0 || modebit === 4) {
         $(`.tool-options > .row:nth-child(${index + 1})`).show();
       }
-      $(`.toolbox a.btn-flat:nth-child(${index + 1})`).addClass(
+      $($('.tool-button')[index]).addClass(
         'light-blue lighten-2');
       showHelp(helpText[index]);
     });
@@ -1439,30 +1609,74 @@ $(document).ready(() => {
     redo();
   });
 
-  $('.row.cmark select').change(() => {
-    if (checkError($('.row.cmark input'))) {
+  $('.row.crect select').change(() => {
+    if (checkError($('.row.crect input'))) {
       return;
     }
     const shape = canvas.selectAll('.selected');
-    const irows = parseInt($('#cmark-rows').val(), 10);
-    const irotation = parseInt($('#cmark-rotation').val(), 10);
-    if (irotation < 0 || irotation > 360) {
-      return;
+    const type = $('#crect-type').val();
+
+    clearShapeMeta(shape.attr('id'));
+
+    if (type === 'stack') {
+      initStack(shape.attr('id'), 0);
+    } else if (type === 'area') {
+      initArea(shape.attr('id'), 0, 0);
     }
-    initStacksInShape(shape, irows, irotation);
+
+    showMetaTool(shape.attr('id'), 'rect', type);
   });
 
-  $('.row.cmark input').on('input', () => {
-    if (checkError($('.row.cmark input'))) {
+  $('.row.cpoly select').change(() => {
+    if (checkError($('.row.cpoly input'))) {
       return;
     }
     const shape = canvas.selectAll('.selected');
-    const irows = parseInt($('#cmark-rows').val(), 10);
-    const irotation = parseInt($('#cmark-rotation').val(), 10);
+    const type = $('#cpoly-type').val();
+
+    clearShapeMeta(shape.attr('id'));
+
+    if (type === 'stack') {
+      initStack(shape.attr('id'), 0);
+    } else if (type === 'area') {
+      initArea(shape.attr('id'), 0, 0);
+    }
+
+    showMetaTool(shape.attr('id'), 'poly', type);
+  });
+
+  $('.row.cselect input').on('input', () => {
+    if (checkError($('.row.cselect input'))) {
+      return;
+    }
+    const fname = $('#cfloor-name').val();
+    metaObjects.floor_name = fname;
+  });
+
+  $('.row.carea select').change(() => {
+    if (checkError($('.row.carea input'))) {
+      return;
+    }
+    const shape = canvas.selectAll('.selected');
+    const irows = parseInt($('#carea-rows').val(), 10);
+    const irotation = parseInt($('#carea-rotation').val(), 10);
     if (irotation < 0 || irotation > 360) {
       return;
     }
-    initStacksInShape(shape, irows, irotation);
+    initArea(shape.attr('id'), irows, irotation);
+  });
+
+  $('.row.carea input').on('input', () => {
+    if (checkError($('.row.carea input'))) {
+      return;
+    }
+    const shape = canvas.selectAll('.selected');
+    const irows = parseInt($('#carea-rows').val(), 10);
+    const irotation = parseInt($('#carea-rotation').val(), 10);
+    if (irotation < 0 || irotation > 360) {
+      return;
+    }
+    initArea(shape.attr('id'), irows, irotation);
   });
 
   $('.row.crect input').on('input', () => {
@@ -1482,16 +1696,16 @@ $(document).ready(() => {
     generateStackData(shape);
   });
 
-  $('.row.cpolygon input').on('input', () => {
-    if (checkError($('.row.cpolygon input'))) {
+  $('.row.cpoly input').on('input', () => {
+    if (checkError($('.row.cpoly input'))) {
       return;
     }
     const shape = canvas.selectAll('.selected');
-    shape.attr('points', $('#cpolygon-points').val());
+    shape.attr('points', $('#cpoly-points').val());
   });
 
-  $('.row.cfloor input').on('input', () => {
-    if (checkError($('.row.cfloor input'))) {
+  $('.row.cwall input').on('input', () => {
+    if (checkError($('.row.cwall input'))) {
       return false;
     }
     return true;
@@ -1514,14 +1728,14 @@ $(document).ready(() => {
   });
 
   $('#cfloor-btn-set').click(() => {
-    modebit = 4;
-    if (metaObjects.floor_border) {
-      canvas.select(`polygon[id="${metaObjects.floor_border.id}"]`).remove();
-    }
-    metaObjects.floor_border = undefined;
-    $(event.currentTarget).addClass('disabled');
-    canvas.style('cursor', 'crosshair').selectAll('*').style(
-      'cursor', 'crosshair');
+    // modebit = 4;
+    // if (metaObjects.floor_border) {
+    //   canvas.select(`polygon[id="${metaObjects.floor_border.id}"]`).remove();
+    // }
+    // metaObjects.floor_border = undefined;
+    // $(event.currentTarget).addClass('disabled');
+    // canvas.style('cursor', 'crosshair').selectAll('*').style(
+    //   'cursor', 'crosshair');
   });
 
   $('#dropdown-zoom > li > a').click(() => {
@@ -1531,53 +1745,29 @@ $(document).ready(() => {
     $('.dropdown-button').dropdown('close');
   });
 
-  $('#btn-canvas-new').click(() => {
-    if ($(event.currentTarget).hasClass('disabled')) {
-      return;
-    }
-    $('#modal-new-canvas > div > form > input[name="floor_id"]').val(
-      activeFloor);
-    $('#ref_img').val('');
-    $('#modal-new-canvas>div>div>div>input').prop('disabled', false);
-    $('.modal').modal();
-    $('#modal-new-canvas').modal('open');
-  });
-
   $('#ref_img').change(() => {
-    $('#modal-new-canvas>div>div>div>input').prop('disabled', true);
+    $('#modal-add-floor>div>.row:last-child>div>input').prop('disabled',
+      true);
   });
 
-  $('#btn-canvas-commit-new').click(() => {
-    const form = $('#modal-new-canvas > div > form');
-    let w = $(
-      '#modal-new-canvas>div>div>div:nth-child(1)>input').val();
-    let h = $(
-      '#modal-new-canvas>div>div>div:nth-child(2)>input').val();
-    form.append(
-      `<input type="hidden" name="width" value="${parseInt(w, 10)}">`,
-    );
-    form.append(
-      `<input type="hidden" name="height" value="${parseInt(h, 10)}">`,
-    );
+  $('#modal-add-floor .modal-action').click(() => {
+    // create a floor record
     $.ajax({
-      url: '/maps/uploadRefImg',
+      url: '/v2/floors',
       type: 'POST',
-      data: new FormData(form[0]),
-      success: (data) => {
-        if ($('#modal-new-canvas>div>div>div>input').prop(
-            'disabled')) {
-          // if any is disabled
-          w = data.w;
-          h = data.h;
-        }
-        initCanvas(parseInt(w, 10), parseInt(h, 10), data.ref);
+      dataType: 'json',
+      data: {
+        name: $('#modal-add-floor input[name="name"]').val(),
+        library: activeLibrary,
+      },
+      success: (floorId) => {
+        activeFloor = floorId;
         loadFloors(activeLibrary);
+        uploadRefImg();
       },
       error: (e) => {
         showError(e.responseJSON.message);
       },
-      contentType: false,
-      processData: false,
     });
   });
 
@@ -1595,29 +1785,32 @@ $(document).ready(() => {
   });
 
   $('#btn-output-save').click(() => {
+    dirtybit = false;
+
     if ($(event.currentTarget).hasClass('disabled')) {
       return;
     }
     const data = exportFloorData();
-    saveCounter = data.stacks.length + 1;
+    const stacksNew = _.filter(data.map.objs, o => o.meta.type ===
+      'stack').map(
+      o => o.meta);
+
+    saveCounter = stacksNew.length + 1;
     $.ajax({
       url: '/v2/floors',
       type: 'PUT',
       dataType: 'json',
       data: {
         id: activeFloor,
-        name: data.floor.name,
-        size_x: data.floor.size_x,
-        size_y: data.floor.size_y,
-        ref: data.floor.ref,
-        geojson: data.floor.geojson,
+        name: data.name,
+        map: JSON.stringify(data.map),
         library: activeLibrary,
-        map: JSON.stringify(data.floor.map),
       },
       success: () => {
         saveCounter -= 1;
         if (saveCounter === 0) {
           showHelp('Save complete!');
+          loadFloors(activeLibrary);
         }
       },
       error: (e) => {
@@ -1627,22 +1820,22 @@ $(document).ready(() => {
 
     // remove old stack records
     $.ajax({
-      url: '/v1/stacks/',
+      url: '/v2/stacks/',
       type: 'GET',
       data: {
         floor_id: activeFloor,
       },
-      success: (stacks) => {
-        stacks.forEach((s) => {
+      success: (stacksOld) => {
+        stacksOld.forEach((s) => {
           $.ajax({
-            url: `/v1/stacks/${s.id}`,
+            url: `/v2/stacks/${s.id}`,
             type: 'DELETE',
           });
         });
       },
     });
 
-    data.stacks.forEach((s) => {
+    stacksNew.forEach((s) => {
       $.ajax({
         url: '/v2/stacks',
         type: 'POST',
@@ -1670,6 +1863,7 @@ $(document).ready(() => {
           saveCounter -= 1;
           if (saveCounter === 0) {
             showHelp('Save complete!');
+            loadFloors(activeLibrary);
           }
         },
         error: (e) => {
@@ -1686,7 +1880,15 @@ $(document).ready(() => {
   });
 
   $('#btn-add-floor').click(() => {
+    if ($(event.currentTarget).hasClass('disabled')) {
+      return;
+    }
+
     $('#modal-add-floor input').val('');
+    $('#ref_img').val('');
+    // in case previous uploaded image disables w,h inputs
+    $('#modal-add-floor>div>.row:last-child>div>input').prop('disabled',
+      false);
     $('.modal').modal();
     $('#modal-add-floor').modal('open');
   });
@@ -1708,24 +1910,6 @@ $(document).ready(() => {
       },
       success: () => {
         loadLibraries();
-      },
-      error: (e) => {
-        showError(e.responseJSON.message);
-      },
-    });
-  });
-
-  $('#modal-add-floor .modal-action').click(() => {
-    $.ajax({
-      url: '/v2/floors',
-      type: 'POST',
-      dataType: 'json',
-      data: {
-        name: $('#modal-add-floor input[name="name"]').val(),
-        library: activeLibrary,
-      },
-      success: () => {
-        loadFloors(activeLibrary);
       },
       error: (e) => {
         showError(e.responseJSON.message);
